@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch, unwrap } from "@/lib/api";
+import EmptyState from "@/components/EmptyState";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function ProfilePage() {
           <p className="mt-2"><span className="text-neutral-500">Phone:</span> {profile.phone_number || profile.phone || "—"}</p>
         </div>
       ) : (
-        <p className="mt-6 text-sm text-neutral-500">No profile details saved yet.</p>
+        <EmptyState compact text="No profile details saved yet." />
       )}
       <button onClick={logout} className="mt-6 border border-neutral-900 px-6 py-2 text-sm font-semibold">
         Log Out

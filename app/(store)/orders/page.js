@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch, unwrap, inr } from "@/lib/api";
+import EmptyState from "@/components/EmptyState";
 
 // User-specific page: never prerender (reads ?placed= at request time).
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ function OrdersInner() {
       {loading ? (
         <p className="mt-6 text-sm text-neutral-500">Loading orders…</p>
       ) : orders.length === 0 ? (
-        <p className="mt-6 text-sm text-neutral-500">No orders yet.</p>
+        <EmptyState compact text="No orders yet." />
       ) : (
         <ul className="mt-6 space-y-4">
           {orders.map((o) => (

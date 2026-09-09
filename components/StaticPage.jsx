@@ -1,4 +1,5 @@
 import { apiGet, unwrap } from "@/lib/api";
+import ShowcaseHeader from "@/components/ShowcaseHeader";
 
 // Content pages (about, policies, services, FAQs...) rendered from backend
 // Legal_Page + FAQs + Settings APIs. No hardcoded copy.
@@ -30,7 +31,7 @@ export default async function StaticPage({ slug }) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-14">
-      <h1 className="text-center font-display text-4xl font-bold">{TITLES[slug] || slug}</h1>
+      <ShowcaseHeader title={TITLES[slug] || slug} />
 
       {pageSections.map((s) => (
         <section key={s.legal_page_section_id} className="mt-8">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
+import EmptyState from "@/components/EmptyState";
 
 export default function AppointmentsPage() {
   const [items, setItems] = useState([]);
@@ -16,7 +17,7 @@ export default function AppointmentsPage() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="font-display text-4xl font-bold">Your Appointments</h1>
       {items.length === 0 ? (
-        <p className="mt-6 text-sm text-neutral-500">No appointments yet.</p>
+        <EmptyState compact text="No appointments yet." />
       ) : (
         <ul className="mt-6 space-y-4">
           {items.map((a) => (

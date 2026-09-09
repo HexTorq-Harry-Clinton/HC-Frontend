@@ -1,5 +1,5 @@
 import { apiGet, unwrap, resolveUploadUrl } from "@/lib/api";
-import Reveal from "@/components/Reveal";
+import ShowcaseHeader from "@/components/ShowcaseHeader";
 
 export const revalidate = 300;
 export const metadata = { title: "Style by HC" };
@@ -12,10 +12,7 @@ export default async function StyleByHCPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14">
-      <Reveal>
-        <h1 className="text-center font-display text-5xl font-bold">Style by HC</h1>
-        <p className="mt-3 text-center text-neutral-500">Curated looks from our stylists.</p>
-      </Reveal>
+      <ShowcaseHeader eyebrow="Curated Looks" title="Style by HC" sub="Curated looks from our stylists." />
       <div className="mt-10 grid gap-6 md:grid-cols-3">
         {collections.filter((c) => c.isactive !== false).map((c) => {
           const m = media.find((x) => x.style_collection_id === c.style_collection_id);

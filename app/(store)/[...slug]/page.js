@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { resolveSlug, titleFor, allStorefrontSlugs, CATEGORIES, OCCASIONS, COLLECTIONS } from "@/lib/catalog";
 import { getCategoryData, getProduct } from "@/lib/shop";
 import CategoryView from "@/components/CategoryView";
-import Reveal from "@/components/Reveal";
+import ShowcaseHeader from "@/components/ShowcaseHeader";
 import ProductDetail from "@/components/ProductDetail";
 import StaticPage from "@/components/StaticPage";
 
@@ -51,13 +51,7 @@ export default async function SlugPage({ params }) {
 
   return (
     <div id="shop">
-      <section className="bg-neutral-950 py-20 text-center text-white">
-        <Reveal>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">Harry Clinton</p>
-          <h1 className="mt-2 font-display text-5xl font-bold">{title}</h1>
-          <p className="mx-auto mt-3 max-w-xl text-neutral-300">{tagline}</p>
-        </Reveal>
-      </section>
+      <ShowcaseHeader dark title={title} sub={tagline} />
       <section className="mx-auto max-w-7xl px-4 py-12">
         <CategoryView
           products={data.products}

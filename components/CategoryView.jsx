@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import ProductCard, { PLACEHOLDER_IMAGE } from "./ProductCard";
+import ProductCard from "./ProductCard";
+import EmptyState from "./EmptyState";
 
 // Client-side filter + grid. Receives server-fetched products as props (SEO-friendly SSR,
 // interactive filtering without refetch).
@@ -61,14 +62,10 @@ export default function CategoryView({ products, sizes = [], clothTypes = [], co
 
       <div>
         {filtered.length === 0 ? (
-          <div className="py-16 text-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={PLACEHOLDER_IMAGE} alt="No pieces yet" className="mx-auto w-28 opacity-70" />
-            <h3 className="mt-4 font-display text-2xl">No pieces yet</h3>
-            <p className="mt-2 text-sm text-neutral-500">
-              Our stylists are curating this collection. Please check back soon.
-            </p>
-          </div>
+          <EmptyState
+            title="No pieces yet"
+            text="Our stylists are curating this collection. Please check back soon."
+          />
         ) : (
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3">
             {filtered.map((p, i) => (

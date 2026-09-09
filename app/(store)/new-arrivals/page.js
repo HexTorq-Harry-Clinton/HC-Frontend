@@ -1,7 +1,7 @@
 import { apiGet, unwrap } from "@/lib/api";
 import { mapProduct } from "@/lib/shop";
 import ProductCard from "@/components/ProductCard";
-import Reveal from "@/components/Reveal";
+import ShowcaseHeader from "@/components/ShowcaseHeader";
 
 export const revalidate = 300;
 export const metadata = { title: "New Arrivals" };
@@ -19,10 +19,7 @@ export default async function NewArrivalsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14">
-      <Reveal>
-        <h1 className="text-center font-display text-5xl font-bold">New Arrivals</h1>
-        <p className="mt-3 text-center text-neutral-500">Fresh off the cutting table.</p>
-      </Reveal>
+      <ShowcaseHeader eyebrow="Just Landed" title="New Arrivals" sub="Fresh off the cutting table." />
       <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
         {latest.map((p, i) => (
           <ProductCard key={p.id} product={p} index={i} />

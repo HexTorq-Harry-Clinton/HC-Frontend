@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
+import EmptyState from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,7 @@ function SearchInner() {
           ))}
         </div>
       )}
-      {searched && results.length === 0 && <p className="mt-8 text-center text-sm text-neutral-500">No matches. Try another word.</p>}
+      {searched && results.length === 0 && <EmptyState compact text="No matches. Try another word." />}
     </div>
   );
 }

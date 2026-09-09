@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/components/CartProvider";
+import EmptyState from "@/components/EmptyState";
 import { inr } from "@/lib/api";
 import { PLACEHOLDER_IMAGE } from "@/components/ProductCard";
 
@@ -12,12 +13,14 @@ export default function CartPage() {
 
   if (cart.items.length === 0) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-20 text-center">
-        <h1 className="font-display text-4xl font-bold">Your bag is empty</h1>
-        <p className="mt-3 text-neutral-500">Sharp looks await. Start with the edit.</p>
-        <Link href="/suits" className="mt-6 inline-block bg-neutral-950 px-8 py-3 text-sm font-semibold text-white">
-          Shop Suits
-        </Link>
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <h1 className="font-display text-4xl font-bold">Your Bag</h1>
+        <EmptyState
+          title="Your bag is empty"
+          text="Sharp looks await. Start with the edit."
+          actionHref="/suits"
+          actionLabel="Shop Suits"
+        />
       </div>
     );
   }

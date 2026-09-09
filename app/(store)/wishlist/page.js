@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useCart } from "@/components/CartProvider";
+import EmptyState from "@/components/EmptyState";
 import ProductCard from "@/components/ProductCard";
 
 export default function WishlistPage() {
@@ -10,10 +10,14 @@ export default function WishlistPage() {
 
   if (cart.wishlist.length === 0) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-20 text-center">
-        <h1 className="font-display text-4xl font-bold">Nothing saved yet</h1>
-        <p className="mt-3 text-neutral-500">Tap the heart on any piece to keep it here.</p>
-        <Link href="/suits" className="mt-6 inline-block bg-neutral-950 px-8 py-3 text-sm font-semibold text-white">Explore</Link>
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <h1 className="font-display text-4xl font-bold">Wishlist</h1>
+        <EmptyState
+          title="Nothing saved yet"
+          text="Tap the heart on any piece to keep it here."
+          actionHref="/suits"
+          actionLabel="Explore"
+        />
       </div>
     );
   }

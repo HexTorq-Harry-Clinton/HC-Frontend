@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
+import EmptyState from "@/components/EmptyState";
 
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState([]);
@@ -16,7 +17,7 @@ export default function AddressesPage() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="font-display text-4xl font-bold">Addresses</h1>
       {addresses.length === 0 ? (
-        <p className="mt-6 text-sm text-neutral-500">No saved addresses. Add one at checkout.</p>
+        <EmptyState compact text="No saved addresses. Add one at checkout." />
       ) : (
         <ul className="mt-6 space-y-4">
           {addresses.map((a) => (
