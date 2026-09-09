@@ -1,31 +1,59 @@
-import { apiGet, unwrap } from "@/lib/api";
+"use client";
 
-export const revalidate = 120;
+import { useEffect, useRef, useState } from "react";
 
-// Announcement ticker above the header, driven by the Running-Bar API.
-export default async function RunningBar() {
-  let items = [];
-  try {
-    const [bars, barItems] = await Promise.all([
-      apiGet("/Running-Bar").then(unwrap),
-      apiGet("/Running-Bar-Items").then(unwrap),
-    ]);
-    const active = bars.find((b) => b.isactive !== false) || bars[0];
-    if (active) {
-      items = barItems.filter(
-        (i) => i.running_bar_id === active.running_bar_id && i.isactive !== false
-      );
+// Announcement ticker: same structure/texts as the previous UI —
+// rotating sentences with prev/next arrows, pause on hover.
+const DEFAULT_SENTENCES = [
+  "Closet under Construction!",
+  "Fashion Hub coming soon",
+  "New collection loading",
+];
+
+export default function RunningBar() {
+  const sentences = DEFAULT_SENTENCES;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (!isPaused && sentences.length > 0) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % sentences.length);
+      }, 4000);
     }
-  } catch {
-    items = [];
-  }
-  if (items.length === 0) return null;
-  const words = items.map((i) => i.item_text || i.title).filter(Boolean);
-  const line = words.join("  •  ");
+    return () => clearInterval(intervalRef.current);
+  }, [isPaused, sentences.length]);
+
+  const showPrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + sentences.length) % sentences.length);
+  };
+
+  const showNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % sentences.length);
+  };
 
   return (
-    <div className="overflow-hidden bg-neutral-950 py-1.5 text-center text-xs font-medium uppercase tracking-widest text-white">
-      <div className="animate-marquee whitespace-nowrap">{line}</div>
+    <div
+      className="flex items-center justify-between bg-neutral-950 px-3 py-1.5 text-white"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <button type="button" onClick={showPrev} aria-label="Previous announcement" className="px-2">
+        &#10094;
+      </button>
+      <div className="flex-1 text-center">
+        <span key={currentIndex} className="fly-centered text-xs font-medium uppercase tracking-widest">
+          {sentences[currentIndex]}
+        </span>
+      </div>
+      <button type="button" onClick={showNext} aria-label="Next announcement" className="px-2">
+        &#10095;
+      </button>
+      <style jsx>{`
+        .fly-centered { display: inline-block; animation: fly-in 0.5s ease; }
+        @keyframes fly-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   );
 }

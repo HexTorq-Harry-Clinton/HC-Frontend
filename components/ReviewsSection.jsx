@@ -3,76 +3,131 @@
 import { useState } from "react";
 import { apiFetch } from "@/lib/api";
 
-// Reviews for a product: server-rendered list + client submit form.
-export default function ReviewsSection({ productId, initialReviews, summary }) {
+// Reviews: same structure/texts as the previous UI —
+// "Customer Reviews", average + stars + count, author/date cards,
+// login-gated "Write a Review" form with labelled fields.
+export default function ReviewsSection({ productId, initialReviews }) {
   const [reviews, setReviews] = useState(initialReviews || []);
+  const [loading] = useState(false);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [rating, setRating] = useState(5);
   const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const avg = summary?.average_rating || summary?.avg_rating ||
-    (reviews.length > 0
-      ? (reviews.reduce((n, r) => n + Number(r.rating || 0), 0) / reviews.length).toFixed(1)
-      : null);
+  const avg =
+    reviews.length > 0
+      ? reviews.reduce((n, r) => n + Number(r.rating || 0), 0) / reviews.length
+      : 0;
 
   const submit = async (e) => {
     e.preventDefault();
     setMsg("");
+    let userId = null;
+    try {
+      const stored = JSON.parse(localStorage.getItem("hc_user") || "null");
+      userId = stored?.user_id || stored?.id || null;
+    } catch {
+      userId = null;
+    }
+    if (!userId) {
+      setMsg("Please log in to write a review.");
+      return;
+    }
+    setBusy(true);
     try {
       const res = await apiFetch("/Reviews", {
         method: "POST",
         body: {
-          product_id: productId, rating: Number(rating),
-          review_title: title, review_text: text,
-          is_verified: false, is_approved: false, rcu: "website",
+          product_id: productId, variant_id: null, user_id: userId,
+          rating: Number(rating), review_title: title, review_text: text,
+          is_verified: 1, rcu: "website",
         },
       });
       const created = res?.data || res;
-      if (created?.review_id) setReviews((r) => [created, ...r]);
+      const list = unwrapList(await apiFetch("/Reviews").catch(() => []));
+      const mine = (Array.isArray(list) ? list : []).filter((r) => r.product_id === productId);
+      if (mine.length > 0) setReviews(mine);
+      else if (created?.review_id) setReviews((r) => [created, ...r]);
       setTitle("");
       setText("");
       setRating(5);
-      setMsg("Thanks! Your review is awaiting moderation.");
+      setMsg("Review submitted successfully.");
     } catch (err) {
-      setMsg(err.message || "Could not submit review.");
+      setMsg(err.message || "Failed to submit review");
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-14">
-      <h2 className="font-display text-3xl font-bold">
-        Reviews {avg ? <span className="text-lg text-neutral-500">★ {avg}</span> : null}
-      </h2>
-
-      {reviews.length === 0 ? (
-        <p className="mt-4 text-sm text-neutral-500">No reviews yet — be the first.</p>
+      <h3 className="font-display text-3xl font-bold">Customer Reviews</h3>
+      {loading ? (
+        <p className="mt-4 text-sm text-neutral-500">Loading reviews...</p>
       ) : (
-        <ul className="mt-6 grid gap-4 md:grid-cols-3">
-          {reviews.slice(0, 6).map((r) => (
-            <li key={r.review_id} className="border border-neutral-200 p-5">
-              <p className="text-sm font-bold">★ {r.rating} — {r.review_title || "Review"}</p>
-              <p className="mt-2 text-sm text-neutral-600">{r.review_text}</p>
-            </li>
-          ))}
-        </ul>
+        <>
+          {reviews.length > 0 && (
+            <p className="mt-2 text-sm text-neutral-500">
+              <span className="font-bold text-neutral-900">{avg.toFixed(1)}</span>{" "}
+              <span className="text-gold">{"★".repeat(Math.round(avg))}{"☆".repeat(5 - Math.round(avg))}</span>{" "}
+              Based on {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+            </p>
+          )}
+          {reviews.length === 0 ? (
+            <p className="mt-4 text-sm text-neutral-500">No reviews yet. Be the first to review this product.</p>
+          ) : (
+            <ul className="mt-6 grid gap-4 md:grid-cols-3">
+              {reviews.map((r) => (
+                <li key={r.review_id} className="border border-neutral-200 p-5">
+                  <p className="text-gold">
+                    {"★".repeat(Math.min(Number(r.rating) || 5, 5))}
+                    {"☆".repeat(5 - Math.min(Number(r.rating) || 5, 5))}
+                  </p>
+                  <p className="mt-2 text-xs text-neutral-500">
+                    {r.user_name || "Verified Buyer"}
+                    {r.created_at ? ` • ${new Date(r.created_at).toLocaleDateString("en-IN")}` : ""}
+                  </p>
+                  <h5 className="mt-1 font-semibold">{r.review_title}</h5>
+                  <p className="mt-1 text-sm text-neutral-600">{r.review_text}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
 
-      <form onSubmit={submit} className="mt-8 max-w-xl space-y-3 border border-neutral-200 p-6">
-        <p className="font-semibold">Write a review</p>
-        {msg && <p className="text-sm text-neutral-600">{msg}</p>}
-        <div className="flex items-center gap-2 text-sm">
-          <span>Rating</span>
-          <select value={rating} onChange={(e) => setRating(e.target.value)} className="border border-neutral-300 px-2 py-1">
-            {[5, 4, 3, 2, 1].map((n) => (
-              <option key={n} value={n}>{n} ★</option>
-            ))}
-          </select>
-        </div>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="w-full border border-neutral-300 px-3 py-2 text-sm" />
-        <textarea value={text} onChange={(e) => setText(e.target.value)} required placeholder="Your review" rows={3} className="w-full border border-neutral-300 px-3 py-2 text-sm" />
-        <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Submit Review</button>
-      </form>
+      <div className="mt-8 max-w-xl border border-neutral-200 p-6">
+        <h4 className="font-semibold">Write a Review</h4>
+        {msg && <p className="mt-2 text-sm text-neutral-600">{msg}</p>}
+        <form onSubmit={submit} className="mt-4 space-y-3">
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">Rating</span>
+            <select value={rating} onChange={(e) => setRating(e.target.value)} className="w-full border border-neutral-300 px-3 py-2 text-sm">
+              <option value={5}>5 - Excellent</option>
+              <option value={4}>4 - Good</option>
+              <option value={3}>3 - Average</option>
+              <option value={2}>2 - Poor</option>
+              <option value={1}>1 - Terrible</option>
+            </select>
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">Title</span>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border border-neutral-300 px-3 py-2 text-sm" />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">Review</span>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} required rows="4" className="w-full border border-neutral-300 px-3 py-2 text-sm" />
+          </label>
+          <button disabled={busy} className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white disabled:opacity-50">
+            {busy ? "Submitting..." : "Submit Review"}
+          </button>
+        </form>
+      </div>
     </section>
   );
+}
+
+function unwrapList(res) {
+  return res?.data?.data || res?.data || res || [];
 }

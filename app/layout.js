@@ -1,4 +1,5 @@
 import { Playfair_Display, Inter } from "next/font/google";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import AuthListener from "@/components/AuthListener";

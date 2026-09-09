@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { inr } from "@/lib/api";
 import { useCart } from "./CartProvider";
 import { PLACEHOLDER_IMAGE } from "./ProductCard";
@@ -11,18 +12,27 @@ import Reveal from "./Reveal";
 import SectionHeading from "./SectionHeading";
 import ReviewsSection from "./ReviewsSection";
 
-// Product detail: breadcrumb, gallery + sticky info + accordions + related + reviews.
+// Product detail: same structure/texts as the previous UI —
+// gallery, name, short, price, Description, Size, qty, Add to Cart,
+// wishlist, Continue Shopping — plus related rail + reviews below.
 export default function ProductDetail({ product }) {
   const cart = useCart();
+  const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
   const [size, setSize] = useState("");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [sizeError, setSizeError] = useState("");
 
   const gallery = product.gallery?.length > 0 ? product.gallery : [product.image || PLACEHOLDER_IMAGE];
   const sizes = [...new Set((product.variants || []).map((v) => v.size_id).filter(Boolean))];
 
   const addToBag = () => {
+    if (sizes.length > 0 && !size) {
+      setSizeError("Please select a size");
+      return;
+    }
+    setSizeError("");
     cart?.addToCart(
       { id: product.id, slug: product.slug, name: product.name, price: product.price, image: gallery[0], size },
       qty
@@ -63,20 +73,24 @@ export default function ProductDetail({ product }) {
         </div>
 
         <Reveal className="md:sticky md:top-24">
-          <p className="eyebrow text-neutral-500">Harry Clinton</p>
-          <h1 className="mt-2 font-display text-4xl font-bold">{product.name}</h1>
-          <p className="mt-3 text-2xl font-bold">{inr(product.price)}</p>
-          <p className="mt-1 text-xs uppercase tracking-widest text-green-700">In atelier • ships in 5–7 days</p>
-          {product.description && <p className="mt-4 text-neutral-600">{product.description}</p>}
+          <h1 className="font-display text-4xl font-bold">{product.name}</h1>
+          {product.description && <p className="mt-1 text-neutral-500">{product.description}</p>}
+          <h3 className="mt-3 text-2xl font-bold">{inr(product.price)}</h3>
+          {product.fullDescription && product.fullDescription !== product.description && (
+            <>
+              <h5 className="mt-5 font-semibold">Description</h5>
+              <div className="mt-1 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: product.fullDescription }} />
+            </>
+          )}
 
-          {sizes.length > 0 && (
+          {sizes.length > 1 && (
             <div className="mt-6">
-              <p className="text-xs font-semibold uppercase tracking-widest">Size</p>
+              <h5 className="font-semibold">Size</h5>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sizes.map((s) => (
                   <button
                     key={s}
-                    onClick={() => setSize(s)}
+                    onClick={() => { setSize(s); setSizeError(""); }}
                     className={`border px-4 py-2 text-sm ${size === s ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300"}`}
                   >
                     {s}
@@ -85,34 +99,31 @@ export default function ProductDetail({ product }) {
               </div>
             </div>
           )}
+          {sizeError && <p className="mt-2 text-sm text-red-600">{sizeError}</p>}
 
           <div className="mt-6 flex items-center gap-3">
-            <p className="text-xs font-semibold uppercase tracking-widest">Qty</p>
             <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="border border-neutral-300 px-3 py-1">−</button>
             <span className="w-8 text-center">{qty}</span>
             <button onClick={() => setQty((q) => q + 1)} className="border border-neutral-300 px-3 py-1">+</button>
           </div>
 
           <div className="mt-6 flex gap-3">
-            <button onClick={addToBag} className="btn-primary flex-1 !py-3">
-              {added ? "Added to Bag ✓" : "Add to Bag"}
+            <button onClick={addToBag} className={`flex-1 py-3 text-sm font-semibold text-white transition ${added ? "bg-green-700" : "bg-neutral-950 hover:bg-neutral-800"}`}>
+              {added ? "Added to Cart" : "Add to Cart"}
             </button>
             <button
               onClick={() => cart?.toggleWishlist({ id: product.id, name: product.name, price: product.price, image: gallery[0] })}
-              aria-label="Toggle wishlist"
-              className="border border-neutral-300 px-5 py-3 text-sm font-semibold transition hover:border-gold hover:text-gold-deep"
+              title="Add to wishlist"
+              className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
             >
-              ♥
+              ♡
             </button>
           </div>
+          <button onClick={() => router.back()} className="link-sweep mt-4 text-sm font-semibold">
+            ← Continue Shopping
+          </button>
 
           <div className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
-            {product.fullDescription && product.fullDescription !== product.description && (
-              <details className="group py-4" open>
-                <summary className="cursor-pointer text-sm font-semibold uppercase tracking-widest marker:text-gold">Details</summary>
-                <div className="mt-2 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: product.fullDescription }} />
-              </details>
-            )}
             <details className="group py-4">
               <summary className="cursor-pointer text-sm font-semibold uppercase tracking-widest marker:text-gold">Shipping & Returns</summary>
               <p className="mt-2 text-sm text-neutral-600">Dispatched in 5–7 working days. Easy 7-day returns on unworn pieces with tags intact.</p>

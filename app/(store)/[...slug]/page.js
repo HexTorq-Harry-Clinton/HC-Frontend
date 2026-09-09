@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
-import { resolveSlug, titleFor, allStorefrontSlugs, CATEGORIES, OCCASIONS, COLLECTIONS } from "@/lib/catalog";
+import { resolveSlug, titleFor, allStorefrontSlugs, COLLECTIONS } from "@/lib/catalog";
 import { getCategoryData, getProduct } from "@/lib/shop";
 import CategoryView from "@/components/CategoryView";
 import ShowcaseHeader from "@/components/ShowcaseHeader";
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductDetail from "@/components/ProductDetail";
 import StaticPage from "@/components/StaticPage";
+import OccasionPage from "@/components/OccasionPage";
+import CategoryMain from "@/components/CategoryMain";
 
 export const revalidate = 300;
 
@@ -41,14 +43,17 @@ export default async function SlugPage({ params }) {
     return <StaticPage slug={resolved.slug} />;
   }
 
+  if (resolved.type === "occasion") {
+    return <OccasionPage page={resolved.page} />;
+  }
+
+  if (resolved.type === "category") {
+    return <CategoryMain category={resolved.category} />;
+  }
+
   const data = await getCategoryData(resolved);
   const title = titleFor(resolved);
-  const tagline =
-    resolved.type === "category"
-      ? CATEGORIES[resolved.category].tagline
-      : resolved.type === "collection"
-        ? `The ${COLLECTIONS[resolved.collection].title}`
-        : `${OCCASIONS[resolved.occasion].title} — ${CATEGORIES[resolved.category].title}`;
+  const tagline = `The ${COLLECTIONS[resolved.collection].title}`;
 
   return (
     <div id="shop">

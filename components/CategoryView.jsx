@@ -5,20 +5,38 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProductCard from "./ProductCard";
 import EmptyState from "./EmptyState";
 
-// Client-side filter + sort + grid. Receives server-fetched products as props
-// (SEO-friendly SSR, interactive filtering without refetch).
-export default function CategoryView({ products, sizes = [], clothTypes = [], colors = [] }) {
+// Filter sidebar + grid: same labels/options/flow as the previous UI
+// (Filters/Reset, Size, Fabric, Color, Price Range Min–Max, Range footer).
+// Receives server-fetched products as props (SEO-friendly SSR).
+// showToolbar=false hides the count/sort row (occasion storytelling pages).
+export default function CategoryView({ products, sizes = [], clothTypes = [], colors = [], showToolbar = true, emptyTitle = "No pieces yet" }) {
   const [size, setSize] = useState("");
-  const [cloth, setCloth] = useState("");
+  const [clothType, setClothType] = useState("");
   const [color, setColor] = useState("");
+  const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState("featured");
+
+  const reset = () => {
+    setSize("");
+    setClothType("");
+    setColor("");
+    setMinPrice("");
+    setMaxPrice("");
+  };
+
+  const priceRange = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 0 };
+    const prices = products.map((p) => Number(p.price) || 0);
+    return { min: Math.min(...prices), max: Math.max(...prices) };
+  }, [products]);
 
   const filtered = useMemo(() => {
     const list = products.filter((p) => {
       if (size && !(p.sizes || []).includes(size)) return false;
-      if (cloth && !(p.clothTypes || []).includes(cloth)) return false;
+      if (clothType && !(p.clothTypes || []).includes(clothType)) return false;
       if (color && (p.color || "").toLowerCase() !== color.toLowerCase()) return false;
+      if (minPrice && Number(p.price) < Number(minPrice)) return false;
       if (maxPrice && Number(p.price) > Number(maxPrice)) return false;
       return true;
     });
@@ -26,36 +44,46 @@ export default function CategoryView({ products, sizes = [], clothTypes = [], co
     if (sort === "price-high") return [...list].sort((a, b) => b.price - a.price);
     if (sort === "name") return [...list].sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [products, size, cloth, color, maxPrice, sort]);
+  }, [products, size, clothType, color, minPrice, maxPrice, sort]);
 
   const selectCls = "mt-2 w-full border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-gold focus:outline-none";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
       <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-        <div>
-          <p className="eyebrow text-neutral-500">Size</p>
-          <select value={size} onChange={(e) => setSize(e.target.value)} className={selectCls}>
-            <option value="">All sizes</option>
-            {sizes.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+        <div className="flex items-center justify-between">
+          <h5 className="mb-0 font-semibold">Filters</h5>
+          <button onClick={reset} className="text-sm text-neutral-500 underline hover:text-neutral-900">
+            Reset
+          </button>
         </div>
-        <div>
-          <p className="eyebrow text-neutral-500">Fabric</p>
-          <select value={cloth} onChange={(e) => setCloth(e.target.value)} className={selectCls}>
-            <option value="">All fabrics</option>
-            {clothTypes.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
+        {sizes.length > 0 && (
+          <div>
+            <label className="text-sm font-medium">Size</label>
+            <select value={size} onChange={(e) => setSize(e.target.value)} className={selectCls}>
+              <option value="">All sizes</option>
+              {sizes.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {clothTypes.length > 0 && (
+          <div>
+            <label className="text-sm font-medium">Fabric</label>
+            <select value={clothType} onChange={(e) => setClothType(e.target.value)} className={selectCls}>
+              <option value="">All fabrics</option>
+              {clothTypes.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        )}
         {colors.length > 0 && (
           <div>
-            <p className="eyebrow text-neutral-500">Colour</p>
+            <label className="text-sm font-medium">Color</label>
             <select value={color} onChange={(e) => setColor(e.target.value)} className={selectCls}>
-              <option value="">All colours</option>
+              <option value="">All colors</option>
               {colors.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
@@ -63,26 +91,36 @@ export default function CategoryView({ products, sizes = [], clothTypes = [], co
           </div>
         )}
         <div>
-          <p className="eyebrow text-neutral-500">Max price (₹)</p>
-          <input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} inputMode="numeric" placeholder="e.g. 5000" className={selectCls} />
+          <label className="text-sm font-medium">Price Range</label>
+          <div className="mt-2 flex gap-2">
+            <input value={minPrice} onChange={(e) => setMinPrice(e.target.value)} type="number" placeholder="Min" className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-gold focus:outline-none" />
+            <input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} type="number" placeholder="Max" className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-gold focus:outline-none" />
+          </div>
         </div>
+        {priceRange.min !== undefined && priceRange.max !== undefined && (
+          <p className="text-xs text-neutral-500">
+            Range: ₹{priceRange.min.toLocaleString("en-IN")} - ₹{priceRange.max.toLocaleString("en-IN")}
+          </p>
+        )}
       </aside>
 
       <div>
-        <div className="mb-5 flex items-center justify-between">
-          <p className="text-xs uppercase tracking-[0.25em] text-neutral-500">
-            {filtered.length} piece{filtered.length === 1 ? "" : "s"}
-          </p>
-          <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort" className="border border-neutral-300 bg-white px-3 py-2 text-xs uppercase tracking-widest focus:border-gold focus:outline-none">
-            <option value="featured">Featured</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name">Alphabetical</option>
-          </select>
-        </div>
+        {showToolbar && (
+          <div className="mb-5 flex items-center justify-between">
+            <p className="text-xs uppercase tracking-[0.25em] text-neutral-500">
+              {filtered.length} piece{filtered.length === 1 ? "" : "s"}
+            </p>
+            <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort" className="border border-neutral-300 bg-white px-3 py-2 text-xs uppercase tracking-widest focus:border-gold focus:outline-none">
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Alphabetical</option>
+            </select>
+          </div>
+        )}
         {filtered.length === 0 ? (
           <EmptyState
-            title="No pieces yet"
+            title={emptyTitle}
             text="Our stylists are curating this collection. Please check back soon."
           />
         ) : (

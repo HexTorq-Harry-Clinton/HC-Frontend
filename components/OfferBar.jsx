@@ -1,31 +1,51 @@
-import Link from "next/link";
+import Image from "next/image";
 import { apiGet, unwrap } from "@/lib/api";
-import Reveal from "./Reveal";
 
-// Offer strip driven by live coupons/discounts — replaces the hardcoded OfferBar.
-export default async function OfferBar() {
-  let coupons = [];
+// Offer strip: same structure as the previous UI — scrolling offer text with
+// logo marks, driven by settings (home_offer_bar_text → offer_bar_text).
+const DEFAULT_TEXT = "Enjoy an Exclusive 50% Privilege on All Orders Today Only !";
+
+function pickText(settings) {
+  const get = (key) => {
+    const m = (Array.isArray(settings) ? settings : []).find(
+      (s) => s.setting_key?.toLowerCase() === key || s.key?.toLowerCase() === key
+    );
+    return m?.setting_value ?? m?.value ?? "";
+  };
+  const raw = get("home_offer_bar_text") || get("offer_bar_text");
+  if (!raw) return [DEFAULT_TEXT];
   try {
-    coupons = unwrap(await apiGet("/Coupons"));
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
   } catch {
-    coupons = [];
+    /* plain string below */
   }
-  const live = coupons.filter((c) => c.isactive !== false).slice(0, 3);
-  if (live.length === 0) return null;
+  return [raw];
+}
+
+export default async function OfferBar() {
+  let settings = [];
+  try {
+    settings = unwrap(await apiGet("/Settings"));
+  } catch {
+    settings = [];
+  }
+  const items = pickText(settings);
 
   return (
-    <section className="border-y border-neutral-200 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 py-3">
-        {live.map((c) => (
-          <Reveal key={c.coupon_id} y={10}>
-            <p className="text-xs font-semibold uppercase tracking-widest">
-              {c.coupon_name || c.coupon_code}
-              <span className="ml-2 border border-dashed border-neutral-400 px-2 py-0.5">{c.coupon_code}</span>
-            </p>
-          </Reveal>
+    <div className="overflow-hidden border-y border-neutral-200 bg-white py-2">
+      <div className="animate-marquee items-center">
+        {[0, 1, 2].map((dup) => (
+          <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup > 0}>
+            {items.map((text, index) => (
+              <span key={index} className="flex items-center whitespace-nowrap px-6 text-sm font-medium">
+                {text}
+                <Image src="/brand/logo-black.png" alt="Black" width={28} height={28} className="ml-6 inline-block" />
+              </span>
+            ))}
+          </div>
         ))}
-        <Link href="/suits" className="text-xs font-bold underline">Shop now</Link>
       </div>
-    </section>
+    </div>
   );
 }
