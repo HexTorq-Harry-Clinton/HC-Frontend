@@ -15,12 +15,13 @@ Complete rewrite of the Harry Clinton clothing e-commerce frontend.
 
 ```bash
 npm install
-cp .env.example .env.local   # point NEXT_PUBLIC_API_BASE_URL at the backend
 npm run dev                  # http://localhost:3000
 ```
 
-Backend (HC-Backend, Express) must be reachable at `NEXT_PUBLIC_API_BASE_URL`
-(default `http://localhost:15000/API/HARRY-CLINTON`).
+Live backend (VPS, auto-deploys on push) is hardcoded in `lib/api.js` —
+`https://git-pipeline.metatronhost.in/hc/API/HARRY-CLINTON` — so the app works
+with zero env declaration. Both Vercel (frontend) and VPS (backend) redeploy
+on push to `main`; always verify against the live API, never localhost.
 
 ```bash
 npm run build   # 79 static pages prerendered + dynamic admin
