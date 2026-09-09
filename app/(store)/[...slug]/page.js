@@ -8,6 +8,9 @@ import ProductDetail from "@/components/ProductDetail";
 import StaticPage from "@/components/StaticPage";
 import OccasionPage from "@/components/OccasionPage";
 import CategoryMain from "@/components/CategoryMain";
+import ServicePage from "@/components/ServicePage";
+import ServicesHub from "@/components/ServicesHub";
+import { servicePage } from "@/lib/services";
 
 export const revalidate = 300;
 
@@ -41,6 +44,13 @@ export default async function SlugPage({ params }) {
 
   if (resolved.type === "static") {
     return <StaticPage slug={resolved.slug} />;
+  }
+
+  if (resolved.type === "service") {
+    if (resolved.slug === "services") return <ServicesHub />;
+    const config = servicePage(resolved.slug);
+    if (!config) notFound();
+    return <ServicePage config={config} />;
   }
 
   if (resolved.type === "occasion") {
