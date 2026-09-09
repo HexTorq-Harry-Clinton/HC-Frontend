@@ -10,13 +10,21 @@
 
 # production
 /build
+# never commit build output here (gh-pages publishes from build/)
+/docs
+/static
+/asset-manifest.json
 
 # misc
 .DS_Store
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# logs
+*.log
 
 # ignore oversized local video files that should not be committed
 /src/shared/assets/video/HomePage/Luxury collections 1.mov
