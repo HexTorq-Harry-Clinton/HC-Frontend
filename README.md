@@ -1,71 +1,46 @@
-# Getting Started with Create React App
+# HC Frontend v2 — Harry Clinton Storefront (Next.js)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Complete rewrite of the Harry Clinton clothing e-commerce frontend.
 
-## Available Scripts
+## Stack
 
-In the project directory, you can run:
+- **Next.js 16** (App Router) + **React 19** — SSR/SSG for SEO, dynamic admin
+- **Tailwind CSS 4** — utility styling, Playfair Display + Inter via `next/font`
+- **Framer Motion** — scroll reveals, card motion
+- **Lenis** — smooth scrolling
+- **GSAP + ScrollTrigger** — hero entrance + parallax
+- Plain **JavaScript** (no TypeScript), ESLint
 
-### `npm start`
+## Getting started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+npm install
+cp .env.example .env.local   # point NEXT_PUBLIC_API_BASE_URL at the backend
+npm run dev                  # http://localhost:3000
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Backend (HC-Backend, Express) must be reachable at `NEXT_PUBLIC_API_BASE_URL`
+(default `http://localhost:15000/API/HARRY-CLINTON`).
 
-### `npm test`
+```bash
+npm run build   # 79 static pages prerendered + dynamic admin
+npm start
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Architecture
 
-### `npm run build`
+- `lib/api.js` — fetch layer (server `apiGet`, client `apiFetch` with `hc_token`, `resolveUploadUrl`, `inr`)
+- `lib/catalog.js` — single route registry: categories, occasions, collections, static pages
+- `lib/shop.js` — server data helpers (category feeds, product detail, home)
+- `app/(store)/page.js` — home (SSG, live sliders/spotlight/collections/FAQs)
+- `app/(store)/[...slug]/page.js` — ONE parametric router for all 50+ legacy URLs
+  (categories, occasions, collections, `product/:id`, static pages) with per-page SEO metadata
+- `app/(store)/cart|checkout|wishlist|search|login|register|profile|orders|...` — commerce + account
+- `app/admin/` — JWT-guarded shell, dashboard, product CRUD, order fulfilment, generic module viewer
+- `components/` — Header/Footer/RunningBar (server), ProductCard/CategoryView/Hero/Reveal (motion islands)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Notes
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# HC-Frontend
+- No hardcoded catalog anywhere — empty API means honest empty states, never fake products.
+- Product media resolves `~/Uploads/...` to absolute backend URLs; missing images use a local SVG placeholder.
+- Category filtering is keyword-based until the backend adds a category FK on products.

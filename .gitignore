@@ -3,33 +3,39 @@
 # dependencies
 /node_modules
 /.pnp
-.pnp.js
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # testing
 /coverage
 
+# next.js
+/.next/
+/out/
+
 # production
 /build
-# never commit build output here (gh-pages publishes from build/)
-/docs
-/static
-/asset-manifest.json
 
 # misc
 .DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+*.pem
 
-# logs
-*.log
-
-# ignore oversized local video files that should not be committed
-/src/shared/assets/video/HomePage/Luxury collections 1.mov
-/src/shared/assets/video/Luxury wedding 1 pool A .mov
-
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
