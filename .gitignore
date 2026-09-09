@@ -44,6 +44,10 @@
 *.woff2
 !app/favicon.ico
 
+# EXCEPTION: brand splash video + logos live in the frontend by design
+# (opening splash + header/footer wordmarks). Everything else stays backend-only.
+!public/brand/**
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -3,6 +3,7 @@ import { getHomeData } from "@/lib/shop";
 import Hero from "@/components/Hero";
 import OfferBar from "@/components/OfferBar";
 import HomeVideo from "@/components/HomeVideo";
+import SplashScreen from "@/components/SplashScreen";
 import ProductCard from "@/components/ProductCard";
 import Reveal from "@/components/Reveal";
 
@@ -13,6 +14,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <SplashScreen />
       <Hero
         title="Wear Royalty, Not Just Suits."
         tagline="Bespoke menswear from Harry Clinton — suits, shirts, trousers and Indo-Western, cut for your moments."

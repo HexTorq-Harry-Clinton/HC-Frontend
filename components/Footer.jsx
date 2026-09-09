@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -5,7 +6,7 @@ export default function Footer() {
     <footer className="mt-16 border-t border-neutral-200 bg-neutral-950 text-neutral-300">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-4">
         <div>
-          <p className="font-display text-xl font-bold text-white">HARRY CLINTON</p>
+          <Image src="/brand/logo-white.png" alt="Harry Clinton" width={150} height={36} />
           <p className="mt-3 text-sm text-neutral-400">
             Bespoke menswear, tailored for the moments that matter.
           </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -40,8 +41,8 @@ export default function NavBar({ links }) {
           >
             {open ? "✕" : "☰"}
           </button>
-          <Link href="/" className="font-display text-2xl font-bold tracking-wide">
-            HARRY CLINTON
+          <Link href="/" aria-label="Harry Clinton home">
+            <Image src="/brand/logo-black.png" alt="Harry Clinton" width={150} height={36} priority />
           </Link>
         </div>
 
