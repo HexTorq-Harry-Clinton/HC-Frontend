@@ -42,7 +42,7 @@ describe("authService", () => {
     const payload = { email_id: "a@b.com", otp: "1234" };
     apiClient.post.mockResolvedValue({ data: { token: "t" } });
     await authService.verifyLoginOtp(payload);
-    expect(apiClient.post).toHaveBeenCalledWith("/Auth/OTP-Login", { ...payload, verify: true });
+    expect(apiClient.post).toHaveBeenCalledWith("/Auth/Verify-Login-OTP", payload);
   });
 
   it("requests forgot password", async () => {

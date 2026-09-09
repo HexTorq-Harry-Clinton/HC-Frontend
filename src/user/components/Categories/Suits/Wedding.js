@@ -1,7 +1,8 @@
 // https://intl.fursac.com/en/c-new-collection.html-------for the reference
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import productService from "../../../../services/productService";
+import { useCategoryProducts } from "../../../../hooks/useCategoryProducts";
+import { PLACEHOLDER_IMAGE } from "../../../../shared/placeholder";
 import ProductFilters from "../../ProductFilters";
 import ProductGrid from "../../ProductGrid";
 import { safeParse, useSubcategorySettings } from "../../../../utils/contentHelpers";
@@ -19,69 +20,7 @@ import sliderImg3 from "../../../../shared/assets/images/ProductDetail/SangeetBl
 import LabelVideo from "../../../../shared/assets/video/WeddingPage/WeddingPageVideo.mp4"; // "../../../../shared/assets/video/WeddingPage/WeddingLabelVideo.mp4"
 import LabelImage from "../../../../shared/assets/images/ProductDetail/SangeetBlack.jpg"; // "../../../../shared/assets/images/WeddingPage/LabelImage.jpeg"
 
-import TheChurchAffair from "../../../../shared/assets/video/WeddingPage/WeddingPageVideo.mp4"; // "../../../../shared/assets/video/WeddingProductVideos/WeddingProductVideo2.mp4"
-import TheRoyalWeddingEdit from "../../../../shared/assets/images/ProductDetail/SangeetBlack.jpg"; // "../../../../shared/assets/images/WeddingSuitProductImages/The Royal Wedding Edit.jpeg"
-import TheDestinationDream from "../../../../shared/assets/images/ProductDetail/SangeetBlack.jpg"; // "../../../../shared/assets/images/WeddingSuitProductImages/IMG_1016.jpg"
-import TheSangeetSoiree from "../../../../shared/assets/images/ProductDetail/SangeetBlack.jpg"; // "../../../../shared/assets/images/WeddingSuitProductImages/Sangeet/Sangeet_Main.jpg"
-
-const placeholderImage = "https://via.placeholder.com/400x500?text=No+Image";
-
-const fallbackCategories = [
-  {
-    id: "royal-wedding-edit",
-    name: "The Royal Wedding Edit",
-    image: TheRoyalWeddingEdit,
-    description: "Luxurious black velvet tuxedo with golden embroidery."
-  },
-  {
-    id: "church-affair",
-    name: "The Church Affair",
-    video: TheChurchAffair,
-    description: "Elegant wedding suit perfect for church events."
-  },
-  {
-    id: "destination-dream",
-    name: "The Destination Dream",
-    image: TheDestinationDream,
-    description: "Perfect suit for destination weddings."
-  },
-  {
-    id: "reception-suit",
-    name: "The Reception Night",
-    image: TheRoyalWeddingEdit,
-    description: "Perfect for evening receptions."
-  },
-  {
-    id: "engagement-suit",
-    name: "The Engagement Chapter",
-    video: TheChurchAffair,
-    description: "Stand out at engagement ceremonies."
-  },
-  {
-    id: "sangeet-suit",
-    name: "The Sangeet Soirée",
-    image: TheSangeetSoiree,
-    description: "Bright and festive for sangeet nights."
-  },
-  {
-    id: "mehendi-suit",
-    name: "The Mehendi & Haldi Mood",
-    image: TheRoyalWeddingEdit,
-    description: "Vibrant suits for mehendi & haldi events."
-  },
-  {
-    id: "intimate-suit",
-    name: "The Intimate Wedding Edit",
-    video: TheChurchAffair,
-    description: "Perfect for small and intimate weddings."
-  },
-  {
-    id: "minimalist-suit",
-    name: "The Modern Minimalist",
-    image: TheDestinationDream,
-    description: "Minimalist style for modern weddings."
-  },
-];
+const WEDDING_KEYWORDS = ["wedding", "sangeet", "reception", "engagement", "mehendi", "haldi", "church", "destination"];
 
 const WeddingPage = () => {
   const navigate = useNavigate();
@@ -110,12 +49,18 @@ const WeddingPage = () => {
   const dynamicFooterText =
     s("footer_text") || "The Wedding Collection";
 
-  const [categories, setCategories] = useState(fallbackCategories);
-  const [variants, setVariants] = useState([]);
-  const [attributeValues, setAttributeValues] = useState([]);
-  const [attributes, setAttributes] = useState([]);
-  const [sizes, setSizes] = useState([]);
-  const [clothTypes, setClothTypes] = useState([]);
+  // API-first product feed (shared hook). No hardcoded fallback products:
+  // when the API has no wedding items the grid renders an empty state.
+  const {
+    categories,
+    variants,
+    attributeValues,
+    attributes,
+    sizes,
+    clothTypes,
+    loading,
+  } = useCategoryProducts(WEDDING_KEYWORDS);
+
   const [filters, setFilters] = useState({
     size: "",
     clothType: "",
@@ -123,55 +68,6 @@ const WeddingPage = () => {
     minPrice: "",
     maxPrice: "",
   });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const [productsRes, mediaRes, variantsRes, attrValuesRes, attrsRes, sizesRes, clothTypesRes] = await Promise.all([
-          productService.getProducts(),
-          productService.getProductMedia(),
-          productService.getProductVariants(),
-          productService.getProductAttributeValues(),
-          productService.getProductAttributes(),
-          productService.getProductSizes(),
-          productService.getProductClothTypes(),
-        ]);
-        const apiProducts = productsRes.data?.data || productsRes.data || [];
-        const apiMedia = mediaRes.data?.data || mediaRes.data || [];
-
-        const weddingKeywords = ["wedding", "sangeet", "reception", "engagement", "mehendi", "haldi", "church", "destination"];
-        const filtered = apiProducts.filter((p) => {
-          const text = `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""} ${p.description || ""} ${p.category || ""}`.toLowerCase();
-          return weddingKeywords.some((k) => text.includes(k));
-        });
-
-        if (filtered.length > 0) {
-          const mapped = filtered.map((p) => {
-            const media = apiMedia.find((m) => m.product_id === p.product_id && m.isprimary === true);
-            return {
-              id: p.product_id || p.product_slug,
-              product_id: p.product_id,
-              name: p.product_name,
-              image: media?.media_url || placeholderImage,
-              description: p.short_description || p.description || "",
-            };
-          });
-          setCategories(mapped);
-        }
-        setVariants(variantsRes.data?.data || variantsRes.data || []);
-        setAttributeValues(attrValuesRes.data?.data || attrValuesRes.data || []);
-        setAttributes(attrsRes.data?.data || attrsRes.data || []);
-        setSizes(sizesRes.data?.data || sizesRes.data || []);
-        setClothTypes(clothTypesRes.data?.data || clothTypesRes.data || []);
-      } catch {
-        // keep fallback
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
   const colorAttributeId = useMemo(() => {
     return attributes.find((a) => a.attribute_slug?.toLowerCase() === "color" || a.attribute_name?.toLowerCase() === "color")?.attribute_id;
   }, [attributes]);
@@ -472,7 +368,23 @@ onClick={() => navigate(`/product/${cat.id}`)}
   </div>
 )}
 
-{!loading && (
+{!loading && filteredCategories.length === 0 && (
+  <div className="container-fluid px-0 my-0">
+    <div className="text-center py-5">
+      <img
+        src={PLACEHOLDER_IMAGE}
+        alt="No wedding pieces yet"
+        style={{ width: "120px", opacity: 0.7 }}
+      />
+      <h4 className="mt-3">No wedding pieces yet</h4>
+      <p className="text-muted">
+        Our stylists are curating this collection. Please check back soon.
+      </p>
+    </div>
+  </div>
+)}
+
+{!loading && filteredCategories.length > 0 && (
   <div className="container-fluid px-0 my-0">
     <div className="row">
       <div className="col-lg-3 mb-4">

@@ -4,8 +4,7 @@ import productService from "../../services/productService";
 import ProductFilters from "./ProductFilters";
 import ProductGrid from "./ProductGrid";
 import { safeParse, useSubcategorySettings } from "../../utils/contentHelpers";
-
-const placeholderImage = "https://via.placeholder.com/400x500?text=No+Image";
+import { PLACEHOLDER_IMAGE as placeholderImage } from "../../shared/placeholder";
 
 const SubcategoryPage = ({
   slug,

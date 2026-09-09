@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import productService from "../../services/productService";
-
-const placeholderImage = "https://via.placeholder.com/300x400?text=No+Image";
+import { resolveUploadUrl } from "../../admin/utils/resolveUploadUrl";
+import { PLACEHOLDER_IMAGE as placeholderImage } from "../../shared/placeholder";
 
 const ProductGrid = ({ keyword = "" }) => {
   const [products, setProducts] = useState([]);
@@ -28,7 +28,7 @@ const ProductGrid = ({ keyword = "" }) => {
             name: p.product_name,
             price: p.base_price || 0,
             currency: p.currency_code || "INR",
-            image: media?.media_url || placeholderImage,
+            image: resolveUploadUrl(media?.media_url) || placeholderImage,
           };
         });
 
