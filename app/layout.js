@@ -10,7 +10,7 @@ const sans = Inter({ variable: "--font-sans", subsets: ["latin"] });
 export const metadata = {
   title: { default: "Harry Clinton | Bespoke Menswear", template: "%s | Harry Clinton" },
   description: "Bespoke suits, shirts, trousers and Indo-Western menswear, tailored for the moments that matter.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://harryclinton.in"),
+  metadataBase: new URL("https://harryclinton.in"),
 };
 
 export default function RootLayout({ children }) {
