@@ -1,40 +1,72 @@
 "use client";
 
 import { useState } from "react";
-import { AuthShell, Field, useAuthForm, apiFetch } from "../auth";
+import Link from "next/link";
+import { apiFetch } from "@/lib/api";
 
+// Forgot Password: same structure/texts/flow as the previous UI.
 export default function ForgotPasswordPage() {
-  const { error, setError, busy, setBusy } = useAuthForm();
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
-    setError("");
-    setBusy(true);
+    setLoading(true);
     try {
-      await apiFetch("/Auth/Forgot-Password", { method: "POST", body: { email_id: email } });
-      setSent(true);
+      const res = await apiFetch("/Auth/Forgot-Password", {
+        method: "POST",
+        body: { email_id: email, rcu: "website" },
+      });
+      const data = res?.data || res;
+      if (data?.Status === "1" || data?.Status === "true" || data?.Status === true || data?.success === true) {
+        setMessage(data?.Message || "Reset instructions sent. Please check your email.");
+        setIsError(false);
+      } else {
+        setMessage(data?.Message || "Could not send reset instructions. Please try again.");
+        setIsError(true);
+      }
     } catch (err) {
-      setError(err.message || "Request failed");
+      setMessage(err.message || "Something went wrong.");
+      setIsError(true);
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   };
 
   return (
-    <AuthShell title="Reset password" subtitle="We will email you a reset link">
-      {error && <p className="bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      {sent ? (
-        <p className="bg-green-50 p-3 text-sm text-green-700">If the email exists, a reset link is on its way.</p>
-      ) : (
-        <form onSubmit={submit} className="space-y-4">
-          <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          <button disabled={busy} className="w-full bg-neutral-950 py-3 text-sm font-semibold text-white disabled:opacity-50">
-            {busy ? "Sending…" : "Send Reset Link"}
+    <div className="flex min-h-[70vh] items-center justify-center bg-neutral-100 px-4 py-14">
+      <div className="w-full max-w-md bg-white p-6 shadow-lg" style={{ borderRadius: "12px" }}>
+        <h3 className="mb-4 text-center font-display text-3xl font-bold">Forgot Password</h3>
+        {message && (
+          <div className={`mb-3 p-2 text-center text-sm ${isError ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>
+            {message}
+          </div>
+        )}
+        <form onSubmit={submit}>
+          <label className="mb-1 block text-sm font-medium">Email address</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            autoComplete="email"
+            required
+            className="w-full border border-neutral-900 px-3 py-2 text-sm focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={!email.trim() || loading}
+            className="mt-4 w-full bg-neutral-950 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
-      )}
-    </AuthShell>
+        <div className="mt-3 text-center text-sm">
+          <Link href="/login" className="underline">Back to login</Link>
+        </div>
+      </div>
+    </div>
   );
 }

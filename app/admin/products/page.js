@@ -82,6 +82,22 @@ export default function AdminProductsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Products</h1>
+      <div className="mt-2 flex flex-wrap gap-2 text-xs">
+        {[
+          ["/admin/product-variants", "Variants"],
+          ["/admin/product-media", "Media"],
+          ["/admin/product-seo", "SEO"],
+          ["/admin/sizes", "Sizes"],
+          ["/admin/cloth-types", "Cloth Types"],
+          ["/admin/care", "Care"],
+          ["/admin/attributes", "Attributes"],
+          ["/admin/attribute-values", "Attr Values"],
+        ].map(([href, label]) => (
+          <a key={href} href={href} className="border border-neutral-300 bg-white px-3 py-1 font-semibold hover:border-neutral-950">
+            {label}
+          </a>
+        ))}
+      </div>
       {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
 
       <form onSubmit={submit} className="mt-4 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">

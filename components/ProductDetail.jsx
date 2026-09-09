@@ -13,28 +13,49 @@ import SectionHeading from "./SectionHeading";
 import ReviewsSection from "./ReviewsSection";
 
 // Product detail: same structure/texts as the previous UI —
-// gallery, name, short, price, Description, Size, qty, Add to Cart,
-// wishlist, Continue Shopping — plus related rail + reviews below.
+// gallery, name, short, variant price, Description, Size, qty,
+// Add to Cart, wishlist, Continue Shopping — plus related + reviews below.
 export default function ProductDetail({ product }) {
   const cart = useCart();
   const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
-  const [size, setSize] = useState("");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState("");
 
   const gallery = product.gallery?.length > 0 ? product.gallery : [product.image || PLACEHOLDER_IMAGE];
-  const sizes = [...new Set((product.variants || []).map((v) => v.size_id).filter(Boolean))];
+  const baseSizes =
+    (product.variants || []).length > 0
+      ? product.variants.map((v) => ({
+          label: v.label || v.size_id || "M",
+          price: v.price || product.price,
+          available: v.available !== false,
+          variant: v,
+        }))
+      : [{ label: "M", price: product.price, available: true, variant: null }];
+  const [size, setSize] = useState(baseSizes.length === 1 ? baseSizes[0].label : "");
+
+  const selected = baseSizes.find((s) => s.label === size);
+  const displayPrice = selected?.price ?? product.price;
 
   const addToBag = () => {
-    if (sizes.length > 0 && !size) {
+    if (baseSizes.length > 1 && !size) {
       setSizeError("Please select a size");
       return;
     }
     setSizeError("");
     cart?.addToCart(
-      { id: product.id, slug: product.slug, name: product.name, price: product.price, image: gallery[0], size },
+      {
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        price: displayPrice,
+        image: gallery[0],
+        size: size || baseSizes[0].label,
+        product_id: product.id,
+        product_variant_id: selected?.variant?.product_variant_id || null,
+        unit_price: displayPrice,
+      },
       qty
     );
     setAdded(true);
@@ -75,7 +96,7 @@ export default function ProductDetail({ product }) {
         <Reveal className="md:sticky md:top-24">
           <h1 className="font-display text-4xl font-bold">{product.name}</h1>
           {product.description && <p className="mt-1 text-neutral-500">{product.description}</p>}
-          <h3 className="mt-3 text-2xl font-bold">{inr(product.price)}</h3>
+          <h3 className="mt-3 text-2xl font-bold">{inr(displayPrice)}</h3>
           {product.fullDescription && product.fullDescription !== product.description && (
             <>
               <h5 className="mt-5 font-semibold">Description</h5>
@@ -83,17 +104,20 @@ export default function ProductDetail({ product }) {
             </>
           )}
 
-          {sizes.length > 1 && (
+          {baseSizes.length > 1 && (
             <div className="mt-6">
               <h5 className="font-semibold">Size</h5>
               <div className="mt-2 flex flex-wrap gap-2">
-                {sizes.map((s) => (
+                {baseSizes.map((s) => (
                   <button
-                    key={s}
-                    onClick={() => { setSize(s); setSizeError(""); }}
-                    className={`border px-4 py-2 text-sm ${size === s ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300"}`}
+                    key={s.label}
+                    onClick={() => { setSize(s.label); setSizeError(""); }}
+                    disabled={!s.available}
+                    className={`border px-4 py-2 text-sm disabled:opacity-40 ${
+                      size === s.label ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300"
+                    }`}
                   >
-                    {s}
+                    {s.label}
                   </button>
                 ))}
               </div>
@@ -112,7 +136,7 @@ export default function ProductDetail({ product }) {
               {added ? "Added to Cart" : "Add to Cart"}
             </button>
             <button
-              onClick={() => cart?.toggleWishlist({ id: product.id, name: product.name, price: product.price, image: gallery[0] })}
+              onClick={() => cart?.toggleWishlist({ id: product.id, name: product.name, price: displayPrice, image: gallery[0] })}
               title="Add to wishlist"
               className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
             >

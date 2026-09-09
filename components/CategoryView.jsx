@@ -9,7 +9,7 @@ import EmptyState from "./EmptyState";
 // (Filters/Reset, Size, Fabric, Color, Price Range Min–Max, Range footer).
 // Receives server-fetched products as props (SEO-friendly SSR).
 // showToolbar=false hides the count/sort row (occasion storytelling pages).
-export default function CategoryView({ products, sizes = [], clothTypes = [], colors = [], showToolbar = true, emptyTitle = "No pieces yet" }) {
+export default function CategoryView({ products, sizes = [], clothTypes = [], colors = [], showToolbar = true, showSort = true, emptyTitle = "No pieces yet" }) {
   const [size, setSize] = useState("");
   const [clothType, setClothType] = useState("");
   const [color, setColor] = useState("");
@@ -110,12 +110,14 @@ export default function CategoryView({ products, sizes = [], clothTypes = [], co
             <p className="text-xs uppercase tracking-[0.25em] text-neutral-500">
               {filtered.length} piece{filtered.length === 1 ? "" : "s"}
             </p>
-            <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort" className="border border-neutral-300 bg-white px-3 py-2 text-xs uppercase tracking-widest focus:border-gold focus:outline-none">
-              <option value="featured">Featured</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Alphabetical</option>
-            </select>
+            {showSort && (
+              <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort" className="border border-neutral-300 bg-white px-3 py-2 text-xs uppercase tracking-widest focus:border-gold focus:outline-none">
+                <option value="featured">Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="name">Alphabetical</option>
+              </select>
+            )}
           </div>
         )}
         {filtered.length === 0 ? (
