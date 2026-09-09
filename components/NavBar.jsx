@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "./CartProvider";
 
 // Interactive navbar island: desktop links, mobile hamburger, live search,
@@ -11,9 +11,18 @@ import { useCart } from "./CartProvider";
 export default function NavBar({ links }) {
   const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [q, setQ] = useState("");
   const router = useRouter();
   const cart = useCart();
+
+  // Tighten the bar once the page scrolls (shadow + slimmer padding).
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const search = (e) => {
     e.preventDefault();
@@ -31,8 +40,8 @@ export default function NavBar({ links }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+    <header className={`sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur transition-shadow duration-300 ${scrolled ? "shadow-[0_8px_30px_rgba(0,0,0,0.08)]" : ""}`}>
+      <div className={`mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-300 ${scrolled ? "py-2" : "py-3"}`}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setOpen((o) => !o)}

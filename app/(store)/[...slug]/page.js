@@ -3,6 +3,7 @@ import { resolveSlug, titleFor, allStorefrontSlugs, CATEGORIES, OCCASIONS, COLLE
 import { getCategoryData, getProduct } from "@/lib/shop";
 import CategoryView from "@/components/CategoryView";
 import ShowcaseHeader from "@/components/ShowcaseHeader";
+import Breadcrumb from "@/components/Breadcrumb";
 import ProductDetail from "@/components/ProductDetail";
 import StaticPage from "@/components/StaticPage";
 
@@ -51,6 +52,7 @@ export default async function SlugPage({ params }) {
 
   return (
     <div id="shop">
+      <div className="bg-neutral-950 pb-2"><Breadcrumb dark trail={[{ label: title }]} /></div>
       <ShowcaseHeader dark title={title} sub={tagline} />
       <section className="mx-auto max-w-7xl px-4 py-12">
         <CategoryView
