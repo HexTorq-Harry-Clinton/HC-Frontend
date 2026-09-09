@@ -24,6 +24,26 @@
 .DS_Store
 *.pem
 
+# media NEVER lives in this repo — all images/video/fonts come from the
+# backend (/Uploads) or remote CDN at runtime, never bundled or committed.
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.avif
+*.bmp
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+*.ttf
+*.otf
+*.woff
+*.woff2
+!app/favicon.ico
+
 # debug
 npm-debug.log*
 yarn-debug.log*
