@@ -1,4 +1,5 @@
 import { apiGet, unwrap } from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 // Fallback content verbatim from the previous UI.
 const FALLBACKS = {
@@ -200,7 +201,7 @@ export default async function LegalView({ doc }) {
           {content.sections.map((section, index) => (
             <div key={index}>
               <h5 className="mt-6 font-semibold">{section.section_title}</h5>
-              <div className="legal-body mt-1 text-sm text-neutral-700" dangerouslySetInnerHTML={{ __html: section.content }} />
+              <div className="legal-body mt-1 text-sm text-neutral-700" dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} />
             </div>
           ))}
         </div>

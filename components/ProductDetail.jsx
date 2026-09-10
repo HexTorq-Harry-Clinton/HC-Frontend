@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { inr } from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { useCart } from "./CartProvider";
 import { PLACEHOLDER_IMAGE } from "./ProductCard";
 import ProductCard from "./ProductCard";
@@ -100,7 +101,7 @@ export default function ProductDetail({ product }) {
           {product.fullDescription && product.fullDescription !== product.description && (
             <>
               <h5 className="mt-5 font-semibold">Description</h5>
-              <div className="mt-1 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: product.fullDescription }} />
+              <div className="mt-1 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }} />
             </>
           )}
 

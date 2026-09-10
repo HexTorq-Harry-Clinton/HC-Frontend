@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const DEFAULT_FAQS = [
   {
@@ -84,7 +85,7 @@ export default function HomeFaqs() {
                 <span className="ml-3 text-gold">{isOpen ? "−" : "+"}</span>
               </button>
               {isOpen && (
-                <p className="px-4 pb-4 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                <p className="px-4 pb-4 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.answer) }} />
               )}
             </div>
           );
