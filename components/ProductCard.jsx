@@ -51,7 +51,7 @@ export default function ProductCard({ product, index = 0 }) {
         <div className="absolute inset-x-0 bottom-0 translate-y-full transition-transform duration-300 ease-out group-hover:translate-y-0">
           <button
             onClick={() => cart?.addToCart({ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image })}
-            className="w-full bg-neutral-950/90 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white backdrop-blur transition hover:bg-gold hover:text-neutral-950"
+            className="w-full bg-neutral-950 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-gold hover:text-neutral-950"
           >
             Add to Bag
           </button>

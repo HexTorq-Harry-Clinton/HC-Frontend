@@ -132,3 +132,8 @@ body {
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
+
+/* respect users who ask for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee, .animate-slow-zoom, .fade-in-out-text { animation: none; }
+}
