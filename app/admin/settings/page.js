@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, resolveUploadUrl, API_BASE_URL } from "@/lib/api";
+import { apiFetch, unwrap, resolveUploadUrl, API_BASE_URL, revalidateSite } from "@/lib/api";
 
 // Site settings singleton: same fields as the previous UI —
 // names, descriptions, 3 logo uploads, maintenance toggle.
@@ -89,6 +89,7 @@ export default function AdminSettingsPage() {
         if (row?.setting_id) setSettingId(row.setting_id);
       }
       setMsg("Settings saved.");
+      revalidateSite();
     } catch (err) {
       setMsg(err.message || "Save failed");
     }

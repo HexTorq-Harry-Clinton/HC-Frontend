@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, inr } from "@/lib/api";
+import { apiFetch, unwrap, inr, revalidateSite } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 
 // Admin order fulfilment: list orders, advance status toward delivered,
@@ -44,6 +44,7 @@ export default function AdminOrdersPage() {
       body: { order_id: o.order_id, orderstatus, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     setRefresh((n) => n + 1);
+    revalidateSite();
   };
 
   if (workspace) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 import { CATEGORIES } from "@/lib/catalog";
 
 // Category Sync: compares backend Menu-Category/Sub-Category rows against the
@@ -136,6 +136,7 @@ export default function CategorySyncPage() {
       }
       say("Done.");
       setDone(true);
+      revalidateSite();
       reload();
     } catch (err) {
       say(`FAILED: ${err.message}`);

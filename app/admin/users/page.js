@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 
 // Users manager: same as the previous UI —
 // search, count, expand with role management, activate toggle.
@@ -57,6 +57,7 @@ export default function AdminUsersPage() {
       body: { user_id: u.user_id, isactive: next, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     load();
+    revalidateSite();
   };
 
   const assignRole = async (u) => {
@@ -75,6 +76,7 @@ export default function AdminUsersPage() {
     }).catch(() => null);
     setAssign((m) => ({ ...m, [u.user_id]: "" }));
     load();
+    revalidateSite();
   };
 
   const removeRole = async (ur) => {
@@ -84,6 +86,7 @@ export default function AdminUsersPage() {
       body: { user_role_id: ur.user_role_id, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     load();
+    revalidateSite();
   };
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch, unwrap, API_BASE_URL } from "@/lib/api";
+import { apiFetch, unwrap, API_BASE_URL, revalidateSite } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
 
 // Full CRUD engine for every admin lookup/content table (registry in lib/admin.js).
@@ -205,6 +205,7 @@ export default function AdminModulePage({ module: slug, lock }) {
       setForm({});
       setEditing(null);
       reload();
+      revalidateSite();
     } catch (err) {
       const raw = err.message || "Save failed";
       const fk = raw.match(/table "dbo\.(\w+)"/);
@@ -231,6 +232,7 @@ export default function AdminModulePage({ module: slug, lock }) {
     if (!window.confirm("Delete this record?")) return;
     await apiFetch(mod.endpoint, { method: "DELETE", body: { [mod.id]: r[mod.id], luu: "ADMIN_PORTAL" } }).catch(() => null);
     reload();
+    revalidateSite();
   };
 
   const toggle = async (r) => {
@@ -242,6 +244,7 @@ export default function AdminModulePage({ module: slug, lock }) {
       body: { [mod.id]: r[mod.id], [mod.toggle]: next, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     reload();
+    revalidateSite();
   };
 
   const renderField = (c) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 
 // Appointments manager: same as the previous UI —
 // customer/date/time/status table, expandable detail,
@@ -73,6 +73,7 @@ export default function AdminAppointmentsManager() {
       },
     }).catch(() => null);
     setMsg("Status updated.");
+    revalidateSite();
     load();
   };
 
@@ -83,6 +84,7 @@ export default function AdminAppointmentsManager() {
       body: { appointment_id: r.appointment_id, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     setMsg("Appointment cancelled.");
+    revalidateSite();
     load();
   };
 

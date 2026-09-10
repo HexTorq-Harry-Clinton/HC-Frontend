@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, inr, resolveUploadUrl, API_BASE_URL } from "@/lib/api";
+import { apiFetch, unwrap, inr, resolveUploadUrl, API_BASE_URL, revalidateSite } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 
 const empty = { product_name: "", product_slug: "", short_description: "", description: "", base_price: "", currency_code: "INR", isactive: true };
@@ -45,7 +45,10 @@ export default function AdminProductsPage() {
     };
   }, [refresh]);
 
-  const reload = () => setRefresh((n) => n + 1);
+  const reload = () => {
+    setRefresh((n) => n + 1);
+    revalidateSite();
+  };
 
   const set = (k) => (e) =>
     setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
