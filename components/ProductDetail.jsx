@@ -31,13 +31,19 @@ export default function ProductDetail({ product }) {
           label: v.label || v.size_id || "M",
           price: v.price || product.price,
           available: v.available !== false,
+          image: v.image || null,
           variant: v,
         }))
-      : [{ label: "M", price: product.price, available: true, variant: null }];
+      : [{ label: "M", price: product.price, available: true, image: null, variant: null }];
   const [size, setSize] = useState(baseSizes.length === 1 ? baseSizes[0].label : "");
 
   const selected = baseSizes.find((s) => s.label === size);
   const displayPrice = selected?.price ?? product.price;
+  // When a size is selected, swap the main image to that variant's image (if any).
+  const variantImage = selected?.image || null;
+  const effectiveGallery = variantImage
+    ? [variantImage, ...gallery.filter((g) => g !== variantImage)]
+    : gallery;
 
   const addToBag = () => {
     if (baseSizes.length > 1 && !size) {
@@ -51,7 +57,7 @@ export default function ProductDetail({ product }) {
         slug: product.slug,
         name: product.name,
         price: displayPrice,
-        image: gallery[0],
+        image: effectiveGallery[0],
         size: size || baseSizes[0].label,
         product_id: product.id,
         product_variant_id: selected?.variant?.product_variant_id || null,
@@ -71,7 +77,7 @@ export default function ProductDetail({ product }) {
         <div>
           <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
             <Image
-              src={gallery[activeImg]}
+              src={effectiveGallery[activeImg] || effectiveGallery[0]}
               alt={product.name}
               fill
               priority
@@ -79,9 +85,9 @@ export default function ProductDetail({ product }) {
               className="object-cover"
             />
           </div>
-          {gallery.length > 1 && (
+          {effectiveGallery.length > 1 && (
             <div className="mt-3 grid grid-cols-4 gap-3">
-              {gallery.map((src, i) => (
+              {effectiveGallery.map((src, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
@@ -137,7 +143,7 @@ export default function ProductDetail({ product }) {
               {added ? "Added to Cart" : "Add to Cart"}
             </button>
             <button
-              onClick={() => cart?.toggleWishlist({ id: product.id, name: product.name, price: displayPrice, image: gallery[0] })}
+              onClick={() => cart?.toggleWishlist({ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] })}
               title="Add to wishlist"
               className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
             >

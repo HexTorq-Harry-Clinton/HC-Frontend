@@ -208,11 +208,23 @@ function ProductWorkspace({ product, onBack }) {
   const [refresh, setRefresh] = useState(0);
 
   const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+  const [vMediaByVariant, setVMediaByVariant] = useState({}); // {variant_id: [media, ...]}
   const [mAlt, setMAlt] = useState("");
   const [mPrimary, setMPrimary] = useState(false);
+  const [mPreview, setMPreview] = useState(null); // { url, name, type } for local preview
   const [uploading, setUploading] = useState(false);
+  const [vUploadingId, setVUploadingId] = useState(null); // variant_id being uploaded
+  const [vPreview, setVPreview] = useState(null);
   const [aAttr, setAAttr] = useState("");
   const [aValue, setAValue] = useState("");
+
+  // Revoke any object URLs we created when leaving the workspace.
+  useEffect(() => {
+    return () => {
+      if (mPreview?.url) URL.revokeObjectURL(mPreview.url);
+      if (vPreview?.url) URL.revokeObjectURL(vPreview.url);
+    };
+  }, [mPreview, vPreview]);
 
   useEffect(() => {
     let live = true;
@@ -227,12 +239,22 @@ function ProductWorkspace({ product, onBack }) {
     ]).then(([v, m, av, a, s, c, seoList]) => {
       if (!live) return;
       const arr = (x) => (Array.isArray(x) ? x : []);
-      setVariants(arr(v).filter((x) => x.product_id === pid));
-      setMedia(arr(m).filter((x) => x.product_id === pid));
+      const variantList = arr(v).filter((x) => x.product_id === pid);
+      const allMedia = arr(m).filter((x) => x.product_id === pid);
+      setVariants(variantList);
+      setMedia(allMedia.filter((x) => !x.product_variant_id));
       setAttrValues(arr(av).filter((x) => x.product_id === pid));
       setAttributes(arr(a));
       setSizes(arr(s));
       setClothTypes(arr(c));
+      // Bucket variant-specific media by variant_id.
+      const bucketed = {};
+      for (const item of allMedia) {
+        if (item.product_variant_id) {
+          (bucketed[item.product_variant_id] ||= []).push(item);
+        }
+      }
+      setVMediaByVariant(bucketed);
       const mine = arr(seoList).find((x) => x.product_id === pid) || null;
       setSeo(mine);
       if (mine) {
@@ -290,9 +312,28 @@ function ProductWorkspace({ product, onBack }) {
     reload();
   };
 
-  const uploadMedia = async (e) => {
+  // Stage 1: pick a file → show local preview (no upload yet).
+  const pickMedia = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (mPreview?.url) URL.revokeObjectURL(mPreview.url);
+    setMPreview({
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name,
+      type: file.type.startsWith("video") ? "video" : "image",
+    });
+  };
+
+  const clearMediaPreview = () => {
+    if (mPreview?.url) URL.revokeObjectURL(mPreview.url);
+    setMPreview(null);
+  };
+
+  // Stage 2: click "Upload" → POST to /FileUpload then attach to product.
+  const uploadMedia = async () => {
+    if (!mPreview?.file) return;
+    const file = mPreview.file;
     setUploading(true);
     setMsg("");
     try {
@@ -311,7 +352,7 @@ function ProductWorkspace({ product, onBack }) {
         method: "POST",
         body: {
           product_id: pid,
-          media_type: file.type.startsWith("video") ? "video" : "image",
+          media_type: mPreview.type,
           media_url: url,
           alt_text: mAlt || product.product_name,
           isprimary: mPrimary ? 1 : 0,
@@ -320,7 +361,7 @@ function ProductWorkspace({ product, onBack }) {
       });
       setMAlt("");
       setMPrimary(false);
-      e.target.value = "";
+      clearMediaPreview();
       setMsg("Image uploaded & attached.");
       reload();
     } catch (err) {
@@ -332,6 +373,73 @@ function ProductWorkspace({ product, onBack }) {
 
   const deleteMedia = async (m) => {
     if (!window.confirm("Delete this image?")) return;
+    await apiFetch("/Products-Media", {
+      method: "DELETE",
+      body: { product_media_id: m.product_media_id, luu: "ADMIN_PORTAL" },
+    }).catch(() => null);
+    reload();
+  };
+
+  // ----- per-variant media upload -----
+  const pickVariantMedia = (variantId) => (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (vPreview?.url) URL.revokeObjectURL(vPreview.url);
+    setVPreview({
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name,
+      type: file.type.startsWith("video") ? "video" : "image",
+      variantId,
+    });
+  };
+
+  const clearVariantPreview = () => {
+    if (vPreview?.url) URL.revokeObjectURL(vPreview.url);
+    setVPreview(null);
+  };
+
+  const uploadVariantMedia = async () => {
+    if (!vPreview?.file || !vPreview.variantId) return;
+    const file = vPreview.file;
+    const variantId = vPreview.variantId;
+    setVUploadingId(variantId);
+    setMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const token = localStorage.getItem("hc_token");
+      const res = await fetch(`${API_BASE_URL}/FileUpload`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      const url = data?.data?.virtualPath || data?.virtualPath || data?.data?.url || data?.url;
+      if (!url) throw new Error("Upload did not return a URL.");
+      await apiFetch("/Products-Media", {
+        method: "POST",
+        body: {
+          product_id: pid,
+          product_variant_id: variantId,
+          media_type: vPreview.type,
+          media_url: url,
+          alt_text: `${product.product_name} - ${variantId}`,
+          rcu: "ADMIN_PORTAL",
+        },
+      });
+      clearVariantPreview();
+      setMsg("Variant image uploaded.");
+      reload();
+    } catch (err) {
+      setMsg(err.message || "Variant upload failed.");
+    } finally {
+      setVUploadingId(null);
+    }
+  };
+
+  const deleteVariantMedia = async (m) => {
+    if (!window.confirm("Delete this variant image?")) return;
     await apiFetch("/Products-Media", {
       method: "DELETE",
       body: { product_media_id: m.product_media_id, luu: "ADMIN_PORTAL" },
@@ -407,23 +515,86 @@ function ProductWorkspace({ product, onBack }) {
             <thead>
               <tr className="border-b text-xs uppercase text-neutral-500">
                 <th className="p-3">SKU</th><th className="p-3">Name</th><th className="p-3">Size</th>
-                <th className="p-3">Cloth Type</th><th className="p-3">Price</th><th className="p-3">Stock</th><th className="p-3">Actions</th>
+                <th className="p-3">Cloth Type</th><th className="p-3">Price</th><th className="p-3">Stock</th>
+                <th className="p-3">Image (per variant)</th><th className="p-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {variants.map((v) => (
-                <tr key={v.product_variant_id} className="border-b last:border-0">
-                  <td className="p-3 font-medium">{v.sku}</td>
-                  <td className="p-3">{v.variant_name || "—"}</td>
-                  <td className="p-3">{sizeName(v.size_id)}</td>
-                  <td className="p-3">{clothName(v.cloth_type_id)}</td>
-                  <td className="p-3">{inr(v.price)}</td>
-                  <td className="p-3">{v.stock_qty}</td>
-                  <td className="p-3 text-right">
-                    <button onClick={() => deleteVariant(v)} className="text-red-600 underline">Delete</button>
-                  </td>
-                </tr>
-              ))}
+              {variants.map((v) => {
+                const vMedia = vMediaByVariant[v.product_variant_id] || [];
+                return (
+                  <tr key={v.product_variant_id} className="border-b align-top last:border-0">
+                    <td className="p-3 font-medium">{v.sku}</td>
+                    <td className="p-3">{v.variant_name || "—"}</td>
+                    <td className="p-3">{sizeName(v.size_id)}</td>
+                    <td className="p-3">{clothName(v.cloth_type_id)}</td>
+                    <td className="p-3">{inr(v.price)}</td>
+                    <td className="p-3">{v.stock_qty}</td>
+                    <td className="p-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {vMedia.length === 0 ? (
+                          <span className="text-xs text-neutral-400">No image</span>
+                        ) : (
+                          vMedia.map((m) => (
+                            <div key={m.product_media_id} className="relative">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={resolveUploadUrl(m.media_url)}
+                                alt={m.alt_text || v.sku}
+                                style={{ height: 48, width: 48, objectFit: "cover" }}
+                                className="border border-neutral-300"
+                              />
+                              <button
+                                onClick={() => deleteVariantMedia(m)}
+                                title="Delete variant image"
+                                className="absolute -right-1 -top-1 rounded-full bg-white px-1 text-xs text-red-600 shadow"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))
+                        )}
+                        <label className="flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-2 py-1 text-xs font-semibold">
+                          {vUploadingId === v.product_variant_id ? "..." : "+ Image"}
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            onChange={pickVariantMedia(v.product_variant_id)}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                      {vPreview?.variantId === v.product_variant_id && (
+                        <div className="mt-2 flex flex-wrap items-start gap-2 rounded border border-neutral-200 bg-neutral-50 p-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {vPreview.type === "image" ? (
+                            <img src={vPreview.url} alt="preview" style={{ height: 60, width: 60, objectFit: "cover" }} className="border" />
+                          ) : (
+                            <video src={vPreview.url} style={{ height: 60, width: 60, objectFit: "cover" }} controls className="border" />
+                          )}
+                          <div className="flex-1">
+                            <p className="text-xs">{vPreview.name}</p>
+                            <p className="text-xs text-neutral-500">Preview</p>
+                          </div>
+                          <button
+                            onClick={uploadVariantMedia}
+                            disabled={vUploadingId === v.product_variant_id}
+                            className="bg-neutral-950 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                          >
+                            {vUploadingId === v.product_variant_id ? "..." : "Upload"}
+                          </button>
+                          <button onClick={clearVariantPreview} className="border border-neutral-300 px-3 py-1 text-xs">
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3 text-right">
+                      <button onClick={() => deleteVariant(v)} className="text-red-600 underline">Delete</button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -472,10 +643,37 @@ function ProductWorkspace({ product, onBack }) {
           <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} /> Set as primary
         </label>
         <label className="flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-4 py-2 text-sm font-semibold">
-          {uploading ? "Uploading..." : "Upload Image (uploads & attaches automatically)"}
-          <input type="file" accept="image/*,video/*" onChange={uploadMedia} disabled={uploading} className="hidden" />
+          {mPreview ? `Selected: ${mPreview.name}` : "Choose file..."}
+          <input type="file" accept="image/*,video/*" onChange={pickMedia} className="hidden" />
         </label>
-        <p className="text-xs text-neutral-500 md:col-span-3">JPG, PNG, WEBP, GIF images or MP4, WEBM, MOV videos.</p>
+        {mPreview ? (
+          <div className="md:col-span-3 flex flex-wrap items-start gap-3 rounded border border-neutral-200 bg-neutral-50 p-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {mPreview.type === "image" ? (
+              <img src={mPreview.url} alt="preview" style={{ height: 100, width: 140, objectFit: "cover" }} className="border border-neutral-300" />
+            ) : (
+              <video src={mPreview.url} style={{ height: 100, width: 140, objectFit: "cover" }} controls className="border border-neutral-300" />
+            )}
+            <div className="flex-1">
+              <p className="text-xs font-medium">{mPreview.name}</p>
+              <p className="text-xs text-neutral-500">Preview — click Upload to attach to this product.</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={uploadMedia}
+                disabled={uploading}
+                className="bg-neutral-950 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+              >
+                {uploading ? "Uploading..." : "Upload"}
+              </button>
+              <button onClick={clearMediaPreview} className="border border-neutral-300 px-4 py-2 text-xs">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-neutral-500 md:col-span-3">JPG, PNG, WEBP, GIF images or MP4, WEBM, MOV videos. Pick a file to preview before upload.</p>
+        )}
       </div>
 
       <h2 className="mt-8 text-lg font-bold">Attributes</h2>
