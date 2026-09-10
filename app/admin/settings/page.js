@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, resolveUploadUrl, API_BASE_URL, revalidateSite } from "@/lib/api";
+import { apiFetch, unwrap, resolveUploadUrl, revalidateSite, uploadFile } from "@/lib/api";
 
 // Site settings singleton: same fields as the previous UI —
 // names, descriptions, 3 logo uploads, maintenance toggle.
@@ -20,7 +20,9 @@ export default function AdminSettingsPage() {
   const [settingId, setSettingId] = useState(null);
   const [form, setForm] = useState({});
   const [msg, setMsg] = useState("");
-  const [uploading, setUploading] = useState(null);
+  // Staged logos: { fieldKey: File } — picked, uploaded on Save (single-submit).
+  const [staged, setStaged] = useState({});
+  const [busy, setBusy] = useState(null); // null | "uploading" | "saving"
 
   useEffect(() => {
     let live = true;
@@ -48,38 +50,41 @@ export default function AdminSettingsPage() {
   const set = (k, type) => (e) =>
     setForm((f) => ({ ...f, [k]: type === "checkbox" ? e.target.checked : e.target.value }));
 
-  const handleUpload = async (key, file) => {
+  // Stage a logo — no upload yet. Staged file wins over the typed URL on Save.
+  const stageFile = (key, file) => {
     if (!file) return;
-    setUploading(key);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("path", "SITE_BRANDING");
-      const token = localStorage.getItem("hc_token");
-      const res = await fetch(`${API_BASE_URL}/FileUpload`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      const url = data?.data?.virtualPath || data?.virtualPath || data?.data?.url || data?.url;
-      if (url) {
-        setForm((f) => ({ ...f, [key]: url }));
-        setMsg("Logo uploaded — save settings to keep it.");
-      } else {
-        setMsg("Upload did not return a URL.");
-      }
-    } catch {
-      setMsg("Upload failed.");
-    } finally {
-      setUploading(null);
-    }
+    setStaged((m) => ({ ...m, [key]: file }));
+    setMsg(`Staged: ${file.name} — click Save Settings to upload & save.`);
+  };
+
+  const clearStaged = (key) => {
+    setStaged((m) => {
+      const next = { ...m };
+      delete next[key];
+      return next;
+    });
   };
 
   const submit = async (e) => {
     e.preventDefault();
     setMsg("");
     const body = { ...form, ismaintenance_mode: form.ismaintenance_mode ? 1 : 0, luu: "ADMIN_PORTAL" };
+    // Upload staged logos FIRST, then save settings with the returned paths.
+    const keys = Object.keys(staged);
+    if (keys.length > 0) {
+      setBusy("uploading");
+      setMsg(`Uploading ${keys.length} logo(s)...`);
+      try {
+        for (const key of keys) {
+          body[key] = await uploadFile(staged[key], { path: "SITE_BRANDING" });
+        }
+      } catch (err) {
+        setMsg(err.message || "Logo upload failed.");
+        setBusy(null);
+        return;
+      }
+    }
+    setBusy("saving");
     try {
       if (settingId) {
         await apiFetch("/Settings", { method: "PUT", body: { setting_id: settingId, ...body } });
@@ -89,9 +94,12 @@ export default function AdminSettingsPage() {
         if (row?.setting_id) setSettingId(row.setting_id);
       }
       setMsg("Settings saved.");
+      setStaged({});
       revalidateSite();
     } catch (err) {
       setMsg(err.message || "Save failed");
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -109,10 +117,19 @@ export default function AdminSettingsPage() {
               <input type="checkbox" checked={!!form[f.key]} onChange={set(f.key, "checkbox")} className="ml-2" />
             ) : f.type === "upload" ? (
               <span className="mt-1 block font-normal">
-                <input value={form[f.key] || ""} onChange={set(f.key)} placeholder="Logo URL or upload below" className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm" />
-                <input type="file" accept="image/*" onChange={(e) => handleUpload(f.key, e.target.files?.[0])} className="mt-1 w-full text-xs" />
-                {uploading === f.key && <span className="text-xs text-neutral-500">Uploading...</span>}
-                {form[f.key] && (
+                <input value={form[f.key] || ""} onChange={set(f.key)} placeholder="Logo URL or pick a file below" className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm" />
+                <input type="file" accept="image/*" onChange={(e) => stageFile(f.key, e.target.files?.[0])} className="mt-1 w-full text-xs" />
+                {staged[f.key] ? (
+                  <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-green-800">
+                    Staged: {staged[f.key].name}
+                    <button type="button" onClick={() => clearStaged(f.key)} className="font-normal text-red-600 underline">
+                      remove
+                    </button>
+                  </span>
+                ) : (
+                  <span className="mt-1 block text-xs text-neutral-500">No file staged — typed URL (if any) will be used.</span>
+                )}
+                {form[f.key] && !staged[f.key] && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={resolveUploadUrl(form[f.key])} alt={f.label} style={{ height: 48, marginTop: 6 }} />
                 )}
@@ -123,7 +140,9 @@ export default function AdminSettingsPage() {
           </label>
         ))}
         <div className="md:col-span-2">
-          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Save Settings</button>
+          <button disabled={busy !== null} className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white disabled:opacity-50">
+            {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : "Save Settings"}
+          </button>
         </div>
       </form>
     </div>

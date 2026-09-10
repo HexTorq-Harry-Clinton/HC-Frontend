@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch, unwrap, API_BASE_URL, revalidateSite } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite, uploadFile, detectMediaType } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
 import ActiveToggle from "@/components/ActiveToggle";
 import { useToast } from "./ToastProvider";
@@ -36,7 +36,10 @@ export default function AdminModulePage({ module: slug, lock }) {
   const [msg, setMsg] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [search, setSearch] = useState("");
-  const [uploading, setUploading] = useState(null);
+  // Staged files: { columnKey: File } — picked in the form, uploaded on
+  // Submit (single-submit flow). Nothing hits the server until Submit.
+  const [staged, setStaged] = useState({});
+  const [busy, setBusy] = useState(null); // null | "uploading" | "saving"
   const [refOptions, setRefOptions] = useState({});
   const [workspace, setWorkspace] = useState(null);
   const [workspaceTab, setWorkspaceTab] = useState(0);
@@ -147,31 +150,24 @@ export default function AdminModulePage({ module: slug, lock }) {
   const set = (k, type) => (e) =>
     setForm((f) => ({ ...f, [k]: type === "checkbox" ? e.target.checked : e.target.value }));
 
-  const handleUpload = async (key, file) => {
+  // Stage a file for single-submit: no upload yet. Staged file wins over
+  // the typed URL on Submit. Auto-fills media_type when the module has one.
+  const stageFile = (key, file) => {
     if (!file) return;
-    setUploading(key);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const token = typeof window !== "undefined" ? localStorage.getItem("hc_token") : null;
-      const res = await fetch(`${API_BASE_URL}/FileUpload`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      const url = data?.data?.virtualPath || data?.virtualPath || data?.data?.url || data?.url;
-      if (url) {
-        setForm((f) => ({ ...f, [key]: url }));
-        setMsg("File uploaded — save the record to keep it.");
-      } else {
-        setMsg("Upload did not return a URL.");
-      }
-    } catch {
-      setMsg("Upload failed.");
-    } finally {
-      setUploading(null);
+    setStaged((m) => ({ ...m, [key]: file }));
+    if (mod?.columns.some((c) => c.key === "media_type")) {
+      const t = detectMediaType(file);
+      setForm((f) => ({ ...f, media_type: t }));
     }
+    setMsg(`Staged: ${file.name} — click ${editing ? "Update" : "Add"} to upload & save.`);
+  };
+
+  const clearStaged = (key) => {
+    setStaged((m) => {
+      const next = { ...m };
+      delete next[key];
+      return next;
+    });
   };
 
   const submit = async (e) => {
@@ -198,6 +194,26 @@ export default function AdminModulePage({ module: slug, lock }) {
         body[c.key] = v === true || v === 1 || v === "1" ? 1 : 0;
       }
     });
+    // Single-submit media flow: upload staged files FIRST, then save the
+    // row with the returned paths. Any upload failure aborts the save and
+    // keeps the form intact — the row is never written without its file.
+    const uploadCols = mod.columns.filter((c) => c.type === "upload" && staged[c.key]);
+    if (uploadCols.length > 0) {
+      setBusy("uploading");
+      setMsg(`Uploading ${uploadCols.length} file(s)...`);
+      try {
+        for (const c of uploadCols) {
+          body[c.key] = await uploadFile(staged[c.key]);
+        }
+      } catch (err) {
+        const friendly = err.message || "Upload failed.";
+        setMsg(friendly);
+        toast?.error(friendly);
+        setBusy(null);
+        return;
+      }
+    }
+    setBusy("saving");
     try {
       if (editing) {
         await apiFetch(mod.endpoint, { method: "PUT", body: { [mod.id]: editing, ...body, luu: "ADMIN_PORTAL" } });
@@ -209,6 +225,7 @@ export default function AdminModulePage({ module: slug, lock }) {
         toast?.success(`${mod.title} created.`);
       }
       setForm({});
+      setStaged({});
       setEditing(null);
       reload();
       revalidateSite();
@@ -220,6 +237,8 @@ export default function AdminModulePage({ module: slug, lock }) {
         : raw;
       setMsg(friendly);
       toast?.error(friendly);
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -230,6 +249,7 @@ export default function AdminModulePage({ module: slug, lock }) {
       f[c.key] = c.type === "checkbox" ? v === 1 || v === true : v ?? "";
     });
     setForm(f);
+    setStaged({});
     setEditing(r[mod.id]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -285,21 +305,41 @@ export default function AdminModulePage({ module: slug, lock }) {
         </span>
       );
     }
+    // media_type is auto-detected from the staged file — display only.
+    if (c.key === "media_type" && mod.columns.some((x) => x.type === "upload")) {
+      return (
+        <span className="mt-1 block font-normal">
+          <input value={form[c.key] || ""} readOnly placeholder="Auto (stage a file)" className={`${inputCls} bg-neutral-100`} />
+          <span className="mt-1 block text-xs text-neutral-500">Auto-detected from the staged file.</span>
+        </span>
+      );
+    }
     if (c.type === "upload") {
+      const file = staged[c.key];
       return (
         <span className="mt-1 block font-normal">
           <input
             value={form[c.key] || ""}
             onChange={set(c.key)}
-            placeholder="URL or upload below"
+            placeholder="URL or pick a file below"
             className={inputCls}
           />
           <input
             type="file"
-            onChange={(e) => handleUpload(c.key, e.target.files?.[0])}
+            accept="image/*,video/*"
+            onChange={(e) => stageFile(c.key, e.target.files?.[0])}
             className="mt-1 w-full text-xs"
           />
-          {uploading === c.key && <span className="text-xs text-neutral-500">Uploading...</span>}
+          {file ? (
+            <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-green-800">
+              Staged: {file.name}
+              <button type="button" onClick={() => clearStaged(c.key)} className="font-normal text-red-600 underline">
+                remove
+              </button>
+            </span>
+          ) : (
+            <span className="mt-1 block text-xs text-neutral-500">No file staged — typed URL (if any) will be used.</span>
+          )}
         </span>
       );
     }
@@ -344,9 +384,14 @@ export default function AdminModulePage({ module: slug, lock }) {
             </label>
           ))}
           <div className="flex gap-2 md:col-span-2">
-            <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">{editing ? "Update" : "Add"}</button>
+            <button
+              disabled={busy !== null}
+              className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : editing ? "Update" : "Add"}
+            </button>
             {editing && (
-              <button type="button" onClick={() => { setEditing(null); setForm({}); }} className="border px-4 py-2 text-sm">Cancel</button>
+              <button type="button" onClick={() => { setEditing(null); setForm({}); setStaged({}); }} className="border px-4 py-2 text-sm">Cancel</button>
             )}
           </div>
         </form>

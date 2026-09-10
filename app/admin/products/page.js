@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, inr, resolveUploadUrl, API_BASE_URL, revalidateSite, friendlyError } from "@/lib/api";
+import { apiFetch, unwrap, inr, resolveUploadUrl, revalidateSite, friendlyError, uploadFile, detectMediaType } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 import AdminToast from "@/components/AdminToast";
 import ActiveToggle from "@/components/ActiveToggle";
@@ -404,29 +404,20 @@ function ProductWorkspace({ product, onBack }) {
     setMPreview(null);
   };
 
-  // Stage 2: click "Upload" → POST to /FileUpload then attach to product.
-  const uploadMedia = async () => {
+  // Single-submit: pick file + alt + primary, one Save uploads first
+  // (shared helper) then attaches the returned path to the product.
+  const saveMedia = async () => {
     if (!mPreview?.file) return;
     const file = mPreview.file;
     setUploading(true);
     setMsg("");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const token = localStorage.getItem("hc_token");
-      const res = await fetch(`${API_BASE_URL}/FileUpload`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      const url = data?.data?.virtualPath || data?.virtualPath || data?.data?.url || data?.url;
-      if (!url) throw new Error("Upload did not return a URL.");
+      const url = await uploadFile(file);
       await apiFetch("/Products-Media", {
         method: "POST",
         body: {
           product_id: pid,
-          media_type: mPreview.type,
+          media_type: detectMediaType(file),
           media_url: url,
           alt_text: mAlt || product.product_name,
           isprimary: mPrimary ? 1 : 0,
@@ -486,23 +477,13 @@ function ProductWorkspace({ product, onBack }) {
     setVUploadingId(variantId);
     setMsg("");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const token = localStorage.getItem("hc_token");
-      const res = await fetch(`${API_BASE_URL}/FileUpload`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      const url = data?.data?.virtualPath || data?.virtualPath || data?.data?.url || data?.url;
-      if (!url) throw new Error("Upload did not return a URL.");
+      const url = await uploadFile(file);
       await apiFetch("/Products-Media", {
         method: "POST",
         body: {
           product_id: pid,
           product_variant_id: variantId,
-          media_type: vPreview.type,
+          media_type: detectMediaType(file),
           media_url: url,
           alt_text: `${product.product_name} - ${variantId}`,
           rcu: "ADMIN_PORTAL",
@@ -763,15 +744,15 @@ function ProductWorkspace({ product, onBack }) {
             )}
             <div className="flex-1">
               <p className="text-xs font-medium">{mPreview.name}</p>
-              <p className="text-xs text-neutral-500">Preview — click Upload to attach to this product.</p>
+              <p className="text-xs text-neutral-500">Preview — click Save to upload & attach to this product.</p>
             </div>
             <div className="flex gap-2">
               <button
-                onClick={uploadMedia}
+                onClick={saveMedia}
                 disabled={uploading}
                 className="bg-neutral-950 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
               >
-                {uploading ? "Uploading..." : "Upload"}
+                {uploading ? "Saving..." : "Save"}
               </button>
               <button onClick={clearMediaPreview} className="border border-neutral-300 px-4 py-2 text-xs">
                 Cancel
