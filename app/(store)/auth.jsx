@@ -30,12 +30,36 @@ export function useAuthForm() {
   return { router, error, setError, busy, setBusy };
 }
 
-export async function saveSession(res) {
-  const data = res?.data || res;
-  const token = data?.token || data?.jwt || data?.accessToken;
+// Session saver matching the REAL backend envelope:
+// { Status, Message, Response: { user, roles, token }, ... }
+// (axios gives us res.data = the whole envelope.)
+// Mirrors the previous UI: hc_token + hc_session + hc_user (with role) +
+// hc_role, and returns the primary role code so callers can route admins.
+export function saveSession(res) {
+  const body = res?.data || res || {};
+  const response = body.Response || body.response || {};
+  const user = response.user || body.user || null;
+  const roles = response.roles || user?.roles || [];
+  const primaryRole = roles[0] || {};
+  const roleCode = primaryRole.role_code || "CUSTOMER";
+  const roleName = primaryRole.role_name || "Customer";
+  const token = response.token || body.token || body.jwt || body.accessToken;
+
   if (token) localStorage.setItem("hc_token", token);
-  if (data?.user) localStorage.setItem("hc_user", JSON.stringify(data.user));
-  if (data?.role_code) localStorage.setItem("hc_role", data.role_code);
+  localStorage.setItem("hc_session", "1");
+  if (user) {
+    localStorage.setItem(
+      "hc_user",
+      JSON.stringify({ ...user, role: roleName, role_code: roleCode })
+    );
+  }
+  localStorage.setItem("hc_role", roleCode);
+  return roleCode;
+}
+
+export function isAdminRole(roleCode) {
+  const rc = roleCode || "";
+  return rc === "ADMIN" || rc.toLowerCase().includes("admin");
 }
 
 export { Field };

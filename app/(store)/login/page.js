@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { saveSession, isAdminRole } from "../auth";
 
 // Login: same structure/texts as the previous UI —
 // OTP block, "or" divider, password block with eye toggle.
+// Admins land on /admin after login, everyone else on /.
 export default function LoginPage() {
   const router = useRouter();
   const [emailOrMobile, setEmailOrMobile] = useState("");
@@ -21,12 +23,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const saveSession = (res) => {
-    const data = res?.data || res;
-    const token = data?.token || data?.jwt || data?.accessToken;
-    if (token) localStorage.setItem("hc_token", token);
-    if (data?.user) localStorage.setItem("hc_user", JSON.stringify(data.user));
-    if (data?.role_code) localStorage.setItem("hc_role", data.role_code);
+  const afterLogin = (roleCode) => {
+    router.push(isAdminRole(roleCode) ? "/admin" : "/");
   };
 
   const sendOtp = async () => {
@@ -59,8 +57,7 @@ export default function LoginPage() {
         method: "POST",
         body: { email_id: emailOrMobile.trim(), otp: otp.trim() },
       });
-      saveSession(res);
-      router.push("/");
+      afterLogin(saveSession(res));
     } catch (err) {
       setOtpMessage(err.message || "Invalid OTP." || "OTP verification failed.");
     } finally {
@@ -81,8 +78,7 @@ export default function LoginPage() {
         method: "POST",
         body: { email_id: email.trim(), password },
       });
-      saveSession(res);
-      router.push("/");
+      afterLogin(saveSession(res));
     } catch (err) {
       setError(err.message || "Login failed");
     } finally {
