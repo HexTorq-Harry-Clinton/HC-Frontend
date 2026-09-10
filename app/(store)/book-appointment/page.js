@@ -80,8 +80,14 @@ export default function BookAppointmentPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    // Times belong to a date: changing the date resets a stale time pick.
+    setForm((prev) => (name === "appointment_date_slot_id" ? { ...prev, [name]: value, appointment_time_slot_id: "" } : { ...prev, [name]: value }));
   };
+
+  // Only times scoped to the chosen date are bookable.
+  const visibleTimes = form.appointment_date_slot_id
+    ? timeSlots.filter((t) => String(t.appointment_date_slot_id) === String(form.appointment_date_slot_id))
+    : timeSlots;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -201,12 +207,12 @@ export default function BookAppointmentPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">Appointment Time *</label>
-                {timeSlots.length === 0 ? (
-                  <div className="bg-yellow-50 p-2 text-sm text-yellow-800">No time slots available.</div>
+                {visibleTimes.length === 0 ? (
+                  <div className="bg-yellow-50 p-2 text-sm text-yellow-800">No time slots available for this date.</div>
                 ) : (
                   <select name="appointment_time_slot_id" value={form.appointment_time_slot_id} onChange={handleChange} required className={inputCls}>
                     <option value="">-- Select Time --</option>
-                    {timeSlots.map((t) => (
+                    {visibleTimes.map((t) => (
                       <option key={t.appointment_time_slot_id} value={t.appointment_time_slot_id}>
                         {t.slot_start_time && t.slot_end_time
                           ? `${t.slot_start_time} – ${t.slot_end_time}`

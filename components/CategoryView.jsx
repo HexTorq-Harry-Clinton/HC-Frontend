@@ -35,7 +35,10 @@ export default function CategoryView({ products, sizes = [], clothTypes = [], co
     const list = products.filter((p) => {
       if (size && !(p.sizes || []).includes(size)) return false;
       if (clothType && !(p.clothTypes || []).includes(clothType)) return false;
-      if (color && (p.color || "").toLowerCase() !== color.toLowerCase()) return false;
+      if (color) {
+        const have = [...(p.colors || []), ...(p.color ? [p.color] : [])].map((c) => String(c).toLowerCase());
+        if (!have.includes(color.toLowerCase())) return false;
+      }
       if (minPrice && Number(p.price) < Number(minPrice)) return false;
       if (maxPrice && Number(p.price) > Number(maxPrice)) return false;
       return true;

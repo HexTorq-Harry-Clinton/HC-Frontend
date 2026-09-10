@@ -45,7 +45,7 @@ function SearchInner() {
             `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""}`.toLowerCase().includes(needle)
           )
           .map((p) => {
-            const m = media.find((x) => x.product_id === p.product_id && x.isprimary === true);
+            const m = media.find((x) => x.product_id === p.product_id && (x.isprimary === 1 || x.isprimary === true));
             return {
               id: p.product_id, slug: p.product_slug, name: p.product_name,
               price: Number(p.base_price) || 0, image: resolveUploadUrl(m?.media_url) || null,
@@ -78,7 +78,7 @@ function SearchInner() {
             `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""}`.toLowerCase().includes(needle)
           )
           .map((p) => {
-            const m = media.find((x) => x.product_id === p.product_id && x.isprimary === true);
+            const m = media.find((x) => x.product_id === p.product_id && (x.isprimary === 1 || x.isprimary === true));
             return {
               id: p.product_id, slug: p.product_slug, name: p.product_name,
               price: Number(p.base_price) || 0, image: resolveUploadUrl(m?.media_url) || null,

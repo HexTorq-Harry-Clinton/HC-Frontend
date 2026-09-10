@@ -17,7 +17,7 @@ export default async function ProductGrid({ keyword = "" }) {
     const keywordLower = keyword.toLowerCase();
     products = apiProducts
       .map((p) => {
-        const media = apiMedia.find((m) => m.product_id === p.product_id && m.isprimary === true);
+        const media = apiMedia.find((m) => m.product_id === p.product_id && (m.isprimary === 1 || m.isprimary === true));
         return {
           id: p.product_id,
           slug: p.product_slug,
@@ -27,7 +27,7 @@ export default async function ProductGrid({ keyword = "" }) {
           image: resolveUploadUrl(media?.media_url) || null,
         };
       })
-      .filter((p) => (!keywordLower || p.name.toLowerCase().includes(keywordLower)));
+      .filter((p) => (!keywordLower || (p.name || "").toLowerCase().includes(keywordLower)));
   } catch (err) {
     error = err.message || "Failed to load products";
   }

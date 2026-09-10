@@ -38,24 +38,32 @@ export function CartProvider({ children }) {
     if (ready) localStorage.setItem("hc_wishlist", JSON.stringify(wishlist));
   }, [wishlist, ready]);
 
+  // Cart lines are keyed by product + variant + size: adding size M then L
+  // creates two lines instead of merging into the first size's row.
+  const lineKey = (p) =>
+    p.key || [p.id, p.product_variant_id, p.size].filter((v) => v !== undefined && v !== null && v !== "").join("|");
+
   const addToCart = useCallback((product, qty = 1) => {
+    const key = lineKey(product);
     setItems((prev) => {
-      const found = prev.find((i) => i.id === product.id);
+      const found = prev.find((i) => (i.key || lineKey(i)) === key);
       if (found) {
-        return prev.map((i) => (i.id === product.id ? { ...i, qty: i.qty + qty } : i));
+        return prev.map((i) => ((i.key || lineKey(i)) === key ? { ...i, key, qty: i.qty + qty } : i));
       }
-      return [...prev, { ...product, qty }];
+      return [...prev, { ...product, key, qty }];
     });
   }, []);
 
   const updateQty = useCallback((id, qty) => {
     setItems((prev) =>
-      qty <= 0 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, qty } : i))
+      qty <= 0
+        ? prev.filter((i) => (i.key || i.id) !== id)
+        : prev.map((i) => ((i.key || i.id) === id ? { ...i, qty } : i))
     );
   }, []);
 
   const removeFromCart = useCallback((id) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev) => prev.filter((i) => (i.key || i.id) !== id));
   }, []);
 
   const clearCart = useCallback(() => setItems([]), []);

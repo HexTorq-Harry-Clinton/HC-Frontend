@@ -44,7 +44,7 @@ export default function CartPage() {
       <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
           {cart.items.map((i) => (
-            <div key={i.id} className="flex gap-4 border-b border-neutral-200 pb-6">
+            <div key={i.key || i.id} className="flex gap-4 border-b border-neutral-200 pb-6">
               <div className="relative h-36 w-28 shrink-0 bg-neutral-100">
                 <Image src={i.image || PLACEHOLDER_IMAGE} alt={i.name} fill sizes="120px" className="object-cover" />
               </div>
@@ -58,10 +58,10 @@ export default function CartPage() {
                   </span>
                 </p>
                 <div className="mt-2 flex items-center gap-2 text-sm">
-                  <button onClick={() => cart.updateQty(i.id, (i.qty || 1) - 1)} className="border border-neutral-300 px-2">-</button>
+                  <button onClick={() => cart.updateQty(i.key || i.id, (i.qty || 1) - 1)} className="border border-neutral-300 px-2">-</button>
                   <span>{i.qty || 1}</span>
-                  <button onClick={() => cart.updateQty(i.id, (i.qty || 1) + 1)} className="border border-neutral-300 px-2">+</button>
-                  <button onClick={() => cart.removeFromCart(i.id)} className="ml-3 text-xs underline text-neutral-500">Remove</button>
+                  <button onClick={() => cart.updateQty(i.key || i.id, (i.qty || 1) + 1)} className="border border-neutral-300 px-2">+</button>
+                  <button onClick={() => cart.removeFromCart(i.key || i.id)} className="ml-3 text-xs underline text-neutral-500">Remove</button>
                 </div>
               </div>
             </div>

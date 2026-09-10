@@ -27,6 +27,16 @@ export default function LoginPage() {
     router.push(isAdminRole(roleCode) ? "/admin" : "/");
   };
 
+  // Backend OTP endpoints require email_id; when the input looks like a
+  // mobile number we also send mobile_number so either lookup can match.
+  // email_id is always sent (required) — never dropped.
+  const otpIdentity = (value) => {
+    const v = (value || "").trim();
+    const body = { email_id: v };
+    if (/^[+\d][\d\s-]{7,}$/.test(v)) body.mobile_number = v;
+    return body;
+  };
+
   const sendOtp = async () => {
     if (!emailOrMobile.trim()) {
       setOtpMessage("Enter email or mobile.");
@@ -35,7 +45,7 @@ export default function LoginPage() {
     setSendingOtp(true);
     setOtpMessage("");
     try {
-      const sent = await apiFetch("/Auth/OTP-Login", { method: "POST", body: { email_id: emailOrMobile.trim() } });
+      const sent = await apiFetch("/Auth/OTP-Login", { method: "POST", body: otpIdentity(emailOrMobile) });
       throwIfAuthFailed(sent, "Failed to send OTP.");
       setOtpSent(true);
       setOtpMessage("OTP sent! Check your email.");
@@ -56,7 +66,7 @@ export default function LoginPage() {
     try {
       const res = await apiFetch("/Auth/Verify-Login-OTP", {
         method: "POST",
-        body: { email_id: emailOrMobile.trim(), otp: otp.trim() },
+        body: { ...otpIdentity(emailOrMobile), otp: otp.trim() },
       });
       throwIfAuthFailed(res, "Invalid OTP.");
       afterLogin(saveSession(res));

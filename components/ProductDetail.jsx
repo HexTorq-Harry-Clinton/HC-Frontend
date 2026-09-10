@@ -25,19 +25,22 @@ export default function ProductDetail({ product }) {
   const [sizeError, setSizeError] = useState("");
 
   const gallery = product.gallery?.length > 0 ? product.gallery : [product.image || PLACEHOLDER_IMAGE];
+  // Each size option carries a unique key (variant id first): two variants
+  // sharing a display label (e.g. "M" in different cloths) stay distinct.
   const baseSizes =
     (product.variants || []).length > 0
-      ? product.variants.map((v) => ({
+      ? product.variants.map((v, idx) => ({
+          key: v.product_variant_id || v.size_id || `${v.label || "size"}-${idx}`,
           label: v.label || v.size_id || "M",
           price: v.price || product.price,
           available: v.available !== false,
           image: v.image || null,
           variant: v,
         }))
-      : [{ label: "M", price: product.price, available: true, image: null, variant: null }];
-  const [size, setSize] = useState(baseSizes.length === 1 ? baseSizes[0].label : "");
+      : [{ key: "default", label: "M", price: product.price, available: true, image: null, variant: null }];
+  const [size, setSize] = useState(baseSizes.length === 1 ? baseSizes[0].key : "");
 
-  const selected = baseSizes.find((s) => s.label === size);
+  const selected = baseSizes.find((s) => s.key === size);
   const displayPrice = selected?.price ?? product.price;
   // When a size is selected, swap the main image to that variant's image (if any).
   const variantImage = selected?.image || null;
@@ -58,7 +61,7 @@ export default function ProductDetail({ product }) {
         name: product.name,
         price: displayPrice,
         image: effectiveGallery[0],
-        size: size || baseSizes[0].label,
+        size: selected?.label || baseSizes[0].label,
         product_id: product.id,
         product_variant_id: selected?.variant?.product_variant_id || null,
         unit_price: displayPrice,
@@ -117,11 +120,11 @@ export default function ProductDetail({ product }) {
               <div className="mt-2 flex flex-wrap gap-2">
                 {baseSizes.map((s) => (
                   <button
-                    key={s.label}
-                    onClick={() => { setSize(s.label); setSizeError(""); }}
+                    key={s.key}
+                    onClick={() => { setSize(s.key); setSizeError(""); }}
                     disabled={!s.available}
                     className={`border px-4 py-2 text-sm disabled:opacity-40 ${
-                      size === s.label ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300"
+                      size === s.key ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300"
                     }`}
                   >
                     {s.label}

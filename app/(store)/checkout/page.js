@@ -135,6 +135,8 @@ export default function CheckoutPage() {
       }
 
       const orderNumber = `ORD-${Date.now()}`;
+      // Column names must match the Orders table: subtotal (pre-discount),
+      // shipping_amount, total_amount — anything else is dropped by the API.
       const orderRes = await apiFetch("/Orders", {
         method: "POST",
         body: {
@@ -142,11 +144,11 @@ export default function CheckoutPage() {
           order_number: orderNumber,
           order_status_id: orderStatusId,
           order_date: new Date().toISOString(),
-          subtotal_price: discountedTotal,
+          subtotal: cart.subtotal,
           discount_amount: discountAmount || 0,
           tax_amount: taxAmount,
-          shipping_price: shippingPrice,
-          total_price: totalPrice,
+          shipping_amount: shippingPrice,
+          total_amount: totalPrice,
           payment_status: "pending",
           rcu: "website",
         },
@@ -198,7 +200,7 @@ export default function CheckoutPage() {
           order_id: orderId,
           order_status_id: orderStatusId,
           orderstatus: "Pending",
-          notes: "Order placed via website",
+          remarks: "Order placed via website",
           rcu: "website",
         },
       }).catch(() => null);
@@ -228,15 +230,13 @@ export default function CheckoutPage() {
         }
       }
 
-      const finalizeOrder = async (paymentStatus) => {
-        if (paymentStatus === "success") {
-          await apiFetch("/Orders", {
-            method: "PUT",
-            body: { order_id: orderId, payment_status: "success", rcu: "website" },
-          }).catch(() => null);
-        }
+      // COD goes in payment_provider (free text). payment_method_type only
+      // accepts card/upi/netbanking/wallet server-side — "cod" would 400.
+      const finalizeOrder = async () => {
         cart.clearCart();
+        cart.removeCoupon?.();
         setSuccess(true);
+        setTimeout(() => router.push("/orders"), 1500);
       };
 
       await apiFetch("/Payments", {
@@ -245,13 +245,13 @@ export default function CheckoutPage() {
           order_id: orderId,
           user_id: userId,
           amount: totalPrice,
-          payment_method: paymentMethod,
+          payment_provider: paymentMethod,
           payment_status: "pending",
           payment_date: new Date().toISOString(),
           rcu: "website",
         },
       }).catch(() => null);
-      await finalizeOrder("pending");
+      await finalizeOrder();
       return;
     } catch (err) {
       setError(err.message || "Checkout failed. Please try again.");
@@ -288,7 +288,8 @@ export default function CheckoutPage() {
                 onChange={(e) => {
                   const id = e.target.value;
                   setSelectedAddressId(id);
-                  const addr = savedAddresses.find((a) => a.address_id === id);
+                  // Dropdown values are strings; DB ids may be numbers — compare loosely.
+                  const addr = savedAddresses.find((a) => String(a.address_id) === String(id));
                   if (addr) {
                     setAddress({
                       recipient_name: addr.full_name || "",

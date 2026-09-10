@@ -108,7 +108,7 @@ function OrdersInner() {
           order_id: o.order_id,
           order_status_id: cancelled?.order_status_id || null,
           orderstatus: "Cancelled",
-          notes: "Cancelled by customer",
+          remarks: "Cancelled by customer",
           rcu: "website",
         },
       });
@@ -125,18 +125,24 @@ function OrdersInner() {
     }
   };
 
-  const openReturn = (item) => setReturnModal({ open: true, item, reason: "", busy: false, done: false, error: "" });
-  const closeReturn = () => setReturnModal({ open: false, item: null, reason: "", busy: false, done: false, error: "" });
+  const openReturn = (item, orderId) => setReturnModal({ open: true, item, orderId, reason: "", busy: false, done: false, error: "" });
+  const closeReturn = () => setReturnModal({ open: false, item: null, orderId: null, reason: "", busy: false, done: false, error: "" });
 
   const submitReturn = async (e) => {
     e.preventDefault();
     setReturnModal((m) => ({ ...m, busy: true, error: "" }));
     try {
+      // Returns API requires order_id + user_id + return_type ("full"/"partial").
+      const item = returnModal.item || {};
       await apiFetch("/Returns", {
         method: "POST",
         body: {
-          order_item_id: returnModal.item?.order_item_id,
+          order_id: returnModal.orderId || item.order_id,
+          user_id: currentUserId(),
+          order_item_id: item.order_item_id,
+          return_type: "partial",
           return_reason: returnModal.reason,
+          return_amount: (Number(item.unit_price) || 0) * (Number(item.qty) || 1),
           return_status: "requested",
           rcu: "website",
         },
@@ -145,8 +151,8 @@ function OrdersInner() {
       setReturns(Array.isArray(list) ? list : []);
       setReturnModal((m) => ({ ...m, busy: false, done: true }));
       setTimeout(closeReturn, 1500);
-    } catch {
-      setReturnModal((m) => ({ ...m, busy: false, error: "Failed to submit return request." }));
+    } catch (err) {
+      setReturnModal((m) => ({ ...m, busy: false, error: err.message || "Failed to submit return request." }));
     }
   };
 
@@ -202,7 +208,7 @@ function OrdersInner() {
           .sort((a, b) => new Date(b.event_timestamp || b.created_at || 0) - new Date(a.event_timestamp || a.created_at || 0));
         const courier = couriers.find((c) => c.courier_partner_id === shipment?.courier_partner_id);
         const totalItems = o.total_items || items.length;
-        const totalPrice = o.total_price ?? o.total ?? 0;
+        const totalPrice = o.total_amount ?? o.total_price ?? o.total ?? 0;
         return (
           <div key={o.order_id} className="mb-4 border border-neutral-200 bg-white shadow-sm">
             <div className="flex items-start justify-between bg-white px-4 py-3">
@@ -248,7 +254,7 @@ function OrdersInner() {
                           ₹{((item.unit_price || 0) * (item.qty || 0)).toLocaleString("en-IN")}
                         </span>
                         {isDelivered && !itemReturn && (
-                          <button onClick={() => openReturn(item)} className="mt-1 p-0 text-xs text-neutral-500 underline">
+                          <button onClick={() => openReturn(item, o.order_id)} className="mt-1 p-0 text-xs text-neutral-500 underline">
                             Request Return
                           </button>
                         )}
@@ -273,7 +279,7 @@ function OrdersInner() {
                   </span>
                   <p className="mt-2 text-sm"><strong>Tracking Number:</strong> {shipment.tracking_number || "N/A"}</p>
                   <p className="text-sm">
-                    <strong>Status:</strong> {events[0]?.description || events[0]?.status || shipment.shipment_status || "In Transit"}
+                    <strong>Status:</strong> {events[0]?.event_description || events[0]?.event_status || shipment.shipment_status || "In Transit"}
                   </p>
                   {events.length > 0 && (
                     <>
@@ -281,7 +287,7 @@ function OrdersInner() {
                       <ul className="mt-1 list-disc pl-5 text-xs text-neutral-600">
                         {events.slice(0, 4).map((e, i) => (
                           <li key={i}>
-                            {formatDate(e.event_timestamp || e.created_at)} — {e.description || e.status}
+                            {formatDate(e.event_timestamp || e.created_at)} — {e.event_description || e.event_status}
                           </li>
                         ))}
                       </ul>
