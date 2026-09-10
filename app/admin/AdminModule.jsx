@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch, unwrap, API_BASE_URL, revalidateSite } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
+import ActiveToggle from "@/components/ActiveToggle";
+import { useToast } from "./ToastProvider";
+import { useConfirm } from "./ConfirmProvider";
 
 // Full CRUD engine for every admin lookup/content table (registry in lib/admin.js).
 // Search across text columns, Active toggles, file uploads, FK dropdowns.
@@ -14,8 +17,7 @@ function cellText(r, c, refOptions = {}) {
   if (c.type === "checkbox") {
     const v = r[c.key];
     return v === 1 || v === true ? "Yes" : "No";
-  }
-  if (c.ref) {
+  }  if (c.ref) {
     const hit = (refOptions[c.ref] || []).find((o) => String(o.value) === String(r[c.key]));
     if (hit) return hit.label;
   }
@@ -26,6 +28,8 @@ function cellText(r, c, refOptions = {}) {
 
 export default function AdminModulePage({ module: slug, lock }) {
   const mod = adminModule(slug);
+  const toast = useToast();
+  const confirm = useConfirm();
   const [rows, setRows] = useState([]);
   const [form, setForm] = useState({});
   const [editing, setEditing] = useState(null);
@@ -198,9 +202,11 @@ export default function AdminModulePage({ module: slug, lock }) {
       if (editing) {
         await apiFetch(mod.endpoint, { method: "PUT", body: { [mod.id]: editing, ...body, luu: "ADMIN_PORTAL" } });
         setMsg("Updated.");
+        toast?.success(`${mod.title} updated.`);
       } else {
         await apiFetch(mod.endpoint, { method: "POST", body: { ...body, rcu: "ADMIN_PORTAL" } });
         setMsg("Added.");
+        toast?.success(`${mod.title} created.`);
       }
       setForm({});
       setEditing(null);
@@ -209,11 +215,11 @@ export default function AdminModulePage({ module: slug, lock }) {
     } catch (err) {
       const raw = err.message || "Save failed";
       const fk = raw.match(/table "dbo\.(\w+)"/);
-      setMsg(
-        /FOREIGN KEY/i.test(raw)
-          ? `That related record does not exist${fk ? ` (missing in ${fk[1]})` : ""}. Please pick it from the dropdown instead of typing an ID.`
-          : raw
-      );
+      const friendly = /FOREIGN KEY/i.test(raw)
+        ? `That related record does not exist${fk ? ` (missing in ${fk[1]})` : ""}. Please pick it from the dropdown instead of typing an ID.`
+        : raw;
+      setMsg(friendly);
+      toast?.error(friendly);
     }
   };
 
@@ -229,19 +235,26 @@ export default function AdminModulePage({ module: slug, lock }) {
   };
 
   const remove = async (r) => {
-    if (!window.confirm("Delete this record?")) return;
+    const singular = mod.title.replace(/s$/, "");
+    const ok = await confirm({
+      title: `Delete this ${singular}?`,
+      message: "This action cannot be undone.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch(mod.endpoint, { method: "DELETE", body: { [mod.id]: r[mod.id], luu: "ADMIN_PORTAL" } }).catch(() => null);
+    toast?.success(`${mod.title} deleted.`);
     reload();
     revalidateSite();
   };
 
-  const toggle = async (r) => {
+  const toggle = async (r, next) => {
     if (!mod.toggle) return;
-    const cur = r[mod.toggle];
-    const next = cur === 1 || cur === true ? 0 : 1;
+    const value = typeof next === "boolean" ? (next ? 1 : 0) : next;
     await apiFetch(mod.endpoint, {
       method: "PUT",
-      body: { [mod.id]: r[mod.id], [mod.toggle]: next, luu: "ADMIN_PORTAL" },
+      body: { [mod.id]: r[mod.id], [mod.toggle]: value, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     reload();
     revalidateSite();
@@ -310,8 +323,9 @@ export default function AdminModulePage({ module: slug, lock }) {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search..."
+          placeholder={`Search ${mod.title}...`}
           className="border border-neutral-300 bg-white px-3 py-2 text-sm"
+          style={{ minWidth: 200 }}
         />
       </div>
       {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
@@ -338,22 +352,36 @@ export default function AdminModulePage({ module: slug, lock }) {
         </form>
       )}
 
-      <div className="mt-4 overflow-x-auto bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      <p className="mb-2 mt-1 text-xs text-neutral-500">
+        {visible.length} record{visible.length === 1 ? "" : "s"}
+      </p>
+      <div className="overflow-x-auto bg-white shadow-sm">
+        <table className="w-full bg-white text-left text-sm">
           <thead>
-            <tr className="border-b text-xs uppercase text-neutral-500">
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
               {mod.columns.map((c) => (
                 <th key={c.key} className="p-3">{c.label}</th>
               ))}
-              <th className="p-3" />
+              <th className="w-[140px] p-3">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {visible.map((r, i) => (
-              <tr key={r[mod.id] || i} className="border-b last:border-0">
+            {visible.length === 0 ? (
+              <tr>
+                <td colSpan={mod.columns.length + 1} className="p-5 text-center text-neutral-500">
+                  No records found.
+                </td>
+              </tr>
+            ) : (
+            visible.map((r, i) => (
+              <tr key={r[mod.id] || i} className="border-b transition last:border-0 hover:bg-[#faf8f4]">
                 {mod.columns.map((c) => (
                   <td key={c.key} className="max-w-xs truncate p-3">
-                    {cellText(r, c, refOptions)}
+                    {mod.toggle && c.key === mod.toggle ? (
+                      <ActiveToggle active={r[c.key]} onToggle={(next) => toggle(r, next)} />
+                    ) : (
+                      cellText(r, c, refOptions)
+                    )}
                   </td>
                 ))}
                 <td className="whitespace-nowrap p-3 text-right">
@@ -363,11 +391,6 @@ export default function AdminModulePage({ module: slug, lock }) {
                       className="mr-3 font-semibold underline"
                     >
                       Open
-                    </button>
-                  )}
-                  {mod.toggle && (
-                    <button onClick={() => toggle(r)} className="mr-3 underline">
-                      {(r[mod.toggle] === 1 || r[mod.toggle] === true) ? "Deactivate" : "Activate"}
                     </button>
                   )}
                   {!mod.readOnly && (
@@ -380,7 +403,7 @@ export default function AdminModulePage({ module: slug, lock }) {
                   )}
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

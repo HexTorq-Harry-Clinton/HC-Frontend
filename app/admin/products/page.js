@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { apiFetch, unwrap, inr, resolveUploadUrl, API_BASE_URL, revalidateSite, friendlyError } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 import AdminToast from "@/components/AdminToast";
+import ActiveToggle from "@/components/ActiveToggle";
+import { useConfirm } from "../ConfirmProvider";
 
 const empty = { product_name: "", product_slug: "", short_description: "", description: "", base_price: "", currency_code: "INR", isactive: true };
 const TABS = ["Products", "Sizes", "Cloth Types", "Care Instructions", "Attributes"];
@@ -21,6 +23,7 @@ const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
 // product table, and inside each product: variants, media,
 // attributes and SEO stacked on one page with product auto-attached.
 export default function AdminProductsPage() {
+  const confirm = useConfirm();
   const [tab, setTab] = useState("Products");
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
@@ -29,7 +32,9 @@ export default function AdminProductsPage() {
   const [msg, setMsg] = useState("");
   const [toast, setToast] = useState(null);
   const [refresh, setRefresh] = useState(0);
-  const [workspace, setWorkspace] = useState(null);
+  // false = list, object = open workspace. (Never null: the workspace
+  // requires a saved product — create via the form first, then Open.)
+  const [workspace, setWorkspace] = useState(false);
 
   // Mount + refresh fetch: state updates happen only in the async continuation.
   useEffect(() => {
@@ -96,13 +101,34 @@ export default function AdminProductsPage() {
   };
 
   const remove = async (p) => {
-    if (!window.confirm(`Delete ${p.product_name}?`)) return;
+    const ok = await confirm({
+      title: "Delete this product?",
+      message: `${p.product_name} and its variants, media and SEO will be removed.`,
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/Products", { method: "DELETE", body: { product_id: p.product_id, luu: "ADMIN_PORTAL" } }).catch(() => null);
     reload();
   };
 
-  if (workspace) {
-    return <ProductWorkspace product={workspace} onBack={() => { setWorkspace(null); reload(); }} />;
+  const toggleProduct = async (p, next) => {
+    await apiFetch("/Products", {
+      method: "PUT",
+      body: { product_id: p.product_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
+    }).catch(() => null);
+    reload();
+  };
+
+  // workspace: false = list, object = open existing (save-first gate:
+  // only a saved product can be opened, so children always attach).
+  if (workspace !== false) {
+    return (
+      <ProductWorkspace
+        product={workspace}
+        onBack={() => { setWorkspace(false); reload(); }}
+      />
+    );
   }
 
   const needle = search.trim().toLowerCase();
@@ -166,30 +192,40 @@ export default function AdminProductsPage() {
             className="mt-4 w-full max-w-md border border-neutral-300 bg-white px-3 py-2 text-sm"
           />
 
-          <div className="mt-4 overflow-x-auto bg-white shadow-sm">
+          <p className="mb-2 mt-4 text-xs text-neutral-500">
+            {visible.length} record{visible.length === 1 ? "" : "s"}
+          </p>
+          <div className="overflow-x-auto bg-white shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b text-xs uppercase text-neutral-500">
-                  <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Price</th><th className="p-3">Active</th><th className="p-3"></th>
+                <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
+                  <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Price</th><th className="p-3">Active</th><th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {visible.map((p) => (
-                  <tr key={p.product_id} className="border-b last:border-0">
+                {visible.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-5 text-center text-neutral-500">No records found.</td>
+                  </tr>
+                ) : (
+                visible.map((p) => (
+                  <tr key={p.product_id} className="border-b transition last:border-0 hover:bg-[#faf8f4]">
                     <td className="p-3">
                       <p className="font-medium">{p.product_name}</p>
                       {p.short_description && <p className="text-xs text-neutral-500">{p.short_description}</p>}
                     </td>
                     <td className="p-3 text-neutral-500">{p.product_slug}</td>
                     <td className="p-3">{inr(p.base_price)}</td>
-                    <td className="p-3">{p.isactive === false ? "No" : "Yes"}</td>
+                    <td className="p-3">
+                      <ActiveToggle active={p.isactive} onToggle={(next) => toggleProduct(p, next)} />
+                    </td>
                     <td className="whitespace-nowrap p-3 text-right">
                       <button onClick={() => setWorkspace(p)} className="mr-3 font-semibold underline">Open</button>
                       <button onClick={() => edit(p)} className="mr-3 underline">Edit</button>
                       <button onClick={() => remove(p)} className="text-red-600 underline">Delete</button>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>
@@ -203,6 +239,7 @@ export default function AdminProductsPage() {
 // page — every record auto-attached to this product, no picking needed.
 function ProductWorkspace({ product, onBack }) {
   const pid = product.product_id;
+  const confirm = useConfirm();
   const [variants, setVariants] = useState([]);
   const [media, setMedia] = useState([]);
   const [attrValues, setAttrValues] = useState([]);
@@ -215,6 +252,7 @@ function ProductWorkspace({ product, onBack }) {
   const [refresh, setRefresh] = useState(0);
 
   const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+  const [editingVariant, setEditingVariant] = useState(null);
   const [vMediaByVariant, setVMediaByVariant] = useState({}); // {variant_id: [media, ...]}
   const [mAlt, setMAlt] = useState("");
   const [mPrimary, setMPrimary] = useState(false);
@@ -281,41 +319,70 @@ function ProductWorkspace({ product, onBack }) {
   const clothName = (id) => clothTypes.find((c) => c.cloth_type_id === id)?.cloth_type_name || id || "—";
   const attrName = (id) => attributes.find((a) => a.attribute_id === id)?.attribute_name || id;
 
-  const addVariant = async (e) => {
+  const saveVariant = async (e) => {
     e.preventDefault();
     setMsg("");
     if (!vForm.sku) {
       setMsg("SKU is required.");
       return;
     }
+    const payload = {
+      product_id: pid,
+      sku: vForm.sku,
+      variant_name: vForm.variant_name || null,
+      size_id: vForm.size_id || null,
+      cloth_type_id: vForm.cloth_type_id || null,
+      price: Number(vForm.price) || 0,
+      stock_qty: Number(vForm.stock_qty) || 0,
+    };
     try {
-      await apiFetch("/Products-Variants", {
-        method: "POST",
-        body: {
-          product_id: pid,
-          sku: vForm.sku,
-          variant_name: vForm.variant_name || null,
-          size_id: vForm.size_id || null,
-          cloth_type_id: vForm.cloth_type_id || null,
-          price: Number(vForm.price) || 0,
-          stock_qty: Number(vForm.stock_qty) || 0,
-          rcu: "ADMIN_PORTAL",
-        },
-      });
+      if (editingVariant) {
+        await apiFetch("/Products-Variants", {
+          method: "PUT",
+          body: { product_variant_id: editingVariant, ...payload, luu: "ADMIN_PORTAL" },
+        });
+        setMsg("Variant updated.");
+      } else {
+        await apiFetch("/Products-Variants", {
+          method: "POST",
+          body: { ...payload, rcu: "ADMIN_PORTAL" },
+        });
+        setMsg("Variant added.");
+      }
       setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
-      setMsg("Variant added.");
+      setEditingVariant(null);
       reload();
     } catch (err) {
-      setMsg(friendlyError(err, "Could not add variant."));
+      setMsg(friendlyError(err, "Could not save variant."));
     }
   };
 
+  const editVariant = (v) => {
+    setEditingVariant(v.product_variant_id);
+    setVForm({
+      sku: v.sku || "", variant_name: v.variant_name || "",
+      size_id: v.size_id || "", cloth_type_id: v.cloth_type_id || "",
+      price: v.price ?? "", stock_qty: v.stock_qty ?? "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const deleteVariant = async (v) => {
-    if (!window.confirm(`Delete variant ${v.sku}?`)) return;
+    const ok = await confirm({
+      title: "Delete this variant?",
+      message: `SKU ${v.sku} will be removed from ${product.product_name}.`,
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/Products-Variants", {
       method: "DELETE",
       body: { product_variant_id: v.product_variant_id, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
+    if (editingVariant === v.product_variant_id) {
+      setEditingVariant(null);
+      setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+    }
     reload();
   };
 
@@ -379,7 +446,13 @@ function ProductWorkspace({ product, onBack }) {
   };
 
   const deleteMedia = async (m) => {
-    if (!window.confirm("Delete this image?")) return;
+    const ok = await confirm({
+      title: "Delete this image?",
+      message: "The image will be removed from this product.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/Products-Media", {
       method: "DELETE",
       body: { product_media_id: m.product_media_id, luu: "ADMIN_PORTAL" },
@@ -446,7 +519,13 @@ function ProductWorkspace({ product, onBack }) {
   };
 
   const deleteVariantMedia = async (m) => {
-    if (!window.confirm("Delete this variant image?")) return;
+    const ok = await confirm({
+      title: "Delete this variant image?",
+      message: "The image will be removed from the variant.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/Products-Media", {
       method: "DELETE",
       body: { product_media_id: m.product_media_id, luu: "ADMIN_PORTAL" },
@@ -476,7 +555,13 @@ function ProductWorkspace({ product, onBack }) {
   };
 
   const deleteAttr = async (av) => {
-    if (!window.confirm("Delete this attribute value?")) return;
+    const ok = await confirm({
+      title: "Delete this attribute value?",
+      message: "The value will be removed from this product.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/Products-Attributes-Values", {
       method: "DELETE",
       body: { product_attribute_value_id: av.product_attribute_value_id, luu: "ADMIN_PORTAL" },
@@ -520,10 +605,10 @@ function ProductWorkspace({ product, onBack }) {
         <div className="mt-2 overflow-x-auto bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b text-xs uppercase text-neutral-500">
+              <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
                 <th className="p-3">SKU</th><th className="p-3">Name</th><th className="p-3">Size</th>
                 <th className="p-3">Cloth Type</th><th className="p-3">Price</th><th className="p-3">Stock</th>
-                <th className="p-3">Image (per variant)</th><th className="p-3">Actions</th>
+                <th className="p-3">Image (per variant)</th><th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -597,6 +682,7 @@ function ProductWorkspace({ product, onBack }) {
                       )}
                     </td>
                     <td className="p-3 text-right">
+                      <button onClick={() => editVariant(v)} className="mr-3 underline">Edit</button>
                       <button onClick={() => deleteVariant(v)} className="text-red-600 underline">Delete</button>
                     </td>
                   </tr>
@@ -606,8 +692,8 @@ function ProductWorkspace({ product, onBack }) {
           </table>
         </div>
       )}
-      <form onSubmit={addVariant} className="mt-3 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
-        <h3 className="font-semibold md:col-span-3">Add Variant</h3>
+      <form onSubmit={saveVariant} className="mt-3 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
+        <h3 className="font-semibold md:col-span-3">{editingVariant ? "Edit Variant" : "Add Variant"}</h3>
         <input value={vForm.sku} onChange={(e) => setVForm((f) => ({ ...f, sku: e.target.value }))} required placeholder="SKU" className={input} />
         <input value={vForm.variant_name} onChange={(e) => setVForm((f) => ({ ...f, variant_name: e.target.value }))} placeholder="Variant Name" className={input} />
         <select value={vForm.size_id} onChange={(e) => setVForm((f) => ({ ...f, size_id: e.target.value }))} className={input}>
@@ -624,8 +710,22 @@ function ProductWorkspace({ product, onBack }) {
         </select>
         <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price" className={input} />
         <input value={vForm.stock_qty} onChange={(e) => setVForm((f) => ({ ...f, stock_qty: e.target.value }))} inputMode="numeric" placeholder="Stock" className={input} />
-        <div className="md:col-span-3">
-          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Add Variant</button>
+        <div className="flex gap-2 md:col-span-3">
+          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">
+            {editingVariant ? "Update Variant" : "Add Variant"}
+          </button>
+          {editingVariant && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingVariant(null);
+                setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+              }}
+              className="border px-4 py-2 text-sm"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </form>
 
@@ -702,8 +802,8 @@ function ProductWorkspace({ product, onBack }) {
         <div className="mt-2 overflow-x-auto bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b text-xs uppercase text-neutral-500">
-                <th className="p-3">Attribute</th><th className="p-3">Value</th><th className="p-3">Actions</th>
+              <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
+                <th className="p-3">Attribute</th><th className="p-3">Value</th><th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>

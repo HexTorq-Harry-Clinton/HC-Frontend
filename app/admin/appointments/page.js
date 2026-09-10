@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
+import { useConfirm } from "../ConfirmProvider";
 
 // Appointments manager: same as the previous UI —
 // customer/date/time/status table, expandable detail,
@@ -9,6 +10,7 @@ import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 const STATUSES = ["Pending", "Approved", "Completed", "Cancelled"];
 
 export default function AdminAppointmentsManager() {
+  const confirm = useConfirm();
   const [rows, setRows] = useState([]);
   const [users, setUsers] = useState([]);
   const [dates, setDates] = useState([]);
@@ -78,7 +80,13 @@ export default function AdminAppointmentsManager() {
   };
 
   const cancel = async (r) => {
-    if (!window.confirm("Cancel this appointment?")) return;
+    const ok = await confirm({
+      title: "Cancel this appointment?",
+      message: `The appointment for ${userName(r.user_id)} will be cancelled.`,
+      confirmLabel: "Cancel Appointment",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/Custom-Appointments", {
       method: "DELETE",
       body: { appointment_id: r.appointment_id, luu: "ADMIN_PORTAL" },
@@ -96,13 +104,18 @@ export default function AdminAppointmentsManager() {
       <div className="mt-4 overflow-x-auto bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b text-xs uppercase text-neutral-500">
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
               <th className="p-3">Customer</th><th className="p-3">Name</th><th className="p-3">Date</th>
-              <th className="p-3">Time</th><th className="p-3">Status</th><th className="p-3">Actions</th>
+              <th className="p-3">Time</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => {
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-5 text-center text-neutral-500">No records found.</td>
+              </tr>
+            ) : (
+            rows.map((r) => {
               const open = expanded === r.appointment_id;
               return (
                 <Fragment key={r.appointment_id}>
@@ -147,7 +160,7 @@ export default function AdminAppointmentsManager() {
                   )}
                 </Fragment>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>

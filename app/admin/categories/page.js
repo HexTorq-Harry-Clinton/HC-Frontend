@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
+import ActiveToggle from "@/components/ActiveToggle";
+import { useConfirm } from "../ConfirmProvider";
 
 const empty = { menu_subcategory_name: "", menu_subcategory_slug: "", redirect_link: "", display_order: "", isactive: true };
 const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
@@ -11,6 +13,7 @@ const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
 // Categories & Subcategories: category tabs on top, subcategories of the
 // selected category below — new subs auto-attach to the open category.
 export default function AdminCategoriesPage() {
+  const confirm = useConfirm();
   const [cats, setCats] = useState([]);
   const [subs, setSubs] = useState([]);
   const [activeCat, setActiveCat] = useState(null);
@@ -45,7 +48,8 @@ export default function AdminCategoriesPage() {
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const current = cats.find((c) => c.menu_category_id === activeCat);
+  const sortedCats = [...cats].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+  const current = sortedCats.find((c) => c.menu_category_id === activeCat);
   const visible = subs
     .filter((s) => s.menu_category_id === activeCat)
     .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
@@ -108,7 +112,13 @@ export default function AdminCategoriesPage() {
   };
 
   const remove = async (s) => {
-    if (!window.confirm(`Delete ${s.menu_subcategory_name}?`)) return;
+    const ok = await confirm({
+      title: "Delete this subcategory?",
+      message: `${s.menu_subcategory_name} will be removed from ${current?.menu_category_name || "its category"}.`,
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/Menu-Sub-Category", {
       method: "DELETE",
       body: { menu_subcategory_id: s.menu_subcategory_id, luu: "ADMIN_PORTAL" },
@@ -116,11 +126,10 @@ export default function AdminCategoriesPage() {
     load();
   };
 
-  const toggle = async (s) => {
-    const next = s.isactive === 1 || s.isactive === true ? 0 : 1;
+  const toggle = async (s, next) => {
     await apiFetch("/Menu-Sub-Category", {
       method: "PUT",
-      body: { menu_subcategory_id: s.menu_subcategory_id, isactive: next, luu: "ADMIN_PORTAL" },
+      body: { menu_subcategory_id: s.menu_subcategory_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     load();
   };
@@ -140,9 +149,7 @@ export default function AdminCategoriesPage() {
       </details>
 
       <div className="mt-4 flex flex-wrap gap-2 border-b border-neutral-200 pb-3">
-        {cats
-          .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-          .map((c) => (
+        {sortedCats.map((c) => (
             <button
               key={c.menu_category_id}
               onClick={() => { setActiveCat(c.menu_category_id); setEditing(null); setForm(empty); }}
@@ -185,29 +192,30 @@ export default function AdminCategoriesPage() {
       <h2 className="mt-6 font-semibold">
         Subcategories {current ? `of ${current.menu_category_name}` : ""} ({visible.length})
       </h2>
+      <p className="mb-2 mt-1 text-xs text-neutral-500">
+        {visible.length} record{visible.length === 1 ? "" : "s"}
+      </p>
       <div className="mt-2 overflow-x-auto bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b text-xs uppercase text-neutral-500">
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
               <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Order</th>
-              <th className="p-3">Active</th><th className="p-3">Actions</th>
+              <th className="p-3">Active</th><th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {visible.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-5 text-center text-sm text-neutral-500">No subcategories yet.</td>
+                <td colSpan={5} className="p-5 text-center text-sm text-neutral-500">No records found.</td>
               </tr>
             ) : (
               visible.map((s) => (
-                <tr key={s.menu_subcategory_id} className="border-b last:border-0">
+                <tr key={s.menu_subcategory_id} className="border-b transition last:border-0 hover:bg-[#faf8f4]">
                   <td className="p-3 font-medium">{s.menu_subcategory_name}</td>
                   <td className="p-3 text-neutral-500">{s.menu_subcategory_slug}</td>
                   <td className="p-3">{s.display_order}</td>
                   <td className="p-3">
-                    <button onClick={() => toggle(s)} className="underline">
-                      {s.isactive === 1 || s.isactive === true ? "Yes" : "No"}
-                    </button>
+                    <ActiveToggle active={s.isactive} onToggle={(next) => toggle(s, next)} />
                   </td>
                   <td className="whitespace-nowrap p-3 text-right">
                     <button onClick={() => edit(s)} className="mr-3 underline">Edit</button>

@@ -2,10 +2,13 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
+import ActiveToggle from "@/components/ActiveToggle";
+import { useConfirm } from "../ConfirmProvider";
 
 // Users manager: same as the previous UI —
 // search, count, expand with role management, activate toggle.
 export default function AdminUsersPage() {
+  const confirm = useConfirm();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
@@ -50,11 +53,10 @@ export default function AdminUsersPage() {
       (u.phone_number || "").toLowerCase().includes(needle)
   );
 
-  const toggleActive = async (u) => {
-    const next = u.isactive === 1 || u.isactive === true ? 0 : 1;
+  const toggleActive = async (u, next) => {
     await apiFetch("/Users", {
       method: "PUT",
-      body: { user_id: u.user_id, isactive: next, luu: "ADMIN_PORTAL" },
+      body: { user_id: u.user_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     load();
     revalidateSite();
@@ -79,8 +81,14 @@ export default function AdminUsersPage() {
     revalidateSite();
   };
 
-  const removeRole = async (ur) => {
-    if (!window.confirm("Remove this role?")) return;
+  const removeRole = async (ur, label) => {
+    const ok = await confirm({
+      title: "Remove this role?",
+      message: `${label || "This role"} will be unassigned.`,
+      confirmLabel: "Remove",
+      danger: true,
+    });
+    if (!ok) return;
     await apiFetch("/User-Roles/remove", {
       method: "DELETE",
       body: { user_role_id: ur.user_role_id, luu: "ADMIN_PORTAL" },
@@ -105,13 +113,18 @@ export default function AdminUsersPage() {
       <div className="mt-4 overflow-x-auto bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b text-xs uppercase text-neutral-500">
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
               <th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Mobile</th>
-              <th className="p-3">Roles</th><th className="p-3">Active</th><th className="p-3">Actions</th>
+              <th className="p-3">Roles</th><th className="p-3">Active</th><th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {visible.map((u) => {
+            {visible.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-5 text-center text-neutral-500">No records found.</td>
+              </tr>
+            ) : (
+            visible.map((u) => {
               const open = expanded === u.user_id;
               const mine = rolesOf(u.user_id);
               const available = roles.filter((r) => !mine.some((m) => m.role_id === r.role_id));
@@ -131,9 +144,7 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
                     <td className="p-3">
-                      <button onClick={() => toggleActive(u)} className="underline">
-                        {(u.isactive === 1 || u.isactive === true) ? "Yes" : "No"}
-                      </button>
+                      <ActiveToggle active={u.isactive} onToggle={(next) => toggleActive(u, next)} />
                     </td>
                     <td className="p-3">
                       <button onClick={() => setExpanded(open ? null : u.user_id)} className="underline">
@@ -154,7 +165,7 @@ export default function AdminUsersPage() {
                             return (
                               <span key={r.role_id} className="flex items-center gap-2 border border-neutral-300 bg-white px-2 py-1 text-xs">
                                 {r.role_name || r.role_code}
-                                <button onClick={() => ur && removeRole(ur)} className="text-red-600" aria-label="Remove role">×</button>
+                                <button onClick={() => ur && removeRole(ur, r.role_name || r.role_code)} className="text-red-600" aria-label="Remove role">×</button>
                               </span>
                             );
                           })}
@@ -183,7 +194,7 @@ export default function AdminUsersPage() {
                   )}
                 </Fragment>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>
