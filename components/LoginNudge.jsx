@@ -13,7 +13,10 @@ export default function LoginNudge() {
   useEffect(() => {
     const token = localStorage.getItem("hc_token");
     const session = localStorage.getItem("hc_session");
-    if (token || session || pathname === "/login") return;
+    if (token || session || pathname === "/login") {
+      // Logged in or already on login: never show.
+      return;
+    }
     let scrolled = false;
     let timerDone = false;
     const tryShow = () => {
@@ -36,6 +39,7 @@ export default function LoginNudge() {
     };
   }, [pathname]);
 
-  if (!show) return null;
+  // Hidden while closed, on /login, or once logged in (re-checked on navigation).
+  if (!show || pathname === "/login") return null;
   return <LoginPopup onSkip={() => setShow(false)} />;
 }
