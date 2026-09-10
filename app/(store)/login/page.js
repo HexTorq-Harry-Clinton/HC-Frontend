@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
-import { saveSession, isAdminRole } from "../auth";
+import { saveSession, isAdminRole, throwIfAuthFailed } from "../auth";
 
 // Login: same structure/texts as the previous UI —
 // OTP block, "or" divider, password block with eye toggle.
@@ -35,7 +35,8 @@ export default function LoginPage() {
     setSendingOtp(true);
     setOtpMessage("");
     try {
-      await apiFetch("/Auth/OTP-Login", { method: "POST", body: { email_id: emailOrMobile.trim() } });
+      const sent = await apiFetch("/Auth/OTP-Login", { method: "POST", body: { email_id: emailOrMobile.trim() } });
+      throwIfAuthFailed(sent, "Failed to send OTP.");
       setOtpSent(true);
       setOtpMessage("OTP sent! Check your email.");
     } catch (err) {
@@ -57,6 +58,7 @@ export default function LoginPage() {
         method: "POST",
         body: { email_id: emailOrMobile.trim(), otp: otp.trim() },
       });
+      throwIfAuthFailed(res, "Invalid OTP.");
       afterLogin(saveSession(res));
     } catch (err) {
       setOtpMessage(err.message || "Invalid OTP." || "OTP verification failed.");
@@ -78,6 +80,7 @@ export default function LoginPage() {
         method: "POST",
         body: { email_id: email.trim(), password },
       });
+      throwIfAuthFailed(res, "Login failed.");
       afterLogin(saveSession(res));
     } catch (err) {
       setError(err.message || "Login failed");

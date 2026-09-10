@@ -62,5 +62,18 @@ export function isAdminRole(roleCode) {
   return rc === "ADMIN" || rc.toLowerCase().includes("admin");
 }
 
+// The auth endpoints return HTTP 200 even on failure, with the real outcome
+// in the envelope: { Status: '1'|'0', Message, Response }.
+// Throw on Status '0' so callers surface Message instead of silently
+// continuing (e.g. wrong OTP must show "Invalid OTP", not redirect home).
+export function throwIfAuthFailed(res, fallback) {
+  const body = res?.data || res || {};
+  const status = body.Status ?? body.status ?? body.success;
+  if (status === "0" || status === 0 || status === false) {
+    throw new Error(body.Message || body.message || fallback || "Request failed.");
+  }
+  return body;
+}
+
 export { Field };
 export { apiFetch };
