@@ -45,3 +45,20 @@ npm start
 - No hardcoded catalog anywhere — empty API means honest empty states, never fake products.
 - Product media resolves `~/Uploads/...` to absolute backend URLs; missing images use a local SVG placeholder.
 - Category filtering is keyword-based until the backend adds a category FK on products.
+
+## Identity contract (auth)
+
+- Backend `tbl_users` PK is `user_id`; the login envelope returns the user row
+  under `Response.user` with `Response.roles[]` and `Response.token`.
+- `saveSession()` (`app/(store)/auth.jsx`) persists `hc_token`, `hc_session="1"`,
+  `hc_user` (row + `role`/`role_code`), and `hc_role` (primary `role_code`).
+- All account pages read identity ONLY via `currentUser()` / `currentUserId()`
+  in `lib/api.js`. Never add `user.id` / `uid` / `customerId` fallbacks —
+  a mismatch must surface as logged-out, not as leaked rows.
+
+## Publishing (ISR)
+
+- Public pages prerender with `revalidate=300` as a fallback safety net.
+- Every admin mutation calls `revalidateSite()` → `POST /api/revalidate`
+  (secret-guarded), which purges the full public cache via
+  `revalidatePath("/", "layout")` — edits go live instantly.
