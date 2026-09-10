@@ -370,7 +370,9 @@ export default function AdminModulePage({ module: slug, lock }) {
                   {!mod.readOnly && (
                     <>
                       <button onClick={() => edit(r)} className="mr-3 underline">Edit</button>
-                      <button onClick={() => remove(r)} className="text-red-600 underline">Delete</button>
+                      {!mod.noDelete && (
+                        <button onClick={() => remove(r)} className="text-red-600 underline">Delete</button>
+                      )}
                     </>
                   )}
                 </td>
