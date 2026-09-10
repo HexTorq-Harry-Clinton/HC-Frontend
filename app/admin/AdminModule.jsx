@@ -34,6 +34,8 @@ export default function AdminModulePage({ module: slug, lock }) {
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(null);
   const [refOptions, setRefOptions] = useState({});
+  const [workspace, setWorkspace] = useState(null);
+  const [workspaceTab, setWorkspaceTab] = useState(0);
 
   // FK dropdown options (v1 optionsLoader pattern): loaded once per ref.
   useEffect(() => {
@@ -95,6 +97,48 @@ export default function AdminModulePage({ module: slug, lock }) {
   }, [rows, search, mod, lock]);
 
   if (!mod) return <p className="text-sm text-neutral-500">Unknown module.</p>;
+
+  // Nested workspace: open a parent row to manage its children inline.
+  // Child records auto-inherit the parent id — no picking IDs.
+  if (workspace && mod.children?.length > 0) {
+    const child = mod.children[workspaceTab] || mod.children[0];
+    const parentLabel =
+      mod.columns
+        .slice(0, 2)
+        .map((c) => workspace[c.key])
+        .filter(Boolean)
+        .join(" • ") || workspace[mod.id];
+    return (
+      <div>
+        <button onClick={() => { setWorkspace(null); reload(); }} className="text-sm underline">
+          ← Back to {mod.title}
+        </button>
+        <h1 className="mt-2 text-2xl font-bold">{parentLabel}</h1>
+        <p className="mt-1 text-xs text-neutral-500">
+          Everything created below automatically belongs to this {mod.title.slice(0, -1).toLowerCase() || "record"} — no need to pick it again.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {mod.children.map((c, i) => (
+            <button
+              key={c.slug}
+              onClick={() => setWorkspaceTab(i)}
+              className={`border px-4 py-2 text-sm font-semibold ${
+                (workspaceTab || 0) === i ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-300 bg-white"
+              }`}
+            >
+              {c.title}
+            </button>
+          ))}
+        </div>
+        <div className="mt-4" key={child.slug}>
+          <AdminModulePage
+            module={child.slug}
+            lock={{ field: child.fk, value: workspace[mod.id], label: parentLabel }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const set = (k, type) => (e) =>
     setForm((f) => ({ ...f, [k]: type === "checkbox" ? e.target.checked : e.target.value }));
@@ -284,6 +328,14 @@ export default function AdminModulePage({ module: slug, lock }) {
                   </td>
                 ))}
                 <td className="whitespace-nowrap p-3 text-right">
+                  {mod.children?.length > 0 && (
+                    <button
+                      onClick={() => { setWorkspace(r); setWorkspaceTab(0); }}
+                      className="mr-3 font-semibold underline"
+                    >
+                      Open
+                    </button>
+                  )}
                   {mod.toggle && (
                     <button onClick={() => toggle(r)} className="mr-3 underline">
                       {(r[mod.toggle] === 1 || r[mod.toggle] === true) ? "Deactivate" : "Activate"}
