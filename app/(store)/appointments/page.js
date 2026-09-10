@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, currentUserId } from "@/lib/api";
 
 // Appointments: same structure/texts/flows as the previous UI —
 // full cards with slot resolution + cancel with confirm.
@@ -26,13 +26,7 @@ export default function AppointmentsPage() {
         const dates = Array.isArray(datesRes) ? datesRes : [];
         const times = Array.isArray(timesRes) ? timesRes : [];
         const profiles = Array.isArray(profileRes) ? profileRes : [];
-        let uid = null;
-        try {
-          const stored = JSON.parse(localStorage.getItem("hc_user") || "null");
-          uid = stored?.user_id || stored?.id || null;
-        } catch {
-          uid = null;
-        }
+        const uid = currentUserId();
         const mine = uid ? all.filter((a) => a.user_id === uid) : all;
         setItems(
           mine.map((a) => {

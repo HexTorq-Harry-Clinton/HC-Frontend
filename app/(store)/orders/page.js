@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { apiFetch, unwrap, inr } from "@/lib/api";
+import { apiFetch, unwrap, inr, currentUserId } from "@/lib/api";
 
 // User-specific page: never prerender (reads ?placed= at request time).
 export const dynamic = "force-dynamic";
@@ -38,13 +38,7 @@ function OrdersInner() {
 
   const fetchAll = useCallback(async () => {
     try {
-      let uid = null;
-      try {
-        const stored = JSON.parse(localStorage.getItem("hc_user") || "null");
-        uid = stored?.user_id || stored?.id || null;
-      } catch {
-        uid = null;
-      }
+      const uid = currentUserId();
       const [profileRes, ordersRes, itemsRes, historyRes, shipmentsRes, eventsRes, couriersRes, returnsRes] =
         await Promise.all([
           apiFetch("/Profiles").then(unwrap).catch(() => []),

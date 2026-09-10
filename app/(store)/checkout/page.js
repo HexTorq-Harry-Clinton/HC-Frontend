@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/CartProvider";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, currentUser, currentUserId } from "@/lib/api";
 
 const initialAddress = {
   recipient_name: "",
@@ -44,17 +44,8 @@ export default function CheckoutPage() {
       router.push("/login");
       return;
     }
-    let uid = null;
-    let parsedUser = null;
-    try {
-      const storedUser = localStorage.getItem("hc_user");
-      if (storedUser) {
-        parsedUser = JSON.parse(storedUser);
-        uid = parsedUser.user_id || parsedUser.id;
-      }
-    } catch {
-      /* ignore */
-    }
+    let parsedUser = currentUser();
+    const uid = currentUserId();
     if (parsedUser) setUser(parsedUser);
     if (!uid) return;
     setUserId(uid);

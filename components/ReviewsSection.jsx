@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, currentUserId } from "@/lib/api";
 
 // Reviews: same structure/texts as the previous UI —
 // "Customer Reviews", average + stars + count, author/date cards,
@@ -23,13 +23,7 @@ export default function ReviewsSection({ productId, initialReviews }) {
   const submit = async (e) => {
     e.preventDefault();
     setMsg("");
-    let userId = null;
-    try {
-      const stored = JSON.parse(localStorage.getItem("hc_user") || "null");
-      userId = stored?.user_id || stored?.id || null;
-    } catch {
-      userId = null;
-    }
+    const userId = currentUserId();
     if (!userId) {
       setMsg("Please log in to write a review.");
       return;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, unwrap, API_BASE_URL } from "@/lib/api";
+import { apiFetch, unwrap, API_BASE_URL, currentUserId } from "@/lib/api";
 
 // Profile: same structure/texts/flows as the previous UI —
 // editable form with photo upload, save states, messages.
@@ -27,13 +27,7 @@ export default function ProfilePage() {
   // Mount hydration reads client-only localStorage + fetches — intentional.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    let uid = null;
-    try {
-      const parsed = JSON.parse(localStorage.getItem("hc_user") || "null");
-      uid = parsed?.user_id || parsed?.id || null;
-    } catch {
-      uid = null;
-    }
+    const uid = currentUserId();
     if (!uid) {
       setLoading(false);
       return;

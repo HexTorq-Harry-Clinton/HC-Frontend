@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, currentUserId } from "@/lib/api";
 
 const emptyAddress = {
   full_name: "",
@@ -39,26 +39,13 @@ export default function AddressesPage() {
   // Mount hydration reads client-only localStorage after paint — intentional.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    let uid = null;
-    try {
-      const parsed = JSON.parse(localStorage.getItem("hc_user") || "null");
-      uid = parsed?.user_id || parsed?.id || null;
-    } catch {
-      uid = null;
-    }
+    const uid = currentUserId();
     if (uid) load(uid);
     else setLoading(false);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const currentUid = () => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem("hc_user") || "null");
-      return parsed?.user_id || parsed?.id || null;
-    } catch {
-      return null;
-    }
-  };
+  const currentUid = () => currentUserId();
 
   const set = (k) => (e) =>
     setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));

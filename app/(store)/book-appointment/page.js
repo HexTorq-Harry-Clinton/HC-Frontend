@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, currentUser, currentUserId } from "@/lib/api";
 
 const emptyForm = {
   name: "",
@@ -37,12 +37,7 @@ export default function BookAppointmentPage() {
     }
     // User prefill reads client-only localStorage after mount — intentional.
     /* eslint-disable react-hooks/set-state-in-effect */
-    let user = {};
-    try {
-      user = JSON.parse(localStorage.getItem("hc_user") || "{}");
-    } catch {
-      user = {};
-    }
+    const user = currentUser() || {};
     setForm((prev) => ({
       ...prev,
       name: user.full_name || "",
@@ -97,13 +92,7 @@ export default function BookAppointmentPage() {
     setSubmitting(true);
     setMessage({ text: "", isError: false });
     try {
-      let user = {};
-      try {
-        user = JSON.parse(localStorage.getItem("hc_user") || "{}");
-      } catch {
-        user = {};
-      }
-      const userId = user.user_id || user.id;
+      const userId = currentUserId();
       await apiFetch("/Custom-Appointments", {
         method: "POST",
         body: { ...form, user_id: userId || null, appointment_status: "Pending", rcu: "website" },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, currentUserId } from "@/lib/api";
 
 const initialFormData = {
   name: "",
@@ -84,16 +84,10 @@ export default function CIconModal({ isOpen, onClose }) {
     setError("");
     setIsSubmitting(true);
     try {
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem("hc_user") || "null");
-      } catch {
-        user = null;
-      }
       await apiFetch("/Custom-Appointments", {
         method: "POST",
         body: {
-          user_id: user?.user_id || user?.id || null,
+          user_id: currentUserId(),
           appointment_date_slot_id: formData.dateSlotId || null,
           appointment_time_slot_id: formData.timeSlotId || null,
           name: formData.name,
