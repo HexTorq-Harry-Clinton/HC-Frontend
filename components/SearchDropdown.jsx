@@ -23,6 +23,7 @@ export default function SearchDropdown({ onClose }) {
   const timerRef = useRef(null);
   const cacheRef = useRef({});
   const dataRef = useRef(null);
+  const fetchedAtRef = useRef(0);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(EMPTY);
@@ -43,7 +44,11 @@ export default function SearchDropdown({ onClose }) {
   }, [onClose]);
 
   const loadBaseData = async () => {
-    if (dataRef.current) return dataRef.current;
+    // Cache the catalog briefly: fresh on every overlay open, and revalidates
+    // after 60s so a long-lived overlay never searches stale data.
+    if (dataRef.current && Date.now() - fetchedAtRef.current < 60000) {
+      return dataRef.current;
+    }
     const [cats, subs, prods, media] = await Promise.all([
       apiFetch("/Menu-Category").then(unwrap).catch(() => []),
       apiFetch("/Menu-Sub-Category").then(unwrap).catch(() => []),
@@ -51,6 +56,8 @@ export default function SearchDropdown({ onClose }) {
       apiFetch("/Products-Media").then(unwrap).catch(() => []),
     ]);
     dataRef.current = { cats, subs, prods, media };
+    fetchedAtRef.current = Date.now();
+    cacheRef.current = {};
     return dataRef.current;
   };
 
