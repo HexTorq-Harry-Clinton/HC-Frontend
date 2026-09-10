@@ -1,28 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, inr } from "@/lib/api";
+import { apiFetch, unwrap, inr, resolveUploadUrl, API_BASE_URL } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 
 const empty = { product_name: "", product_slug: "", short_description: "", description: "", base_price: "", currency_code: "INR", isactive: true };
+const TABS = ["Products", "Sizes", "Cloth Types", "Care Instructions", "Attributes"];
+const TAB_MODULES = {
+  Sizes: "sizes",
+  "Cloth Types": "cloth-types",
+  "Care Instructions": "care",
+  Attributes: "attributes",
+};
 
-// Admin product manager: live CRUD on /Products (the start of the
-// admin-adds-product → client-sees-it flow).
+const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
+
+// Product Management: grouped workspace like before —
+// tabs (Products/Sizes/Cloth Types/Care/Attributes) + search,
+// product table, and inside each product: variants, media,
+// attributes and SEO stacked on one page with product auto-attached.
 export default function AdminProductsPage() {
+  const [tab, setTab] = useState("Products");
   const [products, setProducts] = useState([]);
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [workspace, setWorkspace] = useState(null);
-  const [workspaceTab, setWorkspaceTab] = useState("product-variants");
-
-  const WORKSPACE_TABS = [
-    ["product-variants", "Variants"],
-    ["product-media", "Media"],
-    ["attribute-values", "Attributes"],
-    ["product-seo", "SEO"],
-  ];
 
   // Mount + refresh fetch: state updates happen only in the async continuation.
   useEffect(() => {
@@ -82,116 +87,442 @@ export default function AdminProductsPage() {
   };
 
   const remove = async (p) => {
-    if (!confirm(`Delete ${p.product_name}?`)) return;
+    if (!window.confirm(`Delete ${p.product_name}?`)) return;
     await apiFetch("/Products", { method: "DELETE", body: { product_id: p.product_id, luu: "ADMIN_PORTAL" } }).catch(() => null);
     reload();
   };
 
-  const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
-
   if (workspace) {
-    const lock = {
-      field: "product_id",
-      value: workspace.product_id,
-      label: `${workspace.product_name} (${workspace.product_slug || workspace.product_id})`,
-    };
-    return (
-      <div>
-        <button onClick={() => setWorkspace(null)} className="text-sm underline">
-          ← Back to Products
-        </button>
-        <h1 className="mt-2 text-2xl font-bold">{workspace.product_name}</h1>
-        <p className="mt-1 text-xs text-neutral-500">
-          Variants, media, attributes and SEO created here automatically belong to this product — no need to pick it again.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {WORKSPACE_TABS.map(([slug, label]) => (
-            <button
-              key={slug}
-              onClick={() => setWorkspaceTab(slug)}
-              className={`border px-4 py-2 text-sm font-semibold ${
-                workspaceTab === slug ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-300 bg-white"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="mt-4" key={workspaceTab}>
-          <AdminModulePage module={workspaceTab} lock={lock} />
-        </div>
-      </div>
-    );
+    return <ProductWorkspace product={workspace} onBack={() => { setWorkspace(null); reload(); }} />;
   }
+
+  const needle = search.trim().toLowerCase();
+  const visible = products.filter(
+    (p) =>
+      !needle ||
+      (p.product_name || "").toLowerCase().includes(needle) ||
+      (p.product_slug || "").toLowerCase().includes(needle)
+  );
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Products</h1>
-      <div className="mt-2 flex flex-wrap gap-2 text-xs">
-        {[
-          ["/admin/product-variants", "Variants"],
-          ["/admin/product-media", "Media"],
-          ["/admin/product-seo", "SEO"],
-          ["/admin/sizes", "Sizes"],
-          ["/admin/cloth-types", "Cloth Types"],
-          ["/admin/care", "Care"],
-          ["/admin/attributes", "Attributes"],
-          ["/admin/attribute-values", "Attr Values"],
-        ].map(([href, label]) => (
-          <a key={href} href={href} className="border border-neutral-300 bg-white px-3 py-1 font-semibold hover:border-neutral-950">
-            {label}
-          </a>
+      <h1 className="text-2xl font-bold">Product Management</h1>
+      <div className="mt-3 flex flex-wrap gap-2 border-b border-neutral-200 pb-3">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`border px-4 py-2 text-sm font-semibold ${
+              tab === t ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-300 bg-white"
+            }`}
+          >
+            {t}
+          </button>
         ))}
       </div>
       {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
 
-      <form onSubmit={submit} className="mt-4 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
-        <input value={form.product_name} onChange={set("product_name")} required placeholder="Product name" className={input} />
-        <input value={form.product_slug} onChange={set("product_slug")} required placeholder="slug-like-this" className={input} />
-        <input value={form.short_description} onChange={set("short_description")} placeholder="Short description" className={input} />
-        <input value={form.base_price} onChange={set("base_price")} inputMode="decimal" required placeholder="Price (INR)" className={input} />
-        <textarea value={form.description} onChange={set("description")} placeholder="Full description" rows={2} className={`${input} md:col-span-2`} />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.isactive} onChange={set("isactive")} /> Active
-        </label>
-        <div className="flex gap-2">
-          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">
-            {editing ? "Update Product" : "Add Product"}
-          </button>
-          {editing && (
-            <button type="button" onClick={() => { setEditing(null); setForm(empty); }} className="border px-4 py-2 text-sm">
-              Cancel
-            </button>
-          )}
+      {tab !== "Products" ? (
+        <div className="mt-4" key={tab}>
+          <AdminModulePage module={TAB_MODULES[tab]} />
+        </div>
+      ) : (
+        <>
+          <form onSubmit={submit} className="mt-4 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
+            <input value={form.product_name} onChange={set("product_name")} required placeholder="Product name" className={input} />
+            <input value={form.product_slug} onChange={set("product_slug")} required placeholder="slug-like-this" className={input} />
+            <input value={form.short_description} onChange={set("short_description")} placeholder="Short description" className={input} />
+            <input value={form.base_price} onChange={set("base_price")} inputMode="decimal" required placeholder="Price (INR)" className={input} />
+            <textarea value={form.description} onChange={set("description")} placeholder="Full description" rows={2} className={`${input} md:col-span-2`} />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={form.isactive} onChange={set("isactive")} /> Active
+            </label>
+            <div className="flex gap-2">
+              <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">
+                {editing ? "Update Product" : "Add Product"}
+              </button>
+              {editing && (
+                <button type="button" onClick={() => { setEditing(null); setForm(empty); }} className="border px-4 py-2 text-sm">
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products..."
+            className="mt-4 w-full max-w-md border border-neutral-300 bg-white px-3 py-2 text-sm"
+          />
+
+          <div className="mt-4 overflow-x-auto bg-white shadow-sm">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b text-xs uppercase text-neutral-500">
+                  <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Price</th><th className="p-3">Active</th><th className="p-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((p) => (
+                  <tr key={p.product_id} className="border-b last:border-0">
+                    <td className="p-3">
+                      <p className="font-medium">{p.product_name}</p>
+                      {p.short_description && <p className="text-xs text-neutral-500">{p.short_description}</p>}
+                    </td>
+                    <td className="p-3 text-neutral-500">{p.product_slug}</td>
+                    <td className="p-3">{inr(p.base_price)}</td>
+                    <td className="p-3">{p.isactive === false ? "No" : "Yes"}</td>
+                    <td className="whitespace-nowrap p-3 text-right">
+                      <button onClick={() => setWorkspace(p)} className="mr-3 font-semibold underline">Open</button>
+                      <button onClick={() => edit(p)} className="mr-3 underline">Edit</button>
+                      <button onClick={() => remove(p)} className="text-red-600 underline">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Inside a product: variants, media, attributes and SEO stacked on one
+// page — every record auto-attached to this product, no picking needed.
+function ProductWorkspace({ product, onBack }) {
+  const pid = product.product_id;
+  const [variants, setVariants] = useState([]);
+  const [media, setMedia] = useState([]);
+  const [attrValues, setAttrValues] = useState([]);
+  const [attributes, setAttributes] = useState([]);
+  const [sizes, setSizes] = useState([]);
+  const [clothTypes, setClothTypes] = useState([]);
+  const [seo, setSeo] = useState(null);
+  const [seoForm, setSeoForm] = useState({ seo_title: "", seo_description: "", seo_keywords: "", og_image_url: "" });
+  const [msg, setMsg] = useState("");
+  const [refresh, setRefresh] = useState(0);
+
+  const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+  const [mAlt, setMAlt] = useState("");
+  const [mPrimary, setMPrimary] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [aAttr, setAAttr] = useState("");
+  const [aValue, setAValue] = useState("");
+
+  useEffect(() => {
+    let live = true;
+    Promise.all([
+      apiFetch("/Products-Variants").then(unwrap).catch(() => []),
+      apiFetch("/Products-Media").then(unwrap).catch(() => []),
+      apiFetch("/Products-Attributes-Values").then(unwrap).catch(() => []),
+      apiFetch("/Products-Attributes").then(unwrap).catch(() => []),
+      apiFetch("/Products-Sizes").then(unwrap).catch(() => []),
+      apiFetch("/Products-Cloth-Types").then(unwrap).catch(() => []),
+      apiFetch("/Products-Seo").then(unwrap).catch(() => []),
+    ]).then(([v, m, av, a, s, c, seoList]) => {
+      if (!live) return;
+      const arr = (x) => (Array.isArray(x) ? x : []);
+      setVariants(arr(v).filter((x) => x.product_id === pid));
+      setMedia(arr(m).filter((x) => x.product_id === pid));
+      setAttrValues(arr(av).filter((x) => x.product_id === pid));
+      setAttributes(arr(a));
+      setSizes(arr(s));
+      setClothTypes(arr(c));
+      const mine = arr(seoList).find((x) => x.product_id === pid) || null;
+      setSeo(mine);
+      if (mine) {
+        setSeoForm({
+          seo_title: mine.seo_title || "", seo_description: mine.seo_description || "",
+          seo_keywords: mine.seo_keywords || "", og_image_url: mine.og_image_url || "",
+        });
+      }
+    }).catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [pid, refresh]);
+
+  const reload = () => setRefresh((n) => n + 1);
+  const sizeName = (id) => sizes.find((s) => s.size_id === id)?.size_name || id || "—";
+  const clothName = (id) => clothTypes.find((c) => c.cloth_type_id === id)?.cloth_type_name || id || "—";
+  const attrName = (id) => attributes.find((a) => a.attribute_id === id)?.attribute_name || id;
+
+  const addVariant = async (e) => {
+    e.preventDefault();
+    setMsg("");
+    if (!vForm.sku) {
+      setMsg("SKU is required.");
+      return;
+    }
+    try {
+      await apiFetch("/Products-Variants", {
+        method: "POST",
+        body: {
+          product_id: pid,
+          sku: vForm.sku,
+          variant_name: vForm.variant_name || null,
+          size_id: vForm.size_id || null,
+          cloth_type_id: vForm.cloth_type_id || null,
+          price: Number(vForm.price) || 0,
+          stock_qty: Number(vForm.stock_qty) || 0,
+          rcu: "ADMIN_PORTAL",
+        },
+      });
+      setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+      setMsg("Variant added.");
+      reload();
+    } catch (err) {
+      setMsg(err.message || "Could not add variant.");
+    }
+  };
+
+  const deleteVariant = async (v) => {
+    if (!window.confirm(`Delete variant ${v.sku}?`)) return;
+    await apiFetch("/Products-Variants", {
+      method: "DELETE",
+      body: { product_variant_id: v.product_variant_id, luu: "ADMIN_PORTAL" },
+    }).catch(() => null);
+    reload();
+  };
+
+  const uploadMedia = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const token = localStorage.getItem("hc_token");
+      const res = await fetch(`${API_BASE_URL}/FileUpload`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      const url = data?.data?.virtualPath || data?.virtualPath || data?.data?.url || data?.url;
+      if (!url) throw new Error("Upload did not return a URL.");
+      await apiFetch("/Products-Media", {
+        method: "POST",
+        body: {
+          product_id: pid,
+          media_type: file.type.startsWith("video") ? "video" : "image",
+          media_url: url,
+          alt_text: mAlt || product.product_name,
+          isprimary: mPrimary ? 1 : 0,
+          rcu: "ADMIN_PORTAL",
+        },
+      });
+      setMAlt("");
+      setMPrimary(false);
+      e.target.value = "";
+      setMsg("Image uploaded & attached.");
+      reload();
+    } catch (err) {
+      setMsg(err.message || "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const deleteMedia = async (m) => {
+    if (!window.confirm("Delete this image?")) return;
+    await apiFetch("/Products-Media", {
+      method: "DELETE",
+      body: { product_media_id: m.product_media_id, luu: "ADMIN_PORTAL" },
+    }).catch(() => null);
+    reload();
+  };
+
+  const addAttr = async (e) => {
+    e.preventDefault();
+    setMsg("");
+    if (!aAttr || !aValue.trim()) {
+      setMsg("Pick an attribute and enter a value.");
+      return;
+    }
+    try {
+      await apiFetch("/Products-Attributes-Values", {
+        method: "POST",
+        body: { product_id: pid, attribute_id: aAttr, attribute_value: aValue.trim(), rcu: "ADMIN_PORTAL" },
+      });
+      setAAttr("");
+      setAValue("");
+      setMsg("Attribute added.");
+      reload();
+    } catch (err) {
+      setMsg(err.message || "Could not add attribute.");
+    }
+  };
+
+  const deleteAttr = async (av) => {
+    if (!window.confirm("Delete this attribute value?")) return;
+    await apiFetch("/Products-Attributes-Values", {
+      method: "DELETE",
+      body: { product_attribute_value_id: av.product_attribute_value_id, luu: "ADMIN_PORTAL" },
+    }).catch(() => null);
+    reload();
+  };
+
+  const saveSeo = async (e) => {
+    e.preventDefault();
+    setMsg("");
+    try {
+      if (seo) {
+        await apiFetch("/Products-Seo", {
+          method: "PUT",
+          body: { product_seo_id: seo.product_seo_id, ...seoForm, luu: "ADMIN_PORTAL" },
+        });
+      } else {
+        await apiFetch("/Products-Seo", {
+          method: "POST",
+          body: { product_id: pid, ...seoForm, rcu: "ADMIN_PORTAL" },
+        });
+      }
+      setMsg("SEO saved.");
+      reload();
+    } catch (err) {
+      setMsg(err.message || "Could not save SEO.");
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={onBack} className="text-sm underline">← Back to Products</button>
+      <h1 className="mt-2 text-2xl font-bold">{product.product_name}</h1>
+      <p className="mt-1 text-xs text-neutral-500">{product.product_slug} · {inr(product.base_price)}</p>
+      {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
+
+      <h2 className="mt-6 text-lg font-bold">Variants</h2>
+      {variants.length === 0 ? (
+        <p className="mt-2 bg-white p-4 text-sm text-neutral-500 shadow-sm">No variants yet.</p>
+      ) : (
+        <div className="mt-2 overflow-x-auto bg-white shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b text-xs uppercase text-neutral-500">
+                <th className="p-3">SKU</th><th className="p-3">Name</th><th className="p-3">Size</th>
+                <th className="p-3">Cloth Type</th><th className="p-3">Price</th><th className="p-3">Stock</th><th className="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variants.map((v) => (
+                <tr key={v.product_variant_id} className="border-b last:border-0">
+                  <td className="p-3 font-medium">{v.sku}</td>
+                  <td className="p-3">{v.variant_name || "—"}</td>
+                  <td className="p-3">{sizeName(v.size_id)}</td>
+                  <td className="p-3">{clothName(v.cloth_type_id)}</td>
+                  <td className="p-3">{inr(v.price)}</td>
+                  <td className="p-3">{v.stock_qty}</td>
+                  <td className="p-3 text-right">
+                    <button onClick={() => deleteVariant(v)} className="text-red-600 underline">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <form onSubmit={addVariant} className="mt-3 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
+        <h3 className="font-semibold md:col-span-3">Add Variant</h3>
+        <input value={vForm.sku} onChange={(e) => setVForm((f) => ({ ...f, sku: e.target.value }))} required placeholder="SKU" className={input} />
+        <input value={vForm.variant_name} onChange={(e) => setVForm((f) => ({ ...f, variant_name: e.target.value }))} placeholder="Variant Name" className={input} />
+        <select value={vForm.size_id} onChange={(e) => setVForm((f) => ({ ...f, size_id: e.target.value }))} className={input}>
+          <option value="">Size — none —</option>
+          {sizes.map((s) => (
+            <option key={s.size_id} value={s.size_id}>{s.size_name}</option>
+          ))}
+        </select>
+        <select value={vForm.cloth_type_id} onChange={(e) => setVForm((f) => ({ ...f, cloth_type_id: e.target.value }))} className={input}>
+          <option value="">Cloth Type — none —</option>
+          {clothTypes.map((c) => (
+            <option key={c.cloth_type_id} value={c.cloth_type_id}>{c.cloth_type_name}</option>
+          ))}
+        </select>
+        <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price" className={input} />
+        <input value={vForm.stock_qty} onChange={(e) => setVForm((f) => ({ ...f, stock_qty: e.target.value }))} inputMode="numeric" placeholder="Stock" className={input} />
+        <div className="md:col-span-3">
+          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Add Variant</button>
         </div>
       </form>
 
-      <div className="mt-6 overflow-x-auto bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b text-xs uppercase text-neutral-500">
-              <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Price</th><th className="p-3">Active</th><th className="p-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.product_id} className="border-b last:border-0">
-                <td className="p-3 font-medium">{p.product_name}</td>
-                <td className="p-3 text-neutral-500">{p.product_slug}</td>
-                <td className="p-3">{inr(p.base_price)}</td>
-                <td className="p-3">{p.isactive === false ? "No" : "Yes"}</td>
-                <td className="p-3 text-right">
-                  <button onClick={() => { setWorkspace(p); setWorkspaceTab("product-variants"); }} className="mr-3 font-semibold underline">
-                    Open
-                  </button>
-                  <button onClick={() => edit(p)} className="mr-3 underline">Edit</button>
-                  <button onClick={() => remove(p)} className="text-red-600 underline">Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <h2 className="mt-8 text-lg font-bold">Images / Media</h2>
+      {media.length === 0 ? (
+        <p className="mt-2 bg-white p-4 text-sm text-neutral-500 shadow-sm">No images yet.</p>
+      ) : (
+        <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {media.map((m) => (
+            <div key={m.product_media_id} className="relative border border-neutral-200 bg-white p-2 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={resolveUploadUrl(m.media_url)} alt={m.alt_text || product.product_name} style={{ height: 140, width: "100%", objectFit: "cover" }} />
+              <p className="mt-1 truncate text-xs">{m.alt_text || "—"}{m.isprimary ? " • Primary" : ""}</p>
+              <button onClick={() => deleteMedia(m)} className="mt-1 text-xs text-red-600 underline">Delete</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="mt-3 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
+        <input value={mAlt} onChange={(e) => setMAlt(e.target.value)} placeholder="Alt Text" className={input} />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} /> Set as primary
+        </label>
+        <label className="flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-4 py-2 text-sm font-semibold">
+          {uploading ? "Uploading..." : "Upload Image (uploads & attaches automatically)"}
+          <input type="file" accept="image/*,video/*" onChange={uploadMedia} disabled={uploading} className="hidden" />
+        </label>
+        <p className="text-xs text-neutral-500 md:col-span-3">JPG, PNG, WEBP, GIF images or MP4, WEBM, MOV videos.</p>
       </div>
+
+      <h2 className="mt-8 text-lg font-bold">Attributes</h2>
+      <form onSubmit={addAttr} className="mt-2 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
+        <select value={aAttr} onChange={(e) => setAAttr(e.target.value)} className={input}>
+          <option value="">-- select attribute --</option>
+          {attributes.map((a) => (
+            <option key={a.attribute_id} value={a.attribute_id}>{a.attribute_name}</option>
+          ))}
+        </select>
+        <input value={aValue} onChange={(e) => setAValue(e.target.value)} placeholder="Value" className={input} />
+        <div>
+          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Add</button>
+        </div>
+      </form>
+      {attrValues.length === 0 ? (
+        <p className="mt-2 bg-white p-4 text-sm text-neutral-500 shadow-sm">No attribute values yet.</p>
+      ) : (
+        <div className="mt-2 overflow-x-auto bg-white shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b text-xs uppercase text-neutral-500">
+                <th className="p-3">Attribute</th><th className="p-3">Value</th><th className="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attrValues.map((av) => (
+                <tr key={av.product_attribute_value_id} className="border-b last:border-0">
+                  <td className="p-3">{attrName(av.attribute_id)}</td>
+                  <td className="p-3">{av.attribute_value}</td>
+                  <td className="p-3 text-right">
+                    <button onClick={() => deleteAttr(av)} className="text-red-600 underline">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <h2 className="mt-8 text-lg font-bold">SEO</h2>
+      <form onSubmit={saveSeo} className="mt-2 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
+        <input value={seoForm.seo_title} onChange={(e) => setSeoForm((f) => ({ ...f, seo_title: e.target.value }))} placeholder="SEO Title" className={input} />
+        <input value={seoForm.seo_keywords} onChange={(e) => setSeoForm((f) => ({ ...f, seo_keywords: e.target.value }))} placeholder="Keywords" className={input} />
+        <textarea value={seoForm.seo_description} onChange={(e) => setSeoForm((f) => ({ ...f, seo_description: e.target.value }))} placeholder="SEO Description" rows={2} className={`${input} md:col-span-2`} />
+        <input value={seoForm.og_image_url} onChange={(e) => setSeoForm((f) => ({ ...f, og_image_url: e.target.value }))} placeholder="OG Image URL" className={`${input} md:col-span-2`} />
+        <div className="md:col-span-2">
+          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Save SEO</button>
+        </div>
+      </form>
     </div>
   );
 }
