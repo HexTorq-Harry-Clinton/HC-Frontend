@@ -51,7 +51,12 @@ export default function CartPage() {
               <div className="flex-1">
                 <h5 className="font-medium">{i.name}</h5>
                 {i.size && <p className="text-xs text-neutral-500">Size: {i.size}</p>}
-                <p className="mt-1">₹{Number(i.price).toLocaleString("en-IN")}</p>
+                <p className="mt-1 text-sm text-neutral-600">
+                  ₹{Number(i.price).toLocaleString("en-IN")} × {i.qty || 1} ={" "}
+                  <span className="font-bold text-neutral-900">
+                    ₹{(Number(i.price) * (i.qty || 1)).toLocaleString("en-IN")}
+                  </span>
+                </p>
                 <div className="mt-2 flex items-center gap-2 text-sm">
                   <button onClick={() => cart.updateQty(i.id, (i.qty || 1) - 1)} className="border border-neutral-300 px-2">-</button>
                   <span>{i.qty || 1}</span>
