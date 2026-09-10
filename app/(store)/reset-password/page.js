@@ -31,7 +31,7 @@ function ResetInner() {
     try {
       const res = await apiFetch("/Auth/Forgot-Password-Confirm", {
         method: "POST",
-        body: { email_id: email, reset_token: token, new_password: password, rcu: "website" },
+        body: { email_id: email, transaction_id: token, new_password: password, luu: "website" },
       });
       const data = res?.data || res;
       if (data?.Status === "1" || data?.Status === "true" || data?.Status === true || data?.success === true) {
