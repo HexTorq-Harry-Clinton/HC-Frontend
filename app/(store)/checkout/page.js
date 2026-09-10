@@ -28,7 +28,8 @@ export default function CheckoutPage() {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [address, setAddress] = useState(initialAddress);
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  // Cash on Delivery is currently the only payment method.
+  const paymentMethod = "cod";
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -238,26 +239,19 @@ export default function CheckoutPage() {
         setSuccess(true);
       };
 
-      if (paymentMethod === "cod") {
-        await apiFetch("/Payments", {
-          method: "POST",
-          body: {
-            order_id: orderId,
-            user_id: userId,
-            amount: totalPrice,
-            payment_method: paymentMethod,
-            payment_status: "pending",
-            payment_date: new Date().toISOString(),
-            rcu: "website",
-          },
-        }).catch(() => null);
-        await finalizeOrder("pending");
-        return;
-      }
-
-      // Online payment via Razorpay (backend endpoints pending — same as before).
-      setError("Payment provider is not ready. Please try Cash on Delivery or contact support.");
-      setPlacing(false);
+      await apiFetch("/Payments", {
+        method: "POST",
+        body: {
+          order_id: orderId,
+          user_id: userId,
+          amount: totalPrice,
+          payment_method: paymentMethod,
+          payment_status: "pending",
+          payment_date: new Date().toISOString(),
+          rcu: "website",
+        },
+      }).catch(() => null);
+      await finalizeOrder("pending");
       return;
     } catch (err) {
       setError(err.message || "Checkout failed. Please try again.");
@@ -369,12 +363,9 @@ export default function CheckoutPage() {
             )}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">Payment Method</label>
-              <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className={inputCls}>
-                <option value="card">Credit / Debit Card</option>
-                <option value="upi">UPI</option>
-                <option value="cod">Cash on Delivery</option>
-                <option value="netbanking">Net Banking</option>
-              </select>
+              <p className="border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm font-semibold">
+                Cash on Delivery
+              </p>
             </div>
             <button type="submit" disabled={placing} className="btn-primary w-full disabled:opacity-50">
               {placing ? "Placing Order..." : "Place Order"}
