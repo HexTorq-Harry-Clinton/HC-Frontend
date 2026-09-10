@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, inr, resolveUploadUrl, API_BASE_URL, revalidateSite } from "@/lib/api";
+import { apiFetch, unwrap, inr, resolveUploadUrl, API_BASE_URL, revalidateSite, friendlyError } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
+import AdminToast from "@/components/AdminToast";
 
 const empty = { product_name: "", product_slug: "", short_description: "", description: "", base_price: "", currency_code: "INR", isactive: true };
 const TABS = ["Products", "Sizes", "Cloth Types", "Care Instructions", "Attributes"];
@@ -26,6 +27,7 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState("");
+  const [toast, setToast] = useState(null);
   const [refresh, setRefresh] = useState(0);
   const [workspace, setWorkspace] = useState(null);
 
@@ -63,18 +65,22 @@ export default function AdminProductsPage() {
           body: { product_id: editing, ...form, base_price: Number(form.base_price) || 0, luu: "ADMIN_PORTAL" },
         });
         setMsg("Product updated.");
+        setToast({ type: "ok", text: "Product updated." });
       } else {
         await apiFetch("/Products", {
           method: "POST",
           body: { ...form, base_price: Number(form.base_price) || 0, rcu: "ADMIN_PORTAL" },
         });
         setMsg("Product added — it is now live on the storefront.");
+        setToast({ type: "ok", text: "Product added — live on the storefront." });
       }
       setForm(empty);
       setEditing(null);
       reload();
     } catch (err) {
-      setMsg(err.message || "Save failed");
+      const friendly = friendlyError(err, "Save failed");
+      setMsg(friendly);
+      setToast({ type: "error", text: friendly });
     }
   };
 
@@ -109,6 +115,7 @@ export default function AdminProductsPage() {
 
   return (
     <div>
+      <AdminToast toast={toast} onDone={() => setToast(null)} />
       <h1 className="text-2xl font-bold">Product Management</h1>
       <div className="mt-3 flex flex-wrap gap-2 border-b border-neutral-200 pb-3">
         {TABS.map((t) => (
@@ -299,7 +306,7 @@ function ProductWorkspace({ product, onBack }) {
       setMsg("Variant added.");
       reload();
     } catch (err) {
-      setMsg(err.message || "Could not add variant.");
+      setMsg(friendlyError(err, "Could not add variant."));
     }
   };
 
@@ -365,7 +372,7 @@ function ProductWorkspace({ product, onBack }) {
       setMsg("Image uploaded & attached.");
       reload();
     } catch (err) {
-      setMsg(err.message || "Upload failed.");
+      setMsg(friendlyError(err, "Upload failed."));
     } finally {
       setUploading(false);
     }
@@ -432,7 +439,7 @@ function ProductWorkspace({ product, onBack }) {
       setMsg("Variant image uploaded.");
       reload();
     } catch (err) {
-      setMsg(err.message || "Variant upload failed.");
+      setMsg(friendlyError(err, "Variant upload failed."));
     } finally {
       setVUploadingId(null);
     }
@@ -464,7 +471,7 @@ function ProductWorkspace({ product, onBack }) {
       setMsg("Attribute added.");
       reload();
     } catch (err) {
-      setMsg(err.message || "Could not add attribute.");
+      setMsg(friendlyError(err, "Could not add attribute."));
     }
   };
 
@@ -495,7 +502,7 @@ function ProductWorkspace({ product, onBack }) {
       setMsg("SEO saved.");
       reload();
     } catch (err) {
-      setMsg(err.message || "Could not save SEO.");
+      setMsg(friendlyError(err, "Could not save SEO."));
     }
   };
 
