@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, subscribeNewsletter } from "@/lib/api";
 
 // Footer: exact structure/order/texts of the previous UI (Tailwind styling).
 export default function Footer() {
@@ -81,15 +81,8 @@ export default function Footer() {
   };
 
   const handleNewsletterSubscribe = async () => {
-    if (!newsletterEmail || !newsletterEmail.includes("@")) {
-      setNewsletterStatus({ message: "Please enter a valid email.", isError: true });
-      return;
-    }
     try {
-      await apiFetch("/Newsletter-Subscriptions", {
-        method: "POST",
-        body: { emailid: newsletterEmail, subscription_status: "subscribed", rcu: "website" },
-      });
+      await subscribeNewsletter(newsletterEmail);
       setNewsletterStatus({ message: "Thank you for subscribing!", isError: false });
       setNewsletterEmail("");
     } catch (err) {

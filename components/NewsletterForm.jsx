@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { subscribeNewsletter } from "@/lib/api";
 
-// Newsletter signup wired to /Newsletter-Subscriptions. Used in footer + home.
+// Newsletter signup — duplicates show "already subscribed", never raw errors.
 export default function NewsletterForm({ dark = false }) {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
@@ -13,14 +13,11 @@ export default function NewsletterForm({ dark = false }) {
     e.preventDefault();
     setMsg("");
     try {
-      await apiFetch("/Newsletter-Subscriptions", {
-        method: "POST",
-        body: { email_id: email, rcu: "website" },
-      });
+      await subscribeNewsletter(email);
       setDone(true);
-      setMsg("Welcome to the circle. Watch your inbox.");
+      setMsg("Thank you for subscribing!");
     } catch (err) {
-      setMsg(err.message || "Could not subscribe. Try again.");
+      setMsg(err.message || "Subscription failed. Please try again.");
     }
   };
 
