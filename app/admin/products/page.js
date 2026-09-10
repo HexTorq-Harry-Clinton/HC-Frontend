@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap, inr } from "@/lib/api";
+import AdminModulePage from "../AdminModule";
 
 const empty = { product_name: "", product_slug: "", short_description: "", description: "", base_price: "", currency_code: "INR", isactive: true };
 
@@ -13,6 +14,15 @@ export default function AdminProductsPage() {
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [workspace, setWorkspace] = useState(null);
+  const [workspaceTab, setWorkspaceTab] = useState("product-variants");
+
+  const WORKSPACE_TABS = [
+    ["product-variants", "Variants"],
+    ["product-media", "Media"],
+    ["attribute-values", "Attributes"],
+    ["product-seo", "SEO"],
+  ];
 
   // Mount + refresh fetch: state updates happen only in the async continuation.
   useEffect(() => {
@@ -79,6 +89,41 @@ export default function AdminProductsPage() {
 
   const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
 
+  if (workspace) {
+    const lock = {
+      field: "product_id",
+      value: workspace.product_id,
+      label: `${workspace.product_name} (${workspace.product_slug || workspace.product_id})`,
+    };
+    return (
+      <div>
+        <button onClick={() => setWorkspace(null)} className="text-sm underline">
+          ← Back to Products
+        </button>
+        <h1 className="mt-2 text-2xl font-bold">{workspace.product_name}</h1>
+        <p className="mt-1 text-xs text-neutral-500">
+          Variants, media, attributes and SEO created here automatically belong to this product — no need to pick it again.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {WORKSPACE_TABS.map(([slug, label]) => (
+            <button
+              key={slug}
+              onClick={() => setWorkspaceTab(slug)}
+              className={`border px-4 py-2 text-sm font-semibold ${
+                workspaceTab === slug ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-300 bg-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-4" key={workspaceTab}>
+          <AdminModulePage module={workspaceTab} lock={lock} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Products</h1>
@@ -136,6 +181,9 @@ export default function AdminProductsPage() {
                 <td className="p-3">{inr(p.base_price)}</td>
                 <td className="p-3">{p.isactive === false ? "No" : "Yes"}</td>
                 <td className="p-3 text-right">
+                  <button onClick={() => { setWorkspace(p); setWorkspaceTab("product-variants"); }} className="mr-3 font-semibold underline">
+                    Open
+                  </button>
                   <button onClick={() => edit(p)} className="mr-3 underline">Edit</button>
                   <button onClick={() => remove(p)} className="text-red-600 underline">Delete</button>
                 </td>

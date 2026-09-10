@@ -2,23 +2,29 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch, unwrap, API_BASE_URL } from "@/lib/api";
-import { adminModule } from "@/lib/admin";
+import { adminModule, REFS } from "@/lib/admin";
 
 // Full CRUD engine for every admin lookup/content table (registry in lib/admin.js).
-// Search across text columns, Active toggles, file uploads, select options.
+// Search across text columns, Active toggles, file uploads, FK dropdowns.
+// lock={{field, value, label}} nests creation inside a parent entry:
+// rows auto-filter to the parent and new records inherit its id.
 const inputCls = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
 
-function cellText(r, c) {
+function cellText(r, c, refOptions = {}) {
   if (c.type === "checkbox") {
     const v = r[c.key];
     return v === 1 || v === true ? "Yes" : "No";
+  }
+  if (c.ref) {
+    const hit = (refOptions[c.ref] || []).find((o) => String(o.value) === String(r[c.key]));
+    if (hit) return hit.label;
   }
   const v = r[c.key];
   if (v === null || v === undefined || v === "") return "—";
   return String(v);
 }
 
-export default function AdminModulePage({ module: slug }) {
+export default function AdminModulePage({ module: slug, lock }) {
   const mod = adminModule(slug);
   const [rows, setRows] = useState([]);
   const [form, setForm] = useState({});
@@ -27,6 +33,36 @@ export default function AdminModulePage({ module: slug }) {
   const [refresh, setRefresh] = useState(0);
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(null);
+  const [refOptions, setRefOptions] = useState({});
+
+  // FK dropdown options (v1 optionsLoader pattern): loaded once per ref.
+  useEffect(() => {
+    if (!mod) return undefined;
+    const refs = [...new Set(mod.columns.filter((c) => c.ref).map((c) => c.ref))];
+    let live = true;
+    Promise.all(
+      refs.map((r) =>
+        apiFetch(REFS[r].endpoint)
+          .then(unwrap)
+          .then((list) => [r, Array.isArray(list) ? list : []])
+          .catch(() => [r, []])
+      )
+    ).then((pairs) => {
+      if (!live) return;
+      const map = {};
+      pairs.forEach(([r, list]) => {
+        const def = REFS[r];
+        map[r] = list.map((row) => ({
+          value: row[def.id],
+          label: def.labels.map((k) => row[k]).find((v) => v) || row[def.id],
+        }));
+      });
+      setRefOptions(map);
+    });
+    return () => {
+      live = false;
+    };
+  }, [mod]);
 
   // Mount + refresh fetch: state updates happen only in the async continuation.
   // (The parent renders <AdminModulePage key={module}> so switching modules
@@ -50,12 +86,13 @@ export default function AdminModulePage({ module: slug }) {
   const reload = () => setRefresh((n) => n + 1);
 
   const visible = useMemo(() => {
+    const base = lock ? rows.filter((r) => String(r[lock.field]) === String(lock.value)) : rows;
     const needle = search.trim().toLowerCase();
-    if (!needle || !mod) return rows;
-    return rows.filter((r) =>
+    if (!needle || !mod) return base;
+    return base.filter((r) =>
       mod.columns.some((c) => String(r[c.key] ?? "").toLowerCase().includes(needle))
     );
-  }, [rows, search, mod]);
+  }, [rows, search, mod, lock]);
 
   if (!mod) return <p className="text-sm text-neutral-500">Unknown module.</p>;
 
@@ -93,6 +130,7 @@ export default function AdminModulePage({ module: slug }) {
     e.preventDefault();
     setMsg("");
     const body = { ...form };
+    if (lock) body[lock.field] = lock.value;
     mod.columns.forEach((c) => {
       if (c.type === "checkbox") {
         const v = body[c.key];
@@ -151,11 +189,12 @@ export default function AdminModulePage({ module: slug }) {
       return <input type="checkbox" checked={!!form[c.key]} onChange={set(c.key, "checkbox")} className="ml-2" />;
     }
     if (c.type === "select") {
+      const opts = c.ref ? refOptions[c.ref] || [] : c.options || [];
       return (
-        <select value={form[c.key] || ""} onChange={set(c.key)} className={`${inputCls} mt-1 font-normal`}>
-          <option value="">Select</option>
-          {(c.options || []).map((o) => (
-            <option key={o} value={o}>{o}</option>
+        <select value={form[c.key] || ""} onChange={set(c.key)} required={!!c.required} className={`${inputCls} mt-1 font-normal`}>
+          <option value="">Select {c.label}</option>
+          {opts.map((o) => (
+            <option key={o.value} value={o.value}>{typeof o === "string" ? o : o.label}</option>
           ))}
         </select>
       );
@@ -206,7 +245,12 @@ export default function AdminModulePage({ module: slug }) {
 
       {!mod.readOnly && (
         <form onSubmit={submit} className="mt-4 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
-          {mod.columns.map((c) => (
+          {lock && (
+            <p className="bg-neutral-100 p-2 text-xs font-semibold md:col-span-2">
+              Adding to: {lock.label}
+            </p>
+          )}
+          {mod.columns.filter((c) => !lock || c.key !== lock.field).map((c) => (
             <label key={c.key} className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${c.type === "textarea" ? "md:col-span-2" : ""}`}>
               {c.label}
               {renderField(c)}
@@ -236,7 +280,7 @@ export default function AdminModulePage({ module: slug }) {
               <tr key={r[mod.id] || i} className="border-b last:border-0">
                 {mod.columns.map((c) => (
                   <td key={c.key} className="max-w-xs truncate p-3">
-                    {cellText(r, c)}
+                    {cellText(r, c, refOptions)}
                   </td>
                 ))}
                 <td className="whitespace-nowrap p-3 text-right">
