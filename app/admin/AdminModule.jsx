@@ -175,6 +175,19 @@ export default function AdminModulePage({ module: slug, lock }) {
     setMsg("");
     const body = { ...form };
     if (lock) body[lock.field] = lock.value;
+    // Guard: FK dropdowns must hold a value from the loaded options.
+    // This makes an FK-conflict insert impossible from this UI.
+    for (const c of mod.columns) {
+      if (lock && c.key === lock.field) continue;
+      if (c.type === "select" && c.ref) {
+        const opts = refOptions[c.ref] || [];
+        const v = body[c.key];
+        if (!v || (opts.length > 0 && !opts.some((o) => String(o.value) === String(v)))) {
+          setMsg(`Please select a valid ${c.label} from the dropdown.`);
+          return;
+        }
+      }
+    }
     mod.columns.forEach((c) => {
       if (c.type === "checkbox") {
         const v = body[c.key];
@@ -193,7 +206,13 @@ export default function AdminModulePage({ module: slug, lock }) {
       setEditing(null);
       reload();
     } catch (err) {
-      setMsg(err.message || "Save failed");
+      const raw = err.message || "Save failed";
+      const fk = raw.match(/table "dbo\.(\w+)"/);
+      setMsg(
+        /FOREIGN KEY/i.test(raw)
+          ? `That related record does not exist${fk ? ` (missing in ${fk[1]})` : ""}. Please pick it from the dropdown instead of typing an ID.`
+          : raw
+      );
     }
   };
 
@@ -235,12 +254,19 @@ export default function AdminModulePage({ module: slug, lock }) {
     if (c.type === "select") {
       const opts = c.ref ? refOptions[c.ref] || [] : c.options || [];
       return (
-        <select value={form[c.key] || ""} onChange={set(c.key)} required={!!c.required} className={`${inputCls} mt-1 font-normal`}>
-          <option value="">Select {c.label}</option>
-          {opts.map((o) => (
-            <option key={o.value} value={o.value}>{typeof o === "string" ? o : o.label}</option>
-          ))}
-        </select>
+        <span className="mt-1 block font-normal">
+          <select value={form[c.key] || ""} onChange={set(c.key)} required={!!c.required} className={inputCls}>
+            <option value="">Select {c.label}</option>
+            {opts.map((o) => (
+              <option key={o.value} value={o.value}>{typeof o === "string" ? o : o.label}</option>
+            ))}
+          </select>
+          {c.ref && opts.length === 0 && (
+            <span className="mt-1 block text-xs text-amber-700">
+              Options could not be loaded — check the API, then refresh. Saving is blocked until you pick from the list.
+            </span>
+          )}
+        </span>
       );
     }
     if (c.type === "upload") {
