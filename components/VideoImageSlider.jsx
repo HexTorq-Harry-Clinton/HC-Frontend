@@ -5,6 +5,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
 
+const FALLBACK_SLIDES = [
+  {
+    src: "/brand/logo-black.png",
+    alt: "Harry Clinton Atelier",
+    redirect: "/suits",
+  },
+];
+
 // Hero carousel: same behavior as the previous UI — arrows, dots, autoplay,
 // pause on hover, slide counter. Slides come from the Image-Sliders API
 // (all imagery is backend-served by design).
@@ -14,6 +22,7 @@ export default function VideoImageSlider() {
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [failed, setFailed] = useState({});
   const timer = useRef(null);
 
   useEffect(() => {
@@ -29,11 +38,12 @@ export default function VideoImageSlider() {
             alt: item.title || item.alt_text || "Harry Clinton",
             redirect: item.redirect_link || null,
           }))
-          .filter((s) => s.src);
-        setSlides(list);
+          .filter((s) => s.src && !s.src.includes("cdn.example.com") && !s.src.includes("example.com"));
+        // If backend has no valid slides (all filtered or empty), fall back to local brand asset so hero is never black.
+        setSlides(list.length > 0 ? list : FALLBACK_SLIDES);
       })
       .catch(() => {
-        if (live) setSlides([]);
+        if (live) setSlides(FALLBACK_SLIDES);
       })
       .finally(() => {
         if (live) setLoading(false);
@@ -69,7 +79,12 @@ export default function VideoImageSlider() {
     );
   }
 
+  // Effective slides with per-item broken-image fallback
+  const effectiveSlides = slides.map((s, i) => (failed[i] ? FALLBACK_SLIDES[0] : s));
+
   if (slides.length === 0) return null;
+
+  const current = effectiveSlides[index] || FALLBACK_SLIDES[0];
 
   return (
     <div
@@ -77,19 +92,32 @@ export default function VideoImageSlider() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="relative aspect-[16/7] w-full">
+      <div className="relative aspect-[16/7] w-full bg-neutral-900">
         <AnimatePresence mode="popLayout">
           <motion.div
-            key={index}
+            key={`${index}-${failed[index] ? "fb" : "ok"}`}
             className="absolute inset-0 cursor-pointer"
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -60 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            onClick={() => slides[index].redirect && router.push(slides[index].redirect)}
+            onClick={() => current.redirect && router.push(current.redirect)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={slides[index].src} alt={slides[index].alt} className="h-full w-full object-cover" loading={index === 0 ? "eager" : "lazy"} />
+            <img
+              src={current.src}
+              alt={current.alt}
+              className="h-full w-full object-cover"
+              loading={index === 0 ? "eager" : "lazy"}
+              onError={() => {
+                if (!failed[index]) setFailed((m) => ({ ...m, [index]: true }));
+              }}
+            />
+            {failed[index] && (
+              <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/70 text-white">
+                <span className="rounded bg-white/15 px-3 py-1 text-xs tracking-widest">HARRY CLINTON</span>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
         <button type="button" aria-label="Previous slide" onClick={() => go(-1)} className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-3 py-2 text-lg shadow hover:bg-white">

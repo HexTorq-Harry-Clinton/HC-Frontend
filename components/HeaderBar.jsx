@@ -60,9 +60,16 @@ export default function HeaderBar({ categories }) {
           </div>
         </div>
 
-        <div className="logo mx-auto text-center">
-          <Link href="/" aria-label="Harry Clinton home">
-            <Image src="/brand/logo-black.png" alt="Logo" width={150} height={40} priority />
+        <div className="logo mx-auto flex justify-center text-center">
+          <Link href="/" aria-label="Harry Clinton home" className="block">
+            <Image
+              src="/brand/logo-black.png"
+              alt="Harry Clinton"
+              width={140}
+              height={36}
+              priority
+              style={{ width: "140px", height: "auto", maxWidth: "38vw", objectFit: "contain" }}
+            />
           </Link>
         </div>
 

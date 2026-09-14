@@ -31,6 +31,10 @@ export default function ShowcaseCarousel({
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  const [failed, setFailed] = useState({});
+
+  const isPlaceholderUrl = (u) => !u || u.includes("cdn.example.com") || u.includes("example.com");
+
   useEffect(() => {
     let live = true;
     const fetchData = async () => {
@@ -41,7 +45,9 @@ export default function ShowcaseCarousel({
         ]);
         if (!live) return;
         const entries = Array.isArray(entriesRes) ? entriesRes : [];
-        const media = Array.isArray(mediaRes) ? mediaRes : [];
+        const rawMedia = Array.isArray(mediaRes) ? mediaRes : [];
+        // Drop placeholder CDN entries that always 404 — they make the carousel render broken alt text (screenshot #4).
+        const media = rawMedia.filter((m) => !isPlaceholderUrl(m.media_url || m.image_url));
         const mapped =
           media.length > 0
             ? media.map((m) => ({
@@ -49,12 +55,14 @@ export default function ShowcaseCarousel({
                 text: m.alt_text || title,
                 link: m.redirect_link || null,
               }))
-            : entries.map((e) => ({
-                img: resolveUploadUrl(e.image_url || e.media_url),
-                text: e.title || title,
-                link: e.redirect_link || null,
-              }));
-        setItems(mapped.filter((m) => m.img));
+            : entries
+                .filter((e) => !isPlaceholderUrl(e.image_url || e.media_url))
+                .map((e) => ({
+                  img: resolveUploadUrl(e.image_url || e.media_url),
+                  text: e.title || title,
+                  link: e.redirect_link || null,
+                }));
+        setItems(mapped.filter((m) => m.img && !isPlaceholderUrl(m.img)));
       } catch {
         if (live) setItems([]);
       }
@@ -102,7 +110,11 @@ export default function ShowcaseCarousel({
     goToSlide(activeIndex);
   }, [activeIndex, goToSlide]);
 
-  if (items.length === 0) return null;
+  // Hide broken cards after they error, so a carousel with all-placeholder data collapses instead of showing 9x "HC Spotlight" alt text.
+  const visibleItems = items.filter((_, i) => !failed[i]);
+  if (visibleItems.length === 0) return null;
+
+  const onImgError = (idx) => setFailed((m) => ({ ...m, [idx]: true }));
 
   return (
     <div style={{ position: "relative", width: "100%", height: isMobile ? "300px" : "500px" }}>
@@ -130,45 +142,51 @@ export default function ShowcaseCarousel({
         style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", height: "100%" }}
       >
         <div style={{ display: "inline-flex" }}>
-          {items.map((item, i) => (
-            <div
-              key={i}
-              onClick={() => router.push(item.link || fallbackLink)}
-              style={{
-                position: "relative",
-                width: isMobile ? "75vw" : "700px",
-                height: isMobile ? "300px" : "500px",
-                marginRight: `${gapPx}px`,
-                overflow: "hidden",
-                flexShrink: 0,
-                cursor: "pointer",
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.img}
-                alt={title}
-                loading="lazy"
-                decoding="async"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-          ))}
+          {items.map((item, i) =>
+            failed[i] ? null : (
+              <div
+                key={i}
+                onClick={() => router.push(item.link || fallbackLink)}
+                style={{
+                  position: "relative",
+                  width: isMobile ? "75vw" : "700px",
+                  height: isMobile ? "300px" : "500px",
+                  marginRight: `${gapPx}px`,
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  cursor: "pointer",
+                  background: "#111",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.img}
+                  alt={item.text || title}
+                  loading="lazy"
+                  decoding="async"
+                  onError={() => onImgError(i)}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+            )
+          )}
         </div>
       </div>
 
       <div className="hc-slider-dots" style={{ textAlign: "center", padding: "10px 0" }}>
-        {items.map((_, i) => (
-          <span
-            key={i}
-            onClick={() => goToSlide(i)}
-            style={{
-              display: "inline-block", width: "8px", height: "8px", borderRadius: "50%",
-              backgroundColor: activeIndex === i ? "white" : "#bbb",
-              cursor: "pointer", transition: "0.3s", margin: "0 4px",
-            }}
-          />
-        ))}
+        {items.map((_, i) =>
+          failed[i] ? null : (
+            <span
+              key={i}
+              onClick={() => goToSlide(i)}
+              style={{
+                display: "inline-block", width: "8px", height: "8px", borderRadius: "50%",
+                backgroundColor: activeIndex === i ? "white" : "#bbb",
+                cursor: "pointer", transition: "0.3s", margin: "0 4px",
+              }}
+            />
+          )
+        )}
       </div>
       <style jsx>{`
         .hc-slider::-webkit-scrollbar { display: none; }

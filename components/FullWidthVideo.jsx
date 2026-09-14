@@ -11,6 +11,7 @@ export default function FullWidthVideo() {
   const [videoUrl, setVideoUrl] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -56,10 +57,14 @@ export default function FullWidthVideo() {
     );
   }
 
-  if (!videoUrl) return null;
+  if (!videoUrl || videoError) return null;
+
+  // Hide placeholder CDN / example.com videos that always fail (same seed as spotlight).
+  const isPlaceholderVideo = videoUrl.includes("cdn.example.com") || videoUrl.includes("example.com");
+  if (isPlaceholderVideo) return null;
 
   return (
-    <div className="video-section relative">
+    <div className="video-section relative bg-black">
       <video
         ref={videoRef}
         src={videoUrl}
@@ -70,6 +75,7 @@ export default function FullWidthVideo() {
         playsInline
         preload="metadata"
         className="aspect-video w-full object-cover"
+        onError={() => setVideoError(true)}
       />
       <button
         type="button"
