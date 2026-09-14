@@ -34,9 +34,13 @@ export async function generateMetadata({ params }) {
   const resolved = resolveSlug(slug);
   if (!resolved) return { title: "Not Found" };
   if (resolved.type === "product") {
-    const product = await getProduct(resolved.id);
-    if (!product) return { title: "Product Not Found" };
-    return { title: product.name, description: product.description };
+    try {
+      const product = await getProduct(resolved.id);
+      if (!product) return { title: "Product Not Found" };
+      return { title: product.name, description: product.description };
+    } catch {
+      return { title: "Product" };
+    }
   }
   const title = titleFor(resolved);
   return { title, description: `${title} — bespoke menswear by Harry Clinton.` };
@@ -79,9 +83,14 @@ export default async function SlugPage({ params }) {
   if (!resolved) notFound();
 
   if (resolved.type === "product") {
-    const product = await getProduct(resolved.id);
-    if (!product) notFound();
-    return <ProductDetail product={product} />;
+    try {
+      const product = await getProduct(resolved.id);
+      if (!product) notFound();
+      return <ProductDetail product={product} />;
+    } catch (e) {
+      console.error("product load failed", resolved.id, e);
+      notFound();
+    }
   }
 
   if (resolved.type === "static") {
