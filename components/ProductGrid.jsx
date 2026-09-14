@@ -48,10 +48,14 @@ export default async function ProductGrid({ keyword = "" }) {
           <div className="col" key={product.id}>
             <Link href={`/product/${product.slug || product.id}`} className="text-decoration-none text-dark">
               <div className="card h-100 border-0 shadow-sm">
-                {product.image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={product.image} alt={product.name} loading="lazy" className="card-img-top" style={{ objectFit: "cover", height: "280px" }} />
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={product.image || "data:image/svg+xml;charset=UTF-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#e9ecef"/><text x="200" y="250" font-family="Arial" font-size="20" fill="#6c757d" text-anchor="middle">Harry Clinton</text></svg>')}
+                  alt={product.name}
+                  loading="lazy"
+                  className="card-img-top"
+                  style={{ objectFit: "cover", height: "280px", background: "#f1eeea" }}
+                />
                 <div className="card-body">
                   <h5 className="card-title">{product.name}</h5>
                   <p className="card-text fw-bold">{inr(product.price)}</p>
