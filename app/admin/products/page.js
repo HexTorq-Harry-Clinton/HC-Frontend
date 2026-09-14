@@ -27,6 +27,7 @@ export default function AdminProductsPage() {
   const [tab, setTab] = useState("Products");
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all"); // all | active | inactive
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState("");
@@ -71,17 +72,34 @@ export default function AdminProductsPage() {
         });
         setMsg("Product updated.");
         setToast({ type: "ok", text: "Product updated." });
+        setForm(empty);
+        setEditing(null);
+        reload();
       } else {
-        await apiFetch("/Products", {
+        const res = await apiFetch("/Products", {
           method: "POST",
           body: { ...form, base_price: Number(form.base_price) || 0, rcu: "ADMIN_PORTAL" },
         });
-        setMsg("Product added — it is now live on the storefront.");
-        setToast({ type: "ok", text: "Product added — live on the storefront." });
+        const created = res?.data || res;
+        const newProduct = created?.product_id ? created : (Array.isArray(created) ? created[0] : created?.data || created);
+        // Try to get inserted row; fallback to first matching by slug
+        let toOpen = newProduct && newProduct.product_id ? newProduct : null;
+        if (!toOpen) {
+          // fetch fresh list to find by slug we just created
+          try {
+            const list = unwrap(await apiFetch("/Products", { params: { includeInactive: 1 } }));
+            toOpen = (Array.isArray(list) ? list : []).find((p) => p.product_slug === form.product_slug) || null;
+          } catch {}
+        }
+        setMsg("Product added — opening workspace for variants, images & SEO.");
+        setToast({ type: "ok", text: "Product added — opening workspace." });
+        setForm(empty);
+        setEditing(null);
+        if (toOpen) {
+          setWorkspace(toOpen);
+        }
+        reload();
       }
-      setForm(empty);
-      setEditing(null);
-      reload();
     } catch (err) {
       const friendly = friendlyError(err, "Save failed");
       setMsg(friendly);
@@ -132,12 +150,13 @@ export default function AdminProductsPage() {
   }
 
   const needle = search.trim().toLowerCase();
-  const visible = products.filter(
-    (p) =>
-      !needle ||
-      (p.product_name || "").toLowerCase().includes(needle) ||
-      (p.product_slug || "").toLowerCase().includes(needle)
-  );
+  const visible = products.filter((p) => {
+    if (statusFilter === "active" && p.isactive === false) return false;
+    if (statusFilter === "inactive" && p.isactive !== false) return false;
+    if (!needle) return true;
+    const hay = `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""} ${p.description || ""} ${p.base_price || ""}`.toLowerCase();
+    return hay.includes(needle);
+  });
 
   return (
     <div>
@@ -168,7 +187,10 @@ export default function AdminProductsPage() {
             <input value={form.product_name} onChange={set("product_name")} required placeholder="Product name" className={input} />
             <input value={form.product_slug} onChange={set("product_slug")} required placeholder="slug-like-this" className={input} />
             <input value={form.short_description} onChange={set("short_description")} placeholder="Short description" className={input} />
-            <input value={form.base_price} onChange={set("base_price")} inputMode="decimal" required placeholder="Price (INR)" className={input} />
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500">₹</span>
+              <input value={form.base_price} onChange={set("base_price")} inputMode="decimal" required placeholder="Price (INR)" className={`${input} pl-7`} />
+            </div>
             <textarea value={form.description} onChange={set("description")} placeholder="Full description" rows={2} className={`${input} md:col-span-2`} />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.isactive} onChange={set("isactive")} /> Active
@@ -185,15 +207,27 @@ export default function AdminProductsPage() {
             </div>
           </form>
 
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products..."
-            className="mt-4 w-full max-w-md border border-neutral-300 bg-white px-3 py-2 text-sm"
-          />
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="w-full max-w-md border border-neutral-300 bg-white px-3 py-2 text-sm"
+            />
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-neutral-300 bg-white px-3 py-2 text-sm">
+              <option value="all">All</option>
+              <option value="active">Active only</option>
+              <option value="inactive">Inactive only</option>
+            </select>
+            {search && (
+              <button type="button" onClick={() => setSearch("")} className="text-sm text-neutral-500 underline">
+                Clear
+              </button>
+            )}
+          </div>
 
           <p className="mb-2 mt-4 text-xs text-neutral-500">
-            {visible.length} record{visible.length === 1 ? "" : "s"}
+            {visible.length} of {products.length} record{products.length === 1 ? "" : "s"} {search || statusFilter !== "all" ? "· filtered" : ""}
           </p>
           <div className="overflow-x-auto bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -615,7 +649,8 @@ function ProductWorkspace({ product, onBack }) {
                                 src={resolveUploadUrl(m.media_url)}
                                 alt={m.alt_text || v.sku}
                                 style={{ height: 48, width: 48, objectFit: "cover" }}
-                                className="border border-neutral-300"
+                                className="border border-neutral-300 bg-white"
+                                onError={(e) => { e.currentTarget.style.display = "none"; }}
                               />
                               <button
                                 onClick={() => deleteVariantMedia(m)}
@@ -627,13 +662,13 @@ function ProductWorkspace({ product, onBack }) {
                             </div>
                           ))
                         )}
-                        <label className="flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-2 py-1 text-xs font-semibold">
+                        <label className="relative flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-2 py-1 text-xs font-semibold">
                           {vUploadingId === v.product_variant_id ? "..." : "+ Image"}
                           <input
                             type="file"
                             accept="image/*,video/*"
                             onChange={pickVariantMedia(v.product_variant_id)}
-                            className="hidden"
+                            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                           />
                         </label>
                       </div>
@@ -689,7 +724,10 @@ function ProductWorkspace({ product, onBack }) {
             <option key={c.cloth_type_id} value={c.cloth_type_id}>{c.cloth_type_name}</option>
           ))}
         </select>
-        <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price" className={input} />
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500">₹</span>
+          <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price" className={`${input} pl-7`} />
+        </div>
         <input value={vForm.stock_qty} onChange={(e) => setVForm((f) => ({ ...f, stock_qty: e.target.value }))} inputMode="numeric" placeholder="Stock" className={input} />
         <div className="flex gap-2 md:col-span-3">
           <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">
@@ -718,7 +756,17 @@ function ProductWorkspace({ product, onBack }) {
           {media.map((m) => (
             <div key={m.product_media_id} className="relative border border-neutral-200 bg-white p-2 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={resolveUploadUrl(m.media_url)} alt={m.alt_text || product.product_name} style={{ height: 140, width: "100%", objectFit: "cover" }} />
+              <img
+                src={resolveUploadUrl(m.media_url)}
+                alt={m.alt_text || product.product_name}
+                style={{ height: 140, width: "100%", objectFit: "cover" }}
+                className="bg-neutral-100"
+                onError={(e) => {
+                  e.currentTarget.src = "/brand/logo-black.png";
+                  e.currentTarget.style.objectFit = "contain";
+                  e.currentTarget.style.padding = "12px";
+                }}
+              />
               <p className="mt-1 truncate text-xs">{m.alt_text || "—"}{m.isprimary ? " • Primary" : ""}</p>
               <button onClick={() => deleteMedia(m)} className="mt-1 text-xs text-red-600 underline">Delete</button>
             </div>
@@ -730,9 +778,9 @@ function ProductWorkspace({ product, onBack }) {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} /> Set as primary
         </label>
-        <label className="flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-4 py-2 text-sm font-semibold">
+        <label className="relative flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-4 py-2 text-sm font-semibold">
           {mPreview ? `Selected: ${mPreview.name}` : "Choose file..."}
-          <input type="file" accept="image/*,video/*" onChange={pickMedia} className="hidden" />
+          <input type="file" accept="image/*,video/*" onChange={pickMedia} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
         </label>
         {mPreview ? (
           <div className="md:col-span-3 flex flex-wrap items-start gap-3 rounded border border-neutral-200 bg-neutral-50 p-3">
