@@ -19,20 +19,18 @@ const DEFAULT_SECS = 30;
 const isOn = (v) => v === 1 || v === true;
 const isOff = (v) => v === 1 || v === true;
 
-function TapeText({ text }) {
-  const html = /<[a-z][\s\S]*>/i.test(text) ? sanitizeHtml(text) : null;
-  if (html) {
-    return (
-      <span
-        className="flex items-center whitespace-nowrap px-6 text-sm font-medium"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    );
-  }
+function TapeText({ text, showLogo = true }) {
+  const inner = /<[a-z][\s\S]*>/i.test(text) ? (
+    <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }} />
+  ) : (
+    text
+  );
   return (
     <span className="flex items-center whitespace-nowrap px-6 text-sm font-medium">
-      {text}
-      <Image src="/brand/logo-black.png" alt="" aria-hidden width={28} height={28} className="ml-6 inline-block" />
+      {inner}
+      {showLogo && (
+        <Image src="/brand/logo-black.png" alt="" aria-hidden width={28} height={28} className="ml-6 inline-block" />
+      )}
     </span>
   );
 }
@@ -63,6 +61,8 @@ export default function OfferBar() {
           return {
             text: String(it.itemsdata).trim(),
             secs: Number.isFinite(secs) && secs > 0 ? secs : 5,
+            // show_logo defaults ON (pre-migration rows carry no column).
+            showLogo: it.show_logo === 0 || it.show_logo === false ? false : true,
           };
         };
         if (bars.length > 0) {
@@ -106,7 +106,7 @@ export default function OfferBar() {
         {[0, 1].map((dup) => (
           <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup > 0}>
             {tape.map((s, i) => (
-              <TapeText key={i} text={s.text} />
+              <TapeText key={i} text={s.text} showLogo={s.showLogo} />
             ))}
           </div>
         ))}

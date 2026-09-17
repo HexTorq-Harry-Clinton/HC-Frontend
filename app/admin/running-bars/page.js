@@ -35,9 +35,9 @@ export default function AdminRunningBarsPage() {
   const [busy, setBusy] = useState(false);
   // null = group list, string = drilled-in group id.
   const [openBarId, setOpenBarId] = useState(null);
-  // null | { name, isactive } — create-group popup.
+  // null | { id?, name, isactive } — create/rename-group popup.
   const [barModal, setBarModal] = useState(null);
-  // null | { itemsdata, duration_seconds, isactive } — create-item popup.
+  // null | { id?, itemsdata, duration_seconds, show_logo, isactive }.
   const [itemModal, setItemModal] = useState(null);
   // false | array of item ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
@@ -101,7 +101,7 @@ export default function AdminRunningBarsPage() {
   };
 
   // ---- groups ----
-  const createBar = async (e) => {
+  const saveBar = async (e) => {
     e?.preventDefault();
     const name = (barModal?.name || "").trim();
     if (!name) {
@@ -110,27 +110,41 @@ export default function AdminRunningBarsPage() {
     }
     setBusy(true);
     try {
-      // NOTE: POST only accepts name+rcu (always created active) — a
-      // switched-off create is followed by a PUT toggle.
-      const res = await apiFetch("/Running-Bar", {
-        method: "POST",
-        body: { running_bar_name: name, rcu: "ADMIN_PORTAL" },
-      });
-      const created = unwrap(res);
-      const row = Array.isArray(created) ? created[0] : created;
-      const id = row?.running_bar_id;
-      if (id && barModal?.isactive === false) {
+      if (barModal?.id) {
         await apiFetch("/Running-Bar", {
           method: "PUT",
-          body: { running_bar_id: id, isactive: 0, luu: "ADMIN_PORTAL" },
+          body: {
+            running_bar_id: barModal.id,
+            running_bar_name: name,
+            isactive: barModal.isactive ? 1 : 0,
+            luu: "ADMIN_PORTAL",
+          },
         });
+        setMsg("Group updated.");
+        toast?.success("Running bar group updated.");
+      } else {
+        // NOTE: POST only accepts name+rcu (always created active) — a
+        // switched-off create is followed by a PUT toggle.
+        const res = await apiFetch("/Running-Bar", {
+          method: "POST",
+          body: { running_bar_name: name, rcu: "ADMIN_PORTAL" },
+        });
+        const created = unwrap(res);
+        const row = Array.isArray(created) ? created[0] : created;
+        const id = row?.running_bar_id;
+        if (id && barModal?.isactive === false) {
+          await apiFetch("/Running-Bar", {
+            method: "PUT",
+            body: { running_bar_id: id, isactive: 0, luu: "ADMIN_PORTAL" },
+          });
+        }
+        setMsg("Group created.");
+        toast?.success("Running bar group created.");
       }
       setBarModal(null);
-      setMsg("Group created.");
-      toast?.success("Running bar group created.");
       reload();
     } catch (err) {
-      fail(err, "Could not create group.");
+      fail(err, "Could not save group.");
     } finally {
       setBusy(false);
     }
@@ -162,7 +176,21 @@ export default function AdminRunningBarsPage() {
   };
 
   // ---- items ----
-  const createItem = async (e) => {
+  const openCreateItem = () => {
+    setItemModal({ id: null, itemsdata: "", duration_seconds: 5, show_logo: true, isactive: true });
+  };
+
+  const openEditItem = (it) => {
+    setItemModal({
+      id: it.running_bar_item_id,
+      itemsdata: it.itemsdata || "",
+      duration_seconds: it.duration_seconds ?? 5,
+      show_logo: it.show_logo === 0 || it.show_logo === false ? false : true,
+      isactive: it.isactive === 1 || it.isactive === true,
+    });
+  };
+
+  const saveItem = async (e) => {
     e?.preventDefault();
     const text = (itemModal?.itemsdata || "").trim();
     const secs = Number(itemModal?.duration_seconds);
@@ -176,31 +204,39 @@ export default function AdminRunningBarsPage() {
     }
     setBusy(true);
     try {
-      const maxOrder = openItems.reduce((m, it) => Math.max(m, Number(it.display_order) || 0), 0);
-      const res = await apiFetch("/Running-Bar-Items", {
-        method: "POST",
-        body: {
-          running_bar_id: openBar.running_bar_id,
-          itemsdata: text,
-          duration_seconds: Math.round(secs),
-          display_order: maxOrder + 1,
-          rcu: "ADMIN_PORTAL",
-        },
-      });
-      const created = unwrap(res);
-      const row = Array.isArray(created) ? created[0] : created;
-      if (row?.running_bar_item_id && itemModal?.isactive === false) {
+      const body = {
+        itemsdata: text,
+        duration_seconds: Math.round(secs),
+        show_logo: itemModal?.show_logo ? 1 : 0,
+        isactive: itemModal?.isactive ? 1 : 0,
+        luu: "ADMIN_PORTAL",
+      };
+      if (itemModal?.id) {
         await apiFetch("/Running-Bar-Items", {
           method: "PUT",
-          body: { running_bar_item_id: row.running_bar_item_id, isactive: 0, luu: "ADMIN_PORTAL" },
+          body: { running_bar_item_id: itemModal.id, ...body },
         });
+        setMsg("Item updated.");
+        toast?.success("Running bar item updated.");
+      } else {
+        const maxOrder = openItems.reduce((m, it) => Math.max(m, Number(it.display_order) || 0), 0);
+        const res = await apiFetch("/Running-Bar-Items", {
+          method: "POST",
+          body: {
+            running_bar_id: openBar.running_bar_id,
+            display_order: maxOrder + 1,
+            rcu: "ADMIN_PORTAL",
+            ...body,
+          },
+        });
+        void res;
+        setMsg("Item created.");
+        toast?.success("Running bar item created.");
       }
       setItemModal(null);
-      setMsg("Item created.");
-      toast?.success("Running bar item created.");
       reload();
     } catch (err) {
-      fail(err, "Could not create item.");
+      fail(err, "Could not save item.");
     } finally {
       setBusy(false);
     }
@@ -210,6 +246,14 @@ export default function AdminRunningBarsPage() {
     await apiFetch("/Running-Bar-Items", {
       method: "PUT",
       body: { running_bar_item_id: it.running_bar_item_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
+    }).catch(() => null);
+    reload();
+  };
+
+  const toggleLogo = async (it, next) => {
+    await apiFetch("/Running-Bar-Items", {
+      method: "PUT",
+      body: { running_bar_item_id: it.running_bar_item_id, show_logo: next ? 1 : 0, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     reload();
   };
@@ -302,7 +346,7 @@ export default function AdminRunningBarsPage() {
       {!openBar ? (
         <>
           <div className="mt-4 flex justify-end">
-            <button type="button" onClick={() => setBarModal({ name: "", isactive: true })} className={btnPrimary}>
+            <button type="button" onClick={() => setBarModal({ id: null, name: "", isactive: true })} className={btnPrimary}>
               <i className="bi bi-plus-lg" /> New group
             </button>
           </div>
@@ -344,6 +388,9 @@ export default function AdminRunningBarsPage() {
                         <td className={tdCls}>{st.count} item(s)</td>
                         <td className={tdCls}>{st.seconds}s total</td>
                         <td className="whitespace-nowrap px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                          <button type="button" onClick={() => setBarModal({ id: b.running_bar_id, name: b.running_bar_name, isactive: b.isactive === 1 || b.isactive === true })} title="Rename group" className={`${iconBtn} mr-1`}>
+                            <i className="bi bi-pencil" />
+                          </button>
                           <span className="mr-2 inline-block align-middle">
                             <ActiveToggle active={b.isactive} onToggle={(next) => toggleBar(b, next)} />
                           </span>
@@ -375,7 +422,7 @@ export default function AdminRunningBarsPage() {
                 <>
                   <button
                     type="button"
-                    onClick={() => setItemModal({ itemsdata: "", duration_seconds: 5, isactive: true })}
+                    onClick={openCreateItem}
                     className={btnPrimary}
                   >
                     <i className="bi bi-plus-lg" /> New item
@@ -413,15 +460,16 @@ export default function AdminRunningBarsPage() {
                   <th className={thCls}>#</th>
                   <th className={thCls}>Text</th>
                   <th className={thCls}>Secs</th>
-                  <th className="w-[110px] px-4 py-3 text-right">Actions</th>
+                  <th className={thCls}>Logo</th>
+                  <th className="w-[150px] px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {orderedItems.length === 0 ? (
                   <tr>
-                    <td colSpan={orderMode ? 5 : 4} className="p-5 text-center text-neutral-500">
-                      No items yet — add the first one.
-                    </td>
+                <td colSpan={orderMode ? 6 : 5} className="p-5 text-center text-neutral-500">
+                  No items yet — add the first one.
+                </td>
                   </tr>
                 ) : (
                   orderedItems.map((it, i) => {
@@ -450,11 +498,24 @@ export default function AdminRunningBarsPage() {
                           )}
                         </td>
                         <td className={tdCls}>{Number(it.duration_seconds) || 0}s</td>
+                        <td className={tdCls}>
+                          {orderMode ? (
+                            <span className="text-xs text-neutral-400">—</span>
+                          ) : (
+                            <ActiveToggle
+                              active={it.show_logo === 0 || it.show_logo === false ? false : true}
+                              onToggle={(next) => toggleLogo(it, next)}
+                            />
+                          )}
+                        </td>
                         <td className="whitespace-nowrap px-4 py-3 text-right">
                           {orderMode ? (
                             <span className="text-xs text-neutral-400">drag me</span>
                           ) : (
                             <>
+                              <button type="button" onClick={() => openEditItem(it)} title="Edit item" className={`${iconBtn} mr-1`}>
+                                <i className="bi bi-pencil" />
+                              </button>
                               <span className="mr-2 inline-block align-middle">
                                 <ActiveToggle active={it.isactive} onToggle={(next) => toggleItem(it, next)} />
                               </span>
@@ -481,11 +542,13 @@ export default function AdminRunningBarsPage() {
           onClick={() => setBarModal(null)}
         >
           <form
-            onSubmit={createBar}
+            onSubmit={saveBar}
             onClick={(e) => e.stopPropagation()}
             className={`w-full max-w-md ${panelCls}`}
           >
-            <h3 className="font-display text-lg font-bold text-neutral-900">New running bar group</h3>
+            <h3 className="font-display text-lg font-bold text-neutral-900">
+              {barModal.id ? "Rename group" : "New running bar group"}
+            </h3>
             <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
               Group name
               <input
@@ -508,25 +571,27 @@ export default function AdminRunningBarsPage() {
                 Cancel
               </button>
               <button type="submit" disabled={busy} className={btnPrimary}>
-                {busy ? "Creating..." : "Create"}
+                {busy ? "Saving..." : barModal.id ? "Save" : "Create"}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* ---- create-item popup ---- */}
+      {/* ---- create/edit-item popup ---- */}
       {itemModal && (
         <div
           className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
           onClick={() => setItemModal(null)}
         >
           <form
-            onSubmit={createItem}
+            onSubmit={saveItem}
             onClick={(e) => e.stopPropagation()}
             className={`w-full max-w-md ${panelCls}`}
           >
-            <h3 className="font-display text-lg font-bold text-neutral-900">New item</h3>
+            <h3 className="font-display text-lg font-bold text-neutral-900">
+              {itemModal.id ? "Edit item" : "New item"}
+            </h3>
             <p className="mt-1 text-xs text-neutral-500">
               In: {openBar?.running_bar_name} — order auto-attached at the end, reorder via Edit order.
             </p>
@@ -552,6 +617,13 @@ export default function AdminRunningBarsPage() {
               />
             </label>
             <label className="mt-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-neutral-500">
+              Logo after item
+              <ActiveToggle
+                active={itemModal.show_logo}
+                onToggle={async (next) => setItemModal({ ...itemModal, show_logo: next })}
+              />
+            </label>
+            <label className="mt-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-neutral-500">
               Active
               <ActiveToggle
                 active={itemModal.isactive}
@@ -563,7 +635,7 @@ export default function AdminRunningBarsPage() {
                 Cancel
               </button>
               <button type="submit" disabled={busy} className={btnPrimary}>
-                {busy ? "Creating..." : "Create"}
+                {busy ? "Saving..." : itemModal.id ? "Update" : "Create"}
               </button>
             </div>
           </form>
