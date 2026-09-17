@@ -89,9 +89,14 @@ export default function OfferBar() {
     };
   }, []);
 
-  // Full loop = sum of DB seconds (each item's screen time ~ its seconds).
+  // Full loop = sum of DB seconds x copies (speed stays proportional to the
+  // configured seconds no matter how many repeats fill the screen).
+  // The queue repeats 4x per half so the tape is always wider than the
+  // viewport — no blank gap, no pop-in, seamless -50% loop.
+  const COPIES = 4;
+  const tape = Array(COPIES).fill(slides).flat();
   const loopSecs = Math.max(
-    slides.reduce((s, it) => s + (Number(it.secs) || 0), 0),
+    slides.reduce((s, it) => s + (Number(it.secs) || 0), 0) * COPIES,
     10
   );
 
@@ -100,7 +105,7 @@ export default function OfferBar() {
       <div className="animate-marquee items-center" style={{ animationDuration: `${loopSecs}s` }}>
         {[0, 1].map((dup) => (
           <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup > 0}>
-            {slides.map((s, i) => (
+            {tape.map((s, i) => (
               <TapeText key={i} text={s.text} />
             ))}
           </div>
