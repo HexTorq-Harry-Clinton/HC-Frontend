@@ -1,12 +1,14 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { resolveSlug, titleFor, allStorefrontSlugs, COLLECTIONS } from "@/lib/catalog";
-import { getCategoryData, getProduct } from "@/lib/shop";
+import { getCategoryData, getProduct, resolveDbSlug } from "@/lib/shop";
 import { apiGet, unwrap, resolveUploadUrl } from "@/lib/api";
 import ProductDetail from "@/components/ProductDetail";
 import ProductDetailLoader from "@/components/ProductDetailLoader";
 import StaticPage from "@/components/StaticPage";
 import OccasionPage from "@/components/OccasionPage";
 import CategoryMain from "@/components/CategoryMain";
+import CategoryView from "@/components/CategoryView";
+import ShowcaseHeader from "@/components/ShowcaseHeader";
 import CollectionView from "@/components/CollectionView";
 import ServicePage from "@/components/ServicePage";
 import ServicesHub from "@/components/ServicesHub";
@@ -23,6 +25,12 @@ import { servicePage } from "@/lib/services";
 
 export const revalidate = 300;
 
+// Admin-editable slugs (renamed/added categories, sub-categories,
+// collections) are NOT in generateStaticParams by design — they resolve
+// live at request time via resolveDbSlug() below, so no rebuild is ever
+// needed when content team edits a slug. Unknown paths render on demand.
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   return [...allStorefrontSlugs(), ["coming-soon"], ["the-vision"]].map((slug) => ({ slug }));
 }
@@ -33,7 +41,12 @@ export async function generateMetadata({ params }) {
   if (key === "coming-soon") return { title: "Coming Soon" };
   if (key === "the-vision") return { title: "The Vision" };
   const resolved = resolveSlug(slug);
-  if (!resolved) return { title: "Not Found" };
+  if (!resolved) {
+    // Not a hardcoded route — maybe an admin-edited DB slug.
+    const db = await resolveDbSlug(slug).catch(() => null);
+    if (!db) return { title: "Not Found" };
+    return { title: db.title, description: `${db.title} — bespoke menswear by Harry Clinton.` };
+  }
   if (resolved.type === "product") {
     try {
       const product = await getProduct(resolved.id);
@@ -81,7 +94,52 @@ export default async function SlugPage({ params }) {
     return <FAQsView />;
   }
   const resolved = resolveSlug(slug);
-  if (!resolved) notFound();
+  if (!resolved) {
+    // Admin-edited DB slug (no hardcoded catalog.js entry) — resolve live.
+    const db = await resolveDbSlug(slug).catch(() => null);
+    if (!db) notFound();
+    if (db.redirect && db.redirect.startsWith("/")) redirect(db.redirect);
+    const data = await getCategoryData(null, db.keywords);
+    if (db.type === "db-collection") {
+      let bannerImage = null;
+      try {
+        const media = await apiGet("/Style-Collection-Media").then(unwrap).catch(() => []);
+        const list = Array.isArray(media) ? media : [];
+        const hit =
+          list.find((m) => String(m.style_collection_id) === String(db.row?.style_collection_id) && m.isprimary) ||
+          list.find((m) => String(m.style_collection_id) === String(db.row?.style_collection_id));
+        bannerImage = resolveUploadUrl(hit?.media_url) || null;
+      } catch {
+        /* banner stays empty */
+      }
+      return (
+        <CollectionView
+          meta={{
+            title: db.title,
+            eyebrow: "Style by HC",
+            description: db.row?.description || "",
+            bannerImage,
+          }}
+          products={data.products}
+          sizes={data.sizes}
+          clothTypes={data.clothTypes}
+          colors={data.colors}
+        />
+      );
+    }
+    return (
+      <>
+        <ShowcaseHeader eyebrow="Harry Clinton" title={db.title} />
+        <CategoryView
+          products={data.products}
+          sizes={data.sizes}
+          clothTypes={data.clothTypes}
+          colors={data.colors}
+          emptyTitle={`Nothing in ${db.title} yet`}
+        />
+      </>
+    );
+  }
 
   if (resolved.type === "product") {
     // Fetch outside the try/catch: React renders the returned element later,
