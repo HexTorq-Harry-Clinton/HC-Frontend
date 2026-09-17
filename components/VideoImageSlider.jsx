@@ -88,7 +88,7 @@ export default function VideoImageSlider() {
 
   return (
     <div
-      className="slider-container relative overflow-hidden bg-neutral-950"
+      className="slider-container group relative overflow-hidden bg-neutral-950"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -120,12 +120,26 @@ export default function VideoImageSlider() {
             )}
           </motion.div>
         </AnimatePresence>
-        <button type="button" aria-label="Previous slide" onClick={() => go(-1)} className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-3 py-2 text-lg shadow hover:bg-white">
-          ‹
-        </button>
-        <button type="button" aria-label="Next slide" onClick={() => go(1)} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-3 py-2 text-lg shadow hover:bg-white">
-          ›
-        </button>
+        {slides.length > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label="Previous slide"
+              onClick={() => go(-1)}
+              className="absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover:opacity-100"
+            >
+              <i className="bi bi-chevron-left text-lg leading-none" />
+            </button>
+            <button
+              type="button"
+              aria-label="Next slide"
+              onClick={() => go(1)}
+              className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover:opacity-100"
+            >
+              <i className="bi bi-chevron-right text-lg leading-none" />
+            </button>
+          </>
+        )}
       </div>
       <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
         {slides.map((_, i) => (
