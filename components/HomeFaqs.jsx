@@ -45,8 +45,17 @@ export default function HomeFaqs() {
         if (!live) return;
         const list = Array.isArray(faqsRes) ? faqsRes : [];
         if (list.length > 0) {
+          // Deduplicate by question to handle cases where backend returns duplicates
+          const seen = new Set();
+          const uniqueFaqs = list.filter((item) => {
+            const question = (item.question || item.title || "").trim().toLowerCase();
+            if (!question || seen.has(question)) return false;
+            seen.add(question);
+            return true;
+          });
+
           setFaqs(
-            list.slice(0, 5).map((item) => ({
+            uniqueFaqs.slice(0, 5).map((item) => ({
               question: item.question || item.title || "",
               answer: item.answer || item.description || "",
             }))
