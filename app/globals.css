@@ -30,19 +30,47 @@ body {
   font-family: var(--font-display);
 }
 
-/* slim luxe scrollbar */
+/* fashionable luxe scrollbar — site-wide, no native browser bars */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #c6a15b #f1efe9;
+}
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 9px;
+  height: 9px;
 }
 ::-webkit-scrollbar-track {
   background: #f1efe9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c9c4b8;
-  border-radius: 8px;
+  background: linear-gradient(180deg, #d8b978 0%, #c6a15b 55%, #a8823f 100%);
+  border-radius: 999px;
+  border: 2px solid #f1efe9;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #c6a15b;
+  background: linear-gradient(180deg, #c6a15b 0%, #a8823f 100%);
+  border-color: #e7e2d5;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* slimmer variant for inner panels, dropdowns, admin tables */
+.scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: #c9b98f transparent;
+}
+.scroll-slim::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d8b978 0%, #a8823f 100%);
+  border-radius: 999px;
+  border: none;
 }
 
 /* shared eyebrow label */
