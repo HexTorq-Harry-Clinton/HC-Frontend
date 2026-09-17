@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import Reveal from "@/components/Reveal";
 
 // Horizontal auto-scroll showcase: same behavior as the previous UI —
 // fixed overlay title, scroll-snap cards, dots, hover/touch pause,
@@ -117,80 +118,82 @@ export default function ShowcaseCarousel({
   const onImgError = (idx) => setFailed((m) => ({ ...m, [idx]: true }));
 
   return (
-    <div style={{ position: "relative", width: "100%", height: isMobile ? "300px" : "500px" }}>
-      <div
-        style={{
-          position: "absolute", bottom: "0", left: "0",
-          width: isMobile ? "75vw" : "700px",
-          padding: isMobile ? "6px 16px" : "8px 24px",
-          color: "white", fontSize: isMobile ? "24px" : "48px", fontWeight: "bold",
-          fontFamily: "var(--font-display), Arial, sans-serif",
-          textShadow: "0px 2px 8px rgba(0,0,0,0.6)", zIndex: 5, pointerEvents: "none",
-        }}
-      >
-        {title}
-      </div>
+    <Reveal y={24} duration={0.9}>
+      <div style={{ position: "relative", width: "100%", height: isMobile ? "300px" : "500px" }}>
+        <div
+          style={{
+            position: "absolute", bottom: "0", left: "0",
+            width: isMobile ? "75vw" : "700px",
+            padding: isMobile ? "6px 16px" : "8px 24px",
+            color: "white", fontSize: isMobile ? "24px" : "48px", fontWeight: "bold",
+            fontFamily: "var(--font-display), Arial, sans-serif",
+            textShadow: "0px 2px 8px rgba(0,0,0,0.6)", zIndex: 5, pointerEvents: "none",
+          }}
+        >
+          {title}
+        </div>
 
-      <div
-        ref={sliderRef}
-        onScroll={handleScroll}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
-        className="hc-slider"
-        style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", height: "100%" }}
-      >
-        <div style={{ display: "inline-flex" }}>
-          {items.map((item, i) =>
+        <div
+          ref={sliderRef}
+          onScroll={handleScroll}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+          className="hc-slider"
+          style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", height: "100%" }}
+        >
+          <div style={{ display: "inline-flex" }}>
+            {items.map((item, i) =>
+              failed[i] ? null : (
+                <div
+                  key={i}
+                  onClick={() => router.push(item.link || fallbackLink)}
+                  style={{
+                    position: "relative",
+                    width: isMobile ? "75vw" : "700px",
+                    height: isMobile ? "300px" : "500px",
+                    marginRight: `${gapPx}px`,
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    cursor: "pointer",
+                    background: "#111",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.img}
+                    alt={item.text || title}
+                    loading="lazy"
+                    decoding="async"
+                    onError={() => onImgError(i)}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        <div className="hc-slider-dots" style={{ textAlign: "center", padding: "10px 0" }}>
+          {items.map((_, i) =>
             failed[i] ? null : (
-              <div
+              <span
                 key={i}
-                onClick={() => router.push(item.link || fallbackLink)}
+                onClick={() => goToSlide(i)}
                 style={{
-                  position: "relative",
-                  width: isMobile ? "75vw" : "700px",
-                  height: isMobile ? "300px" : "500px",
-                  marginRight: `${gapPx}px`,
-                  overflow: "hidden",
-                  flexShrink: 0,
-                  cursor: "pointer",
-                  background: "#111",
+                  display: "inline-block", width: "8px", height: "8px", borderRadius: "50%",
+                  backgroundColor: activeIndex === i ? "white" : "#bbb",
+                  cursor: "pointer", transition: "0.3s", margin: "0 4px",
                 }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.img}
-                  alt={item.text || title}
-                  loading="lazy"
-                  decoding="async"
-                  onError={() => onImgError(i)}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </div>
+              />
             )
           )}
         </div>
+        <style jsx>{`
+          .hc-slider::-webkit-scrollbar { display: none; }
+        `}</style>
       </div>
-
-      <div className="hc-slider-dots" style={{ textAlign: "center", padding: "10px 0" }}>
-        {items.map((_, i) =>
-          failed[i] ? null : (
-            <span
-              key={i}
-              onClick={() => goToSlide(i)}
-              style={{
-                display: "inline-block", width: "8px", height: "8px", borderRadius: "50%",
-                backgroundColor: activeIndex === i ? "white" : "#bbb",
-                cursor: "pointer", transition: "0.3s", margin: "0 4px",
-              }}
-            />
-          )
-        )}
-      </div>
-      <style jsx>{`
-        .hc-slider::-webkit-scrollbar { display: none; }
-      `}</style>
-    </div>
+    </Reveal>
   );
 }

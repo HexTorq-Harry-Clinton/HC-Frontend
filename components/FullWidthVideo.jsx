@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import Reveal from "@/components/Reveal";
 
 // Full-bleed brand video with mute toggle — same structure as the previous UI.
 // Video comes from the Menu-Video API (backend-served by design).
@@ -64,29 +65,31 @@ export default function FullWidthVideo() {
   if (isPlaceholderVideo) return null;
 
   return (
-    <div className="video-section relative bg-black">
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        poster={posterUrl || undefined}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        className="aspect-video w-full object-cover"
-        onError={() => setVideoError(true)}
-      />
-      <button
-        type="button"
-        onClick={toggleMute}
-        aria-label={isMuted ? "Unmute video" : "Mute video"}
-        className="absolute bottom-4 right-4 rounded-full bg-black/60 px-4 py-2 text-sm text-white hover:bg-black"
-      >
-        {isMuted ? <i className="bi bi-volume-mute" /> : <i className="bi bi-volume-up" />}
-      </button>
-      <SpinnerStyle />
-    </div>
+    <Reveal blur y={24} duration={1}>
+      <div className="video-section relative bg-black">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          poster={posterUrl || undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="aspect-video w-full object-cover"
+          onError={() => setVideoError(true)}
+        />
+        <button
+          type="button"
+          onClick={toggleMute}
+          aria-label={isMuted ? "Unmute video" : "Mute video"}
+          className="absolute bottom-4 right-4 rounded-full bg-black/60 px-4 py-2 text-sm text-white hover:bg-black"
+        >
+          {isMuted ? <i className="bi bi-volume-mute" /> : <i className="bi bi-volume-up" />}
+        </button>
+        <SpinnerStyle />
+      </div>
+    </Reveal>
   );
 }
 
