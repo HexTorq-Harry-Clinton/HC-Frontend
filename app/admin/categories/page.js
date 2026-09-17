@@ -8,7 +8,8 @@ import ActiveToggle from "@/components/ActiveToggle";
 import { useConfirm } from "../ConfirmProvider";
 
 const empty = { menu_subcategory_name: "", menu_subcategory_slug: "", redirect_link: "", display_order: "", isactive: true };
-const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
+const input =
+  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 
 // Categories & Subcategories: category tabs on top, subcategories of the
 // selected category below — new subs auto-attach to the open category.
@@ -136,11 +137,19 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Categories & Subcategories</h1>
-      {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
+      <div>
+        <p className="eyebrow text-gold-deep">Harry Clinton</p>
+        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900">Categories & Subcategories</h1>
+      </div>
+      {msg && (
+        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+          {msg}
+        </p>
+      )}
 
-      <details className="mt-4 border border-neutral-200 bg-white shadow-sm">
-        <summary className="cursor-pointer p-4 text-sm font-semibold">
+      <details className="mt-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <summary className="flex cursor-pointer items-center gap-2 p-4 text-sm font-semibold text-neutral-800 transition-colors hover:bg-[#faf8f4]">
+          <i className="bi bi-gear-wide-connected text-gold-deep" />
           Manage categories (add / rename / reorder)
         </summary>
         <div className="border-t border-neutral-200 p-4">
@@ -151,12 +160,13 @@ export default function AdminCategoriesPage() {
       <div className="mt-4 flex flex-wrap gap-2 border-b border-neutral-200 pb-3">
         {sortedCats.map((c) => (
             <button
+              type="button"
               key={c.menu_category_id}
               onClick={() => { setActiveCat(c.menu_category_id); setEditing(null); setForm(empty); }}
-              className={`border px-4 py-2 text-sm font-semibold ${
+              className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
                 activeCat === c.menu_category_id
-                  ? "border-neutral-950 bg-neutral-950 text-white"
-                  : "border-neutral-300 bg-white"
+                  ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
+                  : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50"
               }`}
             >
               {c.menu_category_name}
@@ -169,38 +179,45 @@ export default function AdminCategoriesPage() {
         </p>
       )}
 
-      <form onSubmit={submit} className="mt-4 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
+      <form onSubmit={submit} className="mt-4 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
         <input value={form.menu_subcategory_name} onChange={set("menu_subcategory_name")} required placeholder="Subcategory name" className={input} />
         <input value={form.menu_subcategory_slug} onChange={set("menu_subcategory_slug")} placeholder="slug-like-this" className={input} />
         <input value={form.redirect_link} onChange={set("redirect_link")} placeholder="Redirect link (e.g. /wedding)" className={input} />
         <input value={form.display_order} onChange={set("display_order")} inputMode="numeric" placeholder="Order" className={input} />
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.isactive} onChange={set("isactive")} /> Active
+          <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
         </label>
         <div className="flex gap-2">
-          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          >
             {editing ? "Update" : "Add"}
           </button>
           {editing && (
-            <button type="button" onClick={() => { setEditing(null); setForm(empty); }} className="border px-4 py-2 text-sm">
+            <button
+              type="button"
+              onClick={() => { setEditing(null); setForm(empty); }}
+              className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+            >
               Cancel
             </button>
           )}
         </div>
       </form>
 
-      <h2 className="mt-6 font-semibold">
+      <h2 className="mt-6 font-semibold text-neutral-900">
         Subcategories {current ? `of ${current.menu_category_name}` : ""} ({visible.length})
       </h2>
       <p className="mb-2 mt-1 text-xs text-neutral-500">
         {visible.length} record{visible.length === 1 ? "" : "s"}
       </p>
-      <div className="mt-2 overflow-x-auto bg-white shadow-sm">
+      <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
-              <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Order</th>
-              <th className="p-3">Active</th><th className="p-3 text-right">Actions</th>
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+              <th className="px-4 py-3">Name</th><th className="px-4 py-3">Slug</th><th className="px-4 py-3">Order</th>
+              <th className="px-4 py-3">Active</th><th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -210,16 +227,16 @@ export default function AdminCategoriesPage() {
               </tr>
             ) : (
               visible.map((s) => (
-                <tr key={s.menu_subcategory_id} className="border-b transition last:border-0 hover:bg-[#faf8f4]">
-                  <td className="p-3 font-medium">{s.menu_subcategory_name}</td>
-                  <td className="p-3 text-neutral-500">{s.menu_subcategory_slug}</td>
-                  <td className="p-3">{s.display_order}</td>
-                  <td className="p-3">
+                <tr key={s.menu_subcategory_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                  <td className="px-4 py-3 font-medium">{s.menu_subcategory_name}</td>
+                  <td className="px-4 py-3 text-neutral-500">{s.menu_subcategory_slug}</td>
+                  <td className="px-4 py-3">{s.display_order}</td>
+                  <td className="px-4 py-3">
                     <ActiveToggle active={s.isactive} onToggle={(next) => toggle(s, next)} />
                   </td>
-                  <td className="whitespace-nowrap p-3 text-right">
-                    <button onClick={() => edit(s)} className="mr-3 underline">Edit</button>
-                    <button onClick={() => remove(s)} className="text-red-600 underline">Delete</button>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <button type="button" onClick={() => edit(s)} className="mr-3 text-neutral-700 underline underline-offset-2 transition-colors hover:text-gold-deep">Edit</button>
+                    <button type="button" onClick={() => remove(s)} className="text-red-600 underline underline-offset-2 transition-colors hover:text-red-700">Delete</button>
                   </td>
                 </tr>
               ))
@@ -228,7 +245,7 @@ export default function AdminCategoriesPage() {
         </table>
       </div>
       <p className="mt-3 text-xs text-neutral-500">
-        Flat list across all categories: <Link href="/admin/sub-categories" className="underline">Sub-Categories</Link>
+        Flat list across all categories: <Link href="/admin/sub-categories" className="font-medium text-gold-deep underline underline-offset-2 transition-colors hover:text-neutral-950">Sub-Categories</Link>
       </p>
     </div>
   );

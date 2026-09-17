@@ -37,6 +37,17 @@ const GROUPS = [
   { key: "settings", label: "Settings", labels: ["Settings"] },
 ];
 
+const GROUP_ICON = {
+  dashboard: "bi bi-grid-1x2-fill",
+  users: "bi bi-people-fill",
+  catalog: "bi bi-bag-heart-fill",
+  marketing: "bi bi-megaphone-fill",
+  sales: "bi bi-receipt-cutoff",
+  shipping: "bi bi-truck",
+  support: "bi bi-life-preserver",
+  settings: "bi bi-gear-fill",
+};
+
 const NAV = [
   { href: "/admin", label: "Dashboard", group: "dashboard" },
   { href: "/admin/users", label: "Users", group: "users" },
@@ -139,28 +150,31 @@ function AdminShellInner({ children }) {
       <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between bg-[#17161a] px-[22px] text-white">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setSidebarOpen((v) => !v)}
             aria-label="Toggle menu"
-            className="border border-white/30 px-2 py-1 text-sm text-white lg:hidden"
+            className="rounded-md border border-white/25 px-2.5 py-1.5 text-sm text-white transition-colors hover:bg-white/10 lg:hidden"
           >
-            ☰
+            <i className="bi bi-list" />
           </button>
-          <div className="flex items-center gap-2 font-semibold">
-            <span className="bg-[#b08d57] px-2 py-0.5 text-sm font-bold text-[#17161a]">HC</span>
-            <span>Harry Clinton Admin</span>
+          <div className="flex items-center gap-2.5 font-semibold tracking-tight">
+            <span className="rounded-md bg-gold px-2 py-0.5 text-sm font-bold text-neutral-950">HC</span>
+            <span className="hidden text-[15px] sm:inline">Harry Clinton Admin</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-sm">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f3ead9] font-bold text-[#6b4f24]">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold/20 font-bold text-gold">
               {initial}
             </span>
-            <span>{displayName}</span>
+            <span className="hidden text-white/85 sm:inline">{displayName}</span>
           </div>
           <button
+            type="button"
             onClick={logout}
-            className="rounded-md border border-white/30 px-3.5 py-1.5 text-[12.5px] font-semibold text-white transition hover:bg-white/10"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/25 px-3.5 py-1.5 text-[12.5px] font-semibold text-white transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
           >
+            <i className="bi bi-box-arrow-right text-sm" />
             Logout
           </button>
         </div>
@@ -168,7 +182,7 @@ function AdminShellInner({ children }) {
 
       <div className="flex flex-1">
         <aside
-          className={`fixed bottom-0 left-0 top-[60px] z-50 w-[252px] overflow-y-auto bg-[#1b1a1f] px-3 pb-10 pt-[18px] text-[#d8d6dd] transition-transform duration-200 lg:sticky lg:translate-x-0 ${
+          className={`fixed bottom-0 left-0 top-[60px] z-50 w-[252px] overflow-y-auto border-r border-white/5 bg-[#16151a] px-3 pb-10 pt-[18px] text-[#d8d6dd] transition-transform duration-200 lg:sticky lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -178,13 +192,20 @@ function AdminShellInner({ children }) {
               if (items.length === 0) return null;
               const isOpen = openGroups.includes(group.key);
               return (
-                <div key={group.key} className="mb-0.5">
+                <div key={group.key} className="mb-1">
                   <button
+                    type="button"
                     onClick={() => toggleGroup(group.key)}
-                    className="flex w-full items-center justify-between px-2.5 py-2.5 text-[11px] font-bold uppercase tracking-[0.07em] text-white/55 transition hover:text-white"
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between rounded-md px-2.5 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/90"
                   >
-                    <span>{group.label}</span>
-                    <span className="text-[10px] opacity-60">{isOpen ? "▼" : "▶"}</span>
+                    <span className="flex items-center gap-2">
+                      <i className={`${GROUP_ICON[group.key]} text-[13px] text-gold/70`} />
+                      {group.label}
+                    </span>
+                    <span className="text-[9px] opacity-70 transition-transform duration-150" style={{ transform: isOpen ? "rotate(90deg)" : "none" }}>
+                      ▶
+                    </span>
                   </button>
                   {isOpen && (
                     <div className="flex flex-col gap-px pb-2 pl-1">
@@ -198,10 +219,10 @@ function AdminShellInner({ children }) {
                             key={item.href}
                             href={item.href}
                             onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-[13.5px] transition ${
+                            className={`flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-[13.5px] transition-colors ${
                               active
-                                ? "border-[#b08d57] bg-[rgba(176,141,87,0.16)] font-semibold text-[#f1e4cb]"
-                                : "border-transparent text-white/70 hover:bg-white/5 hover:text-white"
+                                ? "border-gold bg-gold/10 font-semibold text-gold"
+                                : "border-transparent text-white/65 hover:bg-white/5 hover:text-white"
                             }`}
                           >
                             <span>{item.label}</span>

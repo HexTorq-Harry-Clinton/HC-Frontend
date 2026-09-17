@@ -3,6 +3,7 @@ import { resolveSlug, titleFor, allStorefrontSlugs, COLLECTIONS } from "@/lib/ca
 import { getCategoryData, getProduct } from "@/lib/shop";
 import { apiGet, unwrap, resolveUploadUrl } from "@/lib/api";
 import ProductDetail from "@/components/ProductDetail";
+import ProductDetailLoader from "@/components/ProductDetailLoader";
 import StaticPage from "@/components/StaticPage";
 import OccasionPage from "@/components/OccasionPage";
 import CategoryMain from "@/components/CategoryMain";
@@ -83,14 +84,23 @@ export default async function SlugPage({ params }) {
   if (!resolved) notFound();
 
   if (resolved.type === "product") {
+    // Fetch outside the try/catch: React renders the returned element later,
+    // so JSX inside a try/catch cannot catch render errors (and the linter
+    // flags it). Here we only resolve the data; rendering happens below.
+    let product = null;
+    let failed = false;
     try {
-      const product = await getProduct(resolved.id);
-      if (!product) notFound();
-      return <ProductDetail product={product} />;
+      product = await getProduct(resolved.id);
     } catch (e) {
       console.error("product load failed", resolved.id, e);
-      notFound();
+      failed = true;
     }
+    // Server catalog came back empty (slow/unreachable backend) or threw — do
+    // NOT notFound(). The product usually exists; the browser can reach the
+    // API even when the server-side fetch failed. Fall back to a client-side
+    // fetch so the product still renders.
+    if (failed || !product) return <ProductDetailLoader id={resolved.id} />;
+    return <ProductDetail product={product} />;
   }
 
   if (resolved.type === "static") {

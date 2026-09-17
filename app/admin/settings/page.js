@@ -105,24 +105,31 @@ export default function AdminSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Settings</h1>
-      {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
-      <form onSubmit={submit} className="mt-4 grid max-w-3xl gap-4 bg-white p-5 shadow-sm md:grid-cols-2">
+      <div>
+        <p className="eyebrow text-gold-deep">Harry Clinton</p>
+        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900">Settings</h1>
+      </div>
+      {msg && (
+        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+          {msg}
+        </p>
+      )}
+      <form onSubmit={submit} className="mt-4 grid max-w-3xl gap-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
         {FIELDS.map((f) => (
           <label key={f.key} className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${f.type === "textarea" ? "md:col-span-2" : ""}`}>
             {f.label}
             {f.type === "textarea" ? (
-              <textarea value={form[f.key] || ""} onChange={set(f.key)} rows={2} className="mt-1 w-full border border-neutral-300 bg-white px-3 py-2 text-sm font-normal" />
+              <textarea value={form[f.key] || ""} onChange={set(f.key)} rows={2} className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-normal text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
             ) : f.type === "checkbox" ? (
-              <input type="checkbox" checked={!!form[f.key]} onChange={set(f.key, "checkbox")} className="ml-2" />
+              <input type="checkbox" checked={!!form[f.key]} onChange={set(f.key, "checkbox")} className="ml-2 h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" />
             ) : f.type === "upload" ? (
               <span className="mt-1 block font-normal">
-                <input value={form[f.key] || ""} onChange={set(f.key)} placeholder="Logo URL or pick a file below" className="w-full border border-neutral-300 bg-white px-3 py-2 text-sm" />
-                <input type="file" accept="image/*" onChange={(e) => stageFile(f.key, e.target.files?.[0])} className="mt-1 w-full text-xs" />
+                <input value={form[f.key] || ""} onChange={set(f.key)} placeholder="Logo URL or pick a file below" className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
+                <input type="file" accept="image/*" onChange={(e) => stageFile(f.key, e.target.files?.[0])} className="mt-1 w-full text-xs text-neutral-600" />
                 {staged[f.key] ? (
                   <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-green-800">
                     Staged: {staged[f.key].name}
-                    <button type="button" onClick={() => clearStaged(f.key)} className="font-normal text-red-600 underline">
+                    <button type="button" onClick={() => clearStaged(f.key)} className="font-normal text-red-600 underline underline-offset-2 transition-colors hover:text-red-700">
                       remove
                     </button>
                   </span>
@@ -131,16 +138,20 @@ export default function AdminSettingsPage() {
                 )}
                 {form[f.key] && !staged[f.key] && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={resolveUploadUrl(form[f.key])} alt={f.label} style={{ height: 48, marginTop: 6 }} />
+                  <img src={resolveUploadUrl(form[f.key])} alt={f.label} style={{ height: 48, marginTop: 6 }} className="rounded-md border border-neutral-200" />
                 )}
               </span>
             ) : (
-              <input type="text" value={form[f.key] || ""} onChange={set(f.key)} className="mt-1 w-full border border-neutral-300 bg-white px-3 py-2 text-sm font-normal" />
+              <input type="text" value={form[f.key] || ""} onChange={set(f.key)} className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-normal text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
             )}
           </label>
         ))}
         <div className="md:col-span-2">
-          <button disabled={busy !== null} className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={busy !== null}
+            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : "Save Settings"}
           </button>
         </div>

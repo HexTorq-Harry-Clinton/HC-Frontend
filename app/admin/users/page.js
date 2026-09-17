@@ -100,22 +100,29 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Users</h1>
-        <span className="bg-neutral-950 px-3 py-1 text-xs font-semibold text-white">{visible.length} users</span>
+        <div>
+          <p className="eyebrow text-gold-deep">Harry Clinton</p>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900">Users</h1>
+        </div>
+        <span className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold text-white">{visible.length} users</span>
       </div>
-      {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
+      {msg && (
+        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+          {msg}
+        </p>
+      )}
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search name, email, phone..."
-        className="mt-4 w-full max-w-md border border-neutral-300 bg-white px-3 py-2 text-sm"
+        className="mt-4 w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
       />
-      <div className="mt-4 overflow-x-auto bg-white shadow-sm">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
-              <th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Mobile</th>
-              <th className="p-3">Roles</th><th className="p-3">Active</th><th className="p-3 text-right">Actions</th>
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+              <th className="px-4 py-3">Name</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">Mobile</th>
+              <th className="px-4 py-3">Roles</th><th className="px-4 py-3">Active</th><th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -130,24 +137,28 @@ export default function AdminUsersPage() {
               const available = roles.filter((r) => !mine.some((m) => m.role_id === r.role_id));
               return (
                 <Fragment key={u.user_id}>
-                  <tr className="border-b">
-                    <td className="p-3 font-medium">{u.full_name}</td>
-                    <td className="p-3">{u.email}</td>
-                    <td className="p-3">{u.phone_number}</td>
-                    <td className="p-3">
+                  <tr className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                    <td className="px-4 py-3 font-medium">{u.full_name}</td>
+                    <td className="px-4 py-3">{u.email}</td>
+                    <td className="px-4 py-3">{u.phone_number}</td>
+                    <td className="px-4 py-3">
                       <span className="flex flex-wrap gap-1">
                         {mine.map((r) => (
-                          <span key={r.role_id} className="bg-neutral-100 px-2 py-0.5 text-xs">
+                          <span key={r.role_id} className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs">
                             {r.role_name || r.role_code}
                           </span>
                         ))}
                       </span>
                     </td>
-                    <td className="p-3">
+                    <td className="px-4 py-3">
                       <ActiveToggle active={u.isactive} onToggle={(next) => toggleActive(u, next)} />
                     </td>
-                    <td className="p-3">
-                      <button onClick={() => setExpanded(open ? null : u.user_id)} className="underline">
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setExpanded(open ? null : u.user_id)}
+                        className="font-semibold text-neutral-700 underline underline-offset-2 transition-colors hover:text-gold-deep"
+                      >
                         {open ? "Hide" : "Manage"}
                       </button>
                     </td>
@@ -163,9 +174,13 @@ export default function AdminUsersPage() {
                           {mine.map((r) => {
                             const ur = userRoles.find((x) => x.user_id === u.user_id && x.role_id === r.role_id);
                             return (
-                              <span key={r.role_id} className="flex items-center gap-2 border border-neutral-300 bg-white px-2 py-1 text-xs">
+                              <span key={r.role_id} className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-2 py-1 text-xs">
                                 {r.role_name || r.role_code}
-                                <button onClick={() => ur && removeRole(ur, r.role_name || r.role_code)} className="text-red-600" aria-label="Remove role">×</button>
+                                <button
+                                  type="button"
+                                  onClick={() => ur && removeRole(ur, r.role_name || r.role_code)}
+                                  className="text-red-600 transition-colors hover:text-red-700"
+                                  aria-label="Remove role">×</button>
                               </span>
                             );
                           })}
@@ -175,7 +190,7 @@ export default function AdminUsersPage() {
                             <select
                               value={assign[u.user_id] || ""}
                               onChange={(e) => setAssign((m) => ({ ...m, [u.user_id]: e.target.value }))}
-                              className="border border-neutral-300 bg-white px-2 py-1 text-sm"
+                              className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                             >
                               <option value="">Select role</option>
                               {available.map((r) => (
@@ -184,7 +199,11 @@ export default function AdminUsersPage() {
                                 </option>
                               ))}
                             </select>
-                            <button onClick={() => assignRole(u)} className="bg-neutral-950 px-3 py-1 text-xs font-semibold text-white">
+                            <button
+                              type="button"
+                              onClick={() => assignRole(u)}
+                              className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                            >
                               Assign
                             </button>
                           </div>

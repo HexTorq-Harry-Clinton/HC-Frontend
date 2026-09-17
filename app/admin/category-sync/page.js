@@ -147,30 +147,35 @@ export default function CategorySyncPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Category Sync</h1>
-      <p className="mt-1 text-xs text-neutral-500">
+      <div>
+        <p className="eyebrow text-gold-deep">Harry Clinton</p>
+        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900">Category Sync</h1>
+      </div>
+      <p className="mt-2 text-xs text-neutral-500">
         Removes all existing Menu-Category and Menu-Sub-Category records and recreates them from the master list below.
       </p>
       <button
+        type="button"
         onClick={rebuild}
         disabled={busy}
-        className="mt-4 bg-red-700 px-6 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        className="mt-4 inline-flex items-center gap-2 rounded-md bg-red-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/40 disabled:cursor-not-allowed disabled:opacity-50"
       >
+        <i className="bi bi-exclamation-triangle" />
         {busy ? "Rebuilding..." : "Delete & Rebuild"}
       </button>
-      {done && <p className="mt-2 bg-green-50 p-2 text-sm text-green-700">Rebuild complete.</p>}
+      {done && <p className="mt-2 rounded-lg bg-green-50 p-2 text-sm font-medium text-green-700">Rebuild complete.</p>}
       {log.length > 0 && (
-        <pre className="mt-3 max-h-48 overflow-y-auto bg-neutral-950 p-3 font-mono text-xs text-green-400">
+        <pre className="mt-3 max-h-48 overflow-y-auto rounded-lg bg-neutral-950 p-3 font-mono text-xs text-green-400">
           {log.join("\n")}
         </pre>
       )}
 
-      <h2 className="mt-6 font-semibold">Categories ({cats.length})</h2>
-      <div className="mt-2 overflow-x-auto bg-white shadow-sm">
+      <h2 className="mt-6 font-semibold text-neutral-900">Categories ({cats.length})</h2>
+      <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b text-xs uppercase text-neutral-500">
-              <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Storefront route</th>
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+              <th className="px-4 py-3">Name</th><th className="px-4 py-3">Slug</th><th className="px-4 py-3">Storefront route</th>
             </tr>
           </thead>
           <tbody>
@@ -178,12 +183,12 @@ export default function CategorySyncPage() {
               const slug = c.menu_category_slug;
               const ok = storefrontSlugs.includes(slug);
               return (
-                <tr key={c.menu_category_id} className="border-b last:border-0">
-                  <td className="p-3">{c.menu_category_name}</td>
-                  <td className="p-3 text-neutral-500">{slug}</td>
-                  <td className="p-3">
+                <tr key={c.menu_category_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                  <td className="px-4 py-3">{c.menu_category_name}</td>
+                  <td className="px-4 py-3 text-neutral-500">{slug}</td>
+                  <td className="px-4 py-3">
                     {ok ? (
-                      <Link href={`/${slug}`} className="text-green-700 underline">/{slug} ✓</Link>
+                      <Link href={`/${slug}`} className="font-medium text-green-700 underline underline-offset-2 transition-colors hover:text-green-800">/{slug} ✓</Link>
                     ) : (
                       <span className="text-red-600">no route — add slug to lib/catalog.js</span>
                     )}
@@ -195,22 +200,22 @@ export default function CategorySyncPage() {
         </table>
       </div>
 
-      <h2 className="mt-6 font-semibold">Sub-Categories ({subs.length})</h2>
-      <div className="mt-2 overflow-x-auto bg-white shadow-sm">
+      <h2 className="mt-6 font-semibold text-neutral-900">Sub-Categories ({subs.length})</h2>
+      <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b text-xs uppercase text-neutral-500">
-              <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Redirect link</th>
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+              <th className="px-4 py-3">Name</th><th className="px-4 py-3">Slug</th><th className="px-4 py-3">Redirect link</th>
             </tr>
           </thead>
           <tbody>
             {subs.map((s) => (
-              <tr key={s.menu_subcategory_id} className="border-b last:border-0">
-                <td className="p-3">{s.menu_subcategory_name}</td>
-                <td className="p-3 text-neutral-500">{s.menu_subcategory_slug}</td>
-                <td className="p-3">
+              <tr key={s.menu_subcategory_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                <td className="px-4 py-3">{s.menu_subcategory_name}</td>
+                <td className="px-4 py-3 text-neutral-500">{s.menu_subcategory_slug}</td>
+                <td className="px-4 py-3">
                   {s.redirect_link ? (
-                    <Link href={s.redirect_link} className="underline">{s.redirect_link}</Link>
+                    <Link href={s.redirect_link} className="font-medium text-gold-deep underline underline-offset-2 transition-colors hover:text-neutral-950">{s.redirect_link}</Link>
                   ) : (
                     <span className="text-neutral-400">—</span>
                   )}

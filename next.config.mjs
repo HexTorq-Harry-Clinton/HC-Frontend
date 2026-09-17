@@ -7,6 +7,10 @@ const nextConfig = {
       { protocol: "https", hostname: "dev.dine360.ca", pathname: "/**" },
       { protocol: "https", hostname: "harryclinton.in", pathname: "/**" },
       { protocol: "https", hostname: "www.harryclinton.in", pathname: "/**" },
+      // Placeholder seed imagery used by existing product media; without this
+      // the optimizer rejects these URLs (400 INVALID_IMAGE_OPTIMIZE_REQUEST)
+      // and the photos never appear.
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
     ],
   },
   async headers() {

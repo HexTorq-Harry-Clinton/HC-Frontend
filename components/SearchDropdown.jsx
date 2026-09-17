@@ -52,8 +52,8 @@ export default function SearchDropdown({ onClose }) {
     const [cats, subs, prods, media] = await Promise.all([
       apiFetch("/Menu-Category").then(unwrap).catch(() => []),
       apiFetch("/Menu-Sub-Category").then(unwrap).catch(() => []),
-      apiFetch("/Products").then(unwrap).catch(() => []),
-      apiFetch("/Products-Media").then(unwrap).catch(() => []),
+      apiFetch("/Products", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+      apiFetch("/Products-Media", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
     ]);
     dataRef.current = { cats, subs, prods, media };
     fetchedAtRef.current = Date.now();

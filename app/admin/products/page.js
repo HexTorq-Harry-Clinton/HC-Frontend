@@ -16,7 +16,8 @@ const TAB_MODULES = {
   Attributes: "attributes",
 };
 
-const input = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
+const input =
+  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 
 // Product Management: grouped workspace like before —
 // tabs (Products/Sizes/Cloth Types/Care/Attributes) + search,
@@ -40,7 +41,7 @@ export default function AdminProductsPage() {
   // Mount + refresh fetch: state updates happen only in the async continuation.
   useEffect(() => {
     let live = true;
-    apiFetch("/Products", { params: { includeInactive: 1 } })
+    apiFetch("/Products", { params: { includeInactive: 1, pageSize: 200 } })
       .then(unwrap)
       .then((list) => {
         if (live) setProducts(Array.isArray(list) ? list : []);
@@ -161,21 +162,31 @@ export default function AdminProductsPage() {
   return (
     <div>
       <AdminToast toast={toast} onDone={() => setToast(null)} />
-      <h1 className="text-2xl font-bold">Product Management</h1>
+      <div>
+        <p className="eyebrow text-gold-deep">Harry Clinton</p>
+        <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900">Product Management</h1>
+      </div>
       <div className="mt-3 flex flex-wrap gap-2 border-b border-neutral-200 pb-3">
         {TABS.map((t) => (
           <button
+            type="button"
             key={t}
             onClick={() => setTab(t)}
-            className={`border px-4 py-2 text-sm font-semibold ${
-              tab === t ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-300 bg-white"
+            className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
+              tab === t
+                ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
+                : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50"
             }`}
           >
             {t}
           </button>
         ))}
       </div>
-      {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
+      {msg && (
+        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+          {msg}
+        </p>
+      )}
 
       {tab !== "Products" ? (
         <div className="mt-4" key={tab}>
@@ -183,7 +194,7 @@ export default function AdminProductsPage() {
         </div>
       ) : (
         <>
-          <form onSubmit={submit} className="mt-4 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
+          <form onSubmit={submit} className="mt-4 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
             <input value={form.product_name} onChange={set("product_name")} required placeholder="Product name" className={input} />
             <input value={form.product_slug} onChange={set("product_slug")} required placeholder="slug-like-this" className={input} />
             <input value={form.short_description} onChange={set("short_description")} placeholder="Short description" className={input} />
@@ -193,14 +204,21 @@ export default function AdminProductsPage() {
             </div>
             <textarea value={form.description} onChange={set("description")} placeholder="Full description" rows={2} className={`${input} md:col-span-2`} />
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.isactive} onChange={set("isactive")} /> Active
+              <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
             </label>
             <div className="flex gap-2">
-              <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+              >
                 {editing ? "Update Product" : "Add Product"}
               </button>
               {editing && (
-                <button type="button" onClick={() => { setEditing(null); setForm(empty); }} className="border px-4 py-2 text-sm">
+                <button
+                  type="button"
+                  onClick={() => { setEditing(null); setForm(empty); }}
+                  className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                >
                   Cancel
                 </button>
               )}
@@ -212,15 +230,19 @@ export default function AdminProductsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products..."
-              className="w-full max-w-md border border-neutral-300 bg-white px-3 py-2 text-sm"
+              className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             />
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-neutral-300 bg-white px-3 py-2 text-sm">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+            >
               <option value="all">All</option>
               <option value="active">Active only</option>
               <option value="inactive">Inactive only</option>
             </select>
             {search && (
-              <button type="button" onClick={() => setSearch("")} className="text-sm text-neutral-500 underline">
+              <button type="button" onClick={() => setSearch("")} className="text-sm font-medium text-neutral-500 underline underline-offset-2 transition-colors hover:text-gold-deep">
                 Clear
               </button>
             )}
@@ -229,11 +251,11 @@ export default function AdminProductsPage() {
           <p className="mb-2 mt-4 text-xs text-neutral-500">
             {visible.length} of {products.length} record{products.length === 1 ? "" : "s"} {search || statusFilter !== "all" ? "· filtered" : ""}
           </p>
-          <div className="overflow-x-auto bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
-                  <th className="p-3">Name</th><th className="p-3">Slug</th><th className="p-3">Price</th><th className="p-3">Active</th><th className="p-3 text-right">Actions</th>
+                <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+                  <th className="px-4 py-3">Name</th><th className="px-4 py-3">Slug</th><th className="px-4 py-3">Price</th><th className="px-4 py-3">Active</th><th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -243,20 +265,20 @@ export default function AdminProductsPage() {
                   </tr>
                 ) : (
                 visible.map((p) => (
-                  <tr key={p.product_id} className="border-b transition last:border-0 hover:bg-[#faf8f4]">
-                    <td className="p-3">
+                  <tr key={p.product_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                    <td className="px-4 py-3">
                       <p className="font-medium">{p.product_name}</p>
                       {p.short_description && <p className="text-xs text-neutral-500">{p.short_description}</p>}
                     </td>
-                    <td className="p-3 text-neutral-500">{p.product_slug}</td>
-                    <td className="p-3">{inr(p.base_price)}</td>
-                    <td className="p-3">
+                    <td className="px-4 py-3 text-neutral-500">{p.product_slug}</td>
+                    <td className="px-4 py-3">{inr(p.base_price)}</td>
+                    <td className="px-4 py-3">
                       <ActiveToggle active={p.isactive} onToggle={(next) => toggleProduct(p, next)} />
                     </td>
-                    <td className="whitespace-nowrap p-3 text-right">
-                      <button onClick={() => setWorkspace(p)} className="mr-3 font-semibold underline">Open</button>
-                      <button onClick={() => edit(p)} className="mr-3 underline">Edit</button>
-                      <button onClick={() => remove(p)} className="text-red-600 underline">Delete</button>
+                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <button type="button" onClick={() => setWorkspace(p)} className="mr-3 font-semibold text-neutral-700 underline underline-offset-2 transition-colors hover:text-gold-deep">Open</button>
+                      <button type="button" onClick={() => edit(p)} className="mr-3 text-neutral-700 underline underline-offset-2 transition-colors hover:text-gold-deep">Edit</button>
+                      <button type="button" onClick={() => remove(p)} className="text-red-600 underline underline-offset-2 transition-colors hover:text-red-700">Delete</button>
                     </td>
                   </tr>
                 )))}
@@ -608,36 +630,48 @@ function ProductWorkspace({ product, onBack }) {
 
   return (
     <div>
-      <button onClick={onBack} className="text-sm underline">← Back to Products</button>
-      <h1 className="mt-2 text-2xl font-bold">{product.product_name}</h1>
+      <button
+        type="button"
+        onClick={onBack}
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-600 transition-colors hover:text-gold-deep"
+      >
+        <i className="bi bi-arrow-left" /> Back to Products
+      </button>
+      <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-neutral-900">{product.product_name}</h1>
       <p className="mt-1 text-xs text-neutral-500">{product.product_slug} · {inr(product.base_price)}</p>
-      {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
+      {msg && (
+        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+          {msg}
+        </p>
+      )}
 
-      <h2 className="mt-6 text-lg font-bold">Variants</h2>
+      <h2 className="mt-6 flex items-center gap-2 text-lg font-bold text-neutral-900">
+        <i className="bi bi-layers text-gold-deep" /> Variants
+      </h2>
       {variants.length === 0 ? (
-        <p className="mt-2 bg-white p-4 text-sm text-neutral-500 shadow-sm">No variants yet.</p>
+        <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No variants yet.</p>
       ) : (
-        <div className="mt-2 overflow-x-auto bg-white shadow-sm">
+        <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
-                <th className="p-3">SKU</th><th className="p-3">Name</th><th className="p-3">Size</th>
-                <th className="p-3">Cloth Type</th><th className="p-3">Price</th><th className="p-3">Stock</th>
-                <th className="p-3">Image (per variant)</th><th className="p-3 text-right">Actions</th>
+              <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+                <th className="px-4 py-3">SKU</th><th className="px-4 py-3">Name</th><th className="px-4 py-3">Size</th>
+                <th className="px-4 py-3">Cloth Type</th><th className="px-4 py-3">Price</th><th className="px-4 py-3">Stock</th>
+                <th className="px-4 py-3">Image (per variant)</th><th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {variants.map((v) => {
                 const vMedia = vMediaByVariant[v.product_variant_id] || [];
                 return (
-                  <tr key={v.product_variant_id} className="border-b align-top last:border-0">
-                    <td className="p-3 font-medium">{v.sku}</td>
-                    <td className="p-3">{v.variant_name || "—"}</td>
-                    <td className="p-3">{sizeName(v.size_id)}</td>
-                    <td className="p-3">{clothName(v.cloth_type_id)}</td>
-                    <td className="p-3">{inr(v.price)}</td>
-                    <td className="p-3">{v.stock_qty}</td>
-                    <td className="p-3">
+                  <tr key={v.product_variant_id} className="border-b align-top transition-colors last:border-0 hover:bg-[#faf8f4]">
+                    <td className="px-4 py-3 font-medium">{v.sku}</td>
+                    <td className="px-4 py-3">{v.variant_name || "—"}</td>
+                    <td className="px-4 py-3">{sizeName(v.size_id)}</td>
+                    <td className="px-4 py-3">{clothName(v.cloth_type_id)}</td>
+                    <td className="px-4 py-3">{inr(v.price)}</td>
+                    <td className="px-4 py-3">{v.stock_qty}</td>
+                    <td className="px-4 py-3">
                       <div className="flex flex-wrap items-center gap-2">
                         {vMedia.length === 0 ? (
                           <span className="text-xs text-neutral-400">No image</span>
@@ -649,20 +683,21 @@ function ProductWorkspace({ product, onBack }) {
                                 src={resolveUploadUrl(m.media_url)}
                                 alt={m.alt_text || v.sku}
                                 style={{ height: 48, width: 48, objectFit: "cover" }}
-                                className="border border-neutral-300 bg-white"
+                                className="rounded-md border border-neutral-300 bg-white"
                                 onError={(e) => { e.currentTarget.style.display = "none"; }}
                               />
                               <button
+                                type="button"
                                 onClick={() => deleteVariantMedia(m)}
                                 title="Delete variant image"
-                                className="absolute -right-1 -top-1 rounded-full bg-white px-1 text-xs text-red-600 shadow"
+                                className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs text-red-600 shadow ring-1 ring-neutral-200 transition-colors hover:bg-red-50"
                               >
                                 ×
                               </button>
                             </div>
                           ))
                         )}
-                        <label className="relative flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-2 py-1 text-xs font-semibold">
+                        <label className="relative flex cursor-pointer items-center justify-center rounded-md border border-dashed border-neutral-400 px-2 py-1 text-xs font-semibold text-neutral-600 transition-colors hover:border-gold hover:text-gold-deep">
                           {vUploadingId === v.product_variant_id ? "..." : "+ Image"}
                           <input
                             type="file"
@@ -673,33 +708,38 @@ function ProductWorkspace({ product, onBack }) {
                         </label>
                       </div>
                       {vPreview?.variantId === v.product_variant_id && (
-                        <div className="mt-2 flex flex-wrap items-start gap-2 rounded border border-neutral-200 bg-neutral-50 p-2">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {vPreview.type === "image" ? (
-                            <img src={vPreview.url} alt="preview" style={{ height: 60, width: 60, objectFit: "cover" }} className="border" />
-                          ) : (
-                            <video src={vPreview.url} style={{ height: 60, width: 60, objectFit: "cover" }} controls className="border" />
-                          )}
+                            <div className="mt-2 flex flex-wrap items-start gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+                              {vPreview.type === "image" ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img src={vPreview.url} alt="preview" style={{ height: 60, width: 60, objectFit: "cover" }} className="rounded-md border border-neutral-300" />
+                              ) : (
+                                <video src={vPreview.url} style={{ height: 60, width: 60, objectFit: "cover" }} controls className="rounded-md border border-neutral-300" />
+                              )}
                           <div className="flex-1">
                             <p className="text-xs">{vPreview.name}</p>
                             <p className="text-xs text-neutral-500">Preview</p>
                           </div>
                           <button
+                            type="button"
                             onClick={uploadVariantMedia}
                             disabled={vUploadingId === v.product_variant_id}
-                            className="bg-neutral-950 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-gold hover:text-neutral-950 disabled:opacity-50"
                           >
                             {vUploadingId === v.product_variant_id ? "..." : "Upload"}
                           </button>
-                          <button onClick={clearVariantPreview} className="border border-neutral-300 px-3 py-1 text-xs">
+                          <button
+                            type="button"
+                            onClick={clearVariantPreview}
+                            className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition-colors hover:border-neutral-950 hover:bg-neutral-50"
+                          >
                             ×
                           </button>
                         </div>
                       )}
                     </td>
-                    <td className="p-3 text-right">
-                      <button onClick={() => editVariant(v)} className="mr-3 underline">Edit</button>
-                      <button onClick={() => deleteVariant(v)} className="text-red-600 underline">Delete</button>
+                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <button type="button" onClick={() => editVariant(v)} className="mr-3 text-neutral-700 underline underline-offset-2 transition-colors hover:text-gold-deep">Edit</button>
+                      <button type="button" onClick={() => deleteVariant(v)} className="text-red-600 underline underline-offset-2 transition-colors hover:text-red-700">Delete</button>
                     </td>
                   </tr>
                 );
@@ -708,7 +748,7 @@ function ProductWorkspace({ product, onBack }) {
           </table>
         </div>
       )}
-      <form onSubmit={saveVariant} className="mt-3 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
+      <form onSubmit={saveVariant} className="mt-3 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-3">
         <h3 className="font-semibold md:col-span-3">{editingVariant ? "Edit Variant" : "Add Variant"}</h3>
         <input value={vForm.sku} onChange={(e) => setVForm((f) => ({ ...f, sku: e.target.value }))} required placeholder="SKU" className={input} />
         <input value={vForm.variant_name} onChange={(e) => setVForm((f) => ({ ...f, variant_name: e.target.value }))} placeholder="Variant Name" className={input} />
@@ -730,7 +770,10 @@ function ProductWorkspace({ product, onBack }) {
         </div>
         <input value={vForm.stock_qty} onChange={(e) => setVForm((f) => ({ ...f, stock_qty: e.target.value }))} inputMode="numeric" placeholder="Stock" className={input} />
         <div className="flex gap-2 md:col-span-3">
-          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          >
             {editingVariant ? "Update Variant" : "Add Variant"}
           </button>
           {editingVariant && (
@@ -740,7 +783,7 @@ function ProductWorkspace({ product, onBack }) {
                 setEditingVariant(null);
                 setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
               }}
-              className="border px-4 py-2 text-sm"
+              className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
             >
               Cancel
             </button>
@@ -748,19 +791,21 @@ function ProductWorkspace({ product, onBack }) {
         </div>
       </form>
 
-      <h2 className="mt-8 text-lg font-bold">Images / Media</h2>
+      <h2 className="mt-8 flex items-center gap-2 text-lg font-bold text-neutral-900">
+        <i className="bi bi-images text-gold-deep" /> Images / Media
+      </h2>
       {media.length === 0 ? (
-        <p className="mt-2 bg-white p-4 text-sm text-neutral-500 shadow-sm">No images yet.</p>
+        <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No images yet.</p>
       ) : (
         <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
           {media.map((m) => (
-            <div key={m.product_media_id} className="relative border border-neutral-200 bg-white p-2 shadow-sm">
+            <div key={m.product_media_id} className="relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-2 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={resolveUploadUrl(m.media_url)}
                 alt={m.alt_text || product.product_name}
                 style={{ height: 140, width: "100%", objectFit: "cover" }}
-                className="bg-neutral-100"
+                className="rounded-lg bg-neutral-100"
                 onError={(e) => {
                   e.currentTarget.src = "/brand/logo-black.png";
                   e.currentTarget.style.objectFit = "contain";
@@ -768,27 +813,27 @@ function ProductWorkspace({ product, onBack }) {
                 }}
               />
               <p className="mt-1 truncate text-xs">{m.alt_text || "—"}{m.isprimary ? " • Primary" : ""}</p>
-              <button onClick={() => deleteMedia(m)} className="mt-1 text-xs text-red-600 underline">Delete</button>
+              <button type="button" onClick={() => deleteMedia(m)} className="mt-1 text-xs text-red-600 underline underline-offset-2 transition-colors hover:text-red-700">Delete</button>
             </div>
           ))}
         </div>
       )}
-      <div className="mt-3 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
+      <div className="mt-3 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-3">
         <input value={mAlt} onChange={(e) => setMAlt(e.target.value)} placeholder="Alt Text" className={input} />
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} /> Set as primary
+          <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Set as primary
         </label>
-        <label className="relative flex cursor-pointer items-center justify-center border border-dashed border-neutral-400 px-4 py-2 text-sm font-semibold">
+        <label className="relative flex cursor-pointer items-center justify-center rounded-md border border-dashed border-neutral-400 px-4 py-2 text-sm font-semibold text-neutral-600 transition-colors hover:border-gold hover:text-gold-deep">
           {mPreview ? `Selected: ${mPreview.name}` : "Choose file..."}
           <input type="file" accept="image/*,video/*" onChange={pickMedia} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
         </label>
         {mPreview ? (
-          <div className="md:col-span-3 flex flex-wrap items-start gap-3 rounded border border-neutral-200 bg-neutral-50 p-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <div className="md:col-span-3 flex flex-wrap items-start gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
             {mPreview.type === "image" ? (
-              <img src={mPreview.url} alt="preview" style={{ height: 100, width: 140, objectFit: "cover" }} className="border border-neutral-300" />
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={mPreview.url} alt="preview" style={{ height: 100, width: 140, objectFit: "cover" }} className="rounded-md border border-neutral-300" />
             ) : (
-              <video src={mPreview.url} style={{ height: 100, width: 140, objectFit: "cover" }} controls className="border border-neutral-300" />
+              <video src={mPreview.url} style={{ height: 100, width: 140, objectFit: "cover" }} controls className="rounded-md border border-neutral-300" />
             )}
             <div className="flex-1">
               <p className="text-xs font-medium">{mPreview.name}</p>
@@ -796,13 +841,18 @@ function ProductWorkspace({ product, onBack }) {
             </div>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={saveMedia}
                 disabled={uploading}
-                className="bg-neutral-950 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-gold hover:text-neutral-950 disabled:opacity-50"
               >
                 {uploading ? "Saving..." : "Save"}
               </button>
-              <button onClick={clearMediaPreview} className="border border-neutral-300 px-4 py-2 text-xs">
+              <button
+                type="button"
+                onClick={clearMediaPreview}
+                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:border-neutral-950 hover:bg-neutral-50"
+              >
                 Cancel
               </button>
             </div>
@@ -812,8 +862,10 @@ function ProductWorkspace({ product, onBack }) {
         )}
       </div>
 
-      <h2 className="mt-8 text-lg font-bold">Attributes</h2>
-      <form onSubmit={addAttr} className="mt-2 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-3">
+      <h2 className="mt-8 flex items-center gap-2 text-lg font-bold text-neutral-900">
+        <i className="bi bi-tags text-gold-deep" /> Attributes
+      </h2>
+      <form onSubmit={addAttr} className="mt-2 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-3">
         <select value={aAttr} onChange={(e) => setAAttr(e.target.value)} className={input}>
           <option value="">-- select attribute --</option>
           {attributes.map((a) => (
@@ -822,26 +874,31 @@ function ProductWorkspace({ product, onBack }) {
         </select>
         <input value={aValue} onChange={(e) => setAValue(e.target.value)} placeholder="Value" className={input} />
         <div>
-          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Add</button>
+          <button
+            type="submit"
+            className="inline-flex w-full items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          >
+            Add
+          </button>
         </div>
       </form>
       {attrValues.length === 0 ? (
-        <p className="mt-2 bg-white p-4 text-sm text-neutral-500 shadow-sm">No attribute values yet.</p>
+        <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No attribute values yet.</p>
       ) : (
-        <div className="mt-2 overflow-x-auto bg-white shadow-sm">
+        <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
-                <th className="p-3">Attribute</th><th className="p-3">Value</th><th className="p-3 text-right">Actions</th>
+              <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+                <th className="px-4 py-3">Attribute</th><th className="px-4 py-3">Value</th><th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {attrValues.map((av) => (
-                <tr key={av.product_attribute_value_id} className="border-b last:border-0">
-                  <td className="p-3">{attrName(av.attribute_id)}</td>
-                  <td className="p-3">{av.attribute_value}</td>
-                  <td className="p-3 text-right">
-                    <button onClick={() => deleteAttr(av)} className="text-red-600 underline">Delete</button>
+                <tr key={av.product_attribute_value_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                  <td className="px-4 py-3">{attrName(av.attribute_id)}</td>
+                  <td className="px-4 py-3">{av.attribute_value}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <button type="button" onClick={() => deleteAttr(av)} className="text-red-600 underline underline-offset-2 transition-colors hover:text-red-700">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -850,14 +907,21 @@ function ProductWorkspace({ product, onBack }) {
         </div>
       )}
 
-      <h2 className="mt-8 text-lg font-bold">SEO</h2>
-      <form onSubmit={saveSeo} className="mt-2 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
+      <h2 className="mt-8 flex items-center gap-2 text-lg font-bold text-neutral-900">
+        <i className="bi bi-search text-gold-deep" /> SEO
+      </h2>
+      <form onSubmit={saveSeo} className="mt-2 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
         <input value={seoForm.seo_title} onChange={(e) => setSeoForm((f) => ({ ...f, seo_title: e.target.value }))} placeholder="SEO Title" className={input} />
         <input value={seoForm.seo_keywords} onChange={(e) => setSeoForm((f) => ({ ...f, seo_keywords: e.target.value }))} placeholder="Keywords" className={input} />
         <textarea value={seoForm.seo_description} onChange={(e) => setSeoForm((f) => ({ ...f, seo_description: e.target.value }))} placeholder="SEO Description" rows={2} className={`${input} md:col-span-2`} />
         <input value={seoForm.og_image_url} onChange={(e) => setSeoForm((f) => ({ ...f, og_image_url: e.target.value }))} placeholder="OG Image URL" className={`${input} md:col-span-2`} />
         <div className="md:col-span-2">
-          <button className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white">Save SEO</button>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          >
+            Save SEO
+          </button>
         </div>
       </form>
     </div>

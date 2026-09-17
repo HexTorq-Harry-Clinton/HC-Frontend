@@ -11,7 +11,22 @@ import { useConfirm } from "./ConfirmProvider";
 // Search across text columns, Active toggles, file uploads, FK dropdowns.
 // lock={{field, value, label}} nests creation inside a parent entry:
 // rows auto-filter to the parent and new records inherit its id.
-const inputCls = "w-full border border-neutral-300 bg-white px-3 py-2 text-sm";
+
+// Shared admin design tokens (dark + gold, matches AdminShell).
+const inputCls =
+  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+const btnPrimary =
+  "inline-flex items-center justify-center rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+const btnOutline =
+  "inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
+const rowAction =
+  "font-semibold text-neutral-700 underline underline-offset-2 transition-colors hover:text-gold-deep";
+const rowDanger =
+  "text-red-600 underline underline-offset-2 transition-colors hover:text-red-700";
+const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
+const tableWrapCls = "overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm";
+const thCls = "px-4 py-3 whitespace-nowrap";
+const tdCls = "max-w-xs truncate px-4 py-3";
 
 function cellText(r, c, refOptions = {}) {
   if (c.type === "checkbox") {
@@ -117,20 +132,27 @@ export default function AdminModulePage({ module: slug, lock }) {
         .join(" • ") || workspace[mod.id];
     return (
       <div>
-        <button onClick={() => { setWorkspace(null); reload(); }} className="text-sm underline">
-          ← Back to {mod.title}
+        <button
+          type="button"
+          onClick={() => { setWorkspace(null); reload(); }}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-600 transition-colors hover:text-gold-deep"
+        >
+          <i className="bi bi-arrow-left" /> Back to {mod.title}
         </button>
-        <h1 className="mt-2 text-2xl font-bold">{parentLabel}</h1>
+        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-neutral-900">{parentLabel}</h1>
         <p className="mt-1 text-xs text-neutral-500">
           Everything created below automatically belongs to this {mod.title.slice(0, -1).toLowerCase() || "record"} — no need to pick it again.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {mod.children.map((c, i) => (
             <button
+              type="button"
               key={c.slug}
               onClick={() => setWorkspaceTab(i)}
-              className={`border px-4 py-2 text-sm font-semibold ${
-                (workspaceTab || 0) === i ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-300 bg-white"
+              className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
+                (workspaceTab || 0) === i
+                  ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
+                  : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50"
               }`}
             >
               {c.title}
@@ -357,41 +379,56 @@ export default function AdminModulePage({ module: slug, lock }) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{mod.title}</h1>
+          <p className="eyebrow text-gold-deep">Harry Clinton</p>
+          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-neutral-900">{mod.title}</h1>
           <p className="mt-1 text-xs text-neutral-500">{rows.length} record(s) • {mod.endpoint}</p>
         </div>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={`Search ${mod.title}...`}
-          className="border border-neutral-300 bg-white px-3 py-2 text-sm"
+          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
           style={{ minWidth: 200 }}
         />
       </div>
-      {msg && <p className="mt-3 bg-white p-3 text-sm shadow-sm">{msg}</p>}
+      {msg && (
+        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+          {msg}
+        </p>
+      )}
 
       {!mod.readOnly && (
-        <form onSubmit={submit} className="mt-4 grid gap-3 bg-white p-5 shadow-sm md:grid-cols-2">
+        <form onSubmit={submit} className={`mt-4 grid gap-3 md:grid-cols-2 ${panelCls}`}>
           {lock && (
-            <p className="bg-neutral-100 p-2 text-xs font-semibold md:col-span-2">
+            <p className="rounded-md bg-neutral-100 p-2 text-xs font-semibold md:col-span-2">
               Adding to: {lock.label}
             </p>
           )}
           {mod.columns.filter((c) => !lock || c.key !== lock.field).map((c) => (
-            <label key={c.key} className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${c.type === "textarea" ? "md:col-span-2" : ""}`}>
+            <label
+              key={c.key}
+              className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${c.type === "textarea" ? "md:col-span-2" : ""}`}
+            >
               {c.label}
               {renderField(c)}
             </label>
           ))}
           <div className="flex gap-2 md:col-span-2">
             <button
+              type="submit"
               disabled={busy !== null}
-              className="bg-neutral-950 px-6 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className={btnPrimary}
             >
               {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : editing ? "Update" : "Add"}
             </button>
             {editing && (
-              <button type="button" onClick={() => { setEditing(null); setForm({}); setStaged({}); }} className="border px-4 py-2 text-sm">Cancel</button>
+              <button
+                type="button"
+                onClick={() => { setEditing(null); setForm({}); setStaged({}); }}
+                className={btnOutline}
+              >
+                Cancel
+              </button>
             )}
           </div>
         </form>
@@ -400,14 +437,14 @@ export default function AdminModulePage({ module: slug, lock }) {
       <p className="mb-2 mt-1 text-xs text-neutral-500">
         {visible.length} record{visible.length === 1 ? "" : "s"}
       </p>
-      <div className="overflow-x-auto bg-white shadow-sm">
+      <div className={tableWrapCls}>
         <table className="w-full bg-white text-left text-sm">
           <thead>
-            <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
+            <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
               {mod.columns.map((c) => (
-                <th key={c.key} className="p-3">{c.label}</th>
+                <th key={c.key} className={thCls}>{c.label}</th>
               ))}
-              <th className="w-[140px] p-3">Actions</th>
+              <th className="w-[140px] px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -419,9 +456,9 @@ export default function AdminModulePage({ module: slug, lock }) {
               </tr>
             ) : (
             visible.map((r, i) => (
-              <tr key={r[mod.id] || i} className="border-b transition last:border-0 hover:bg-[#faf8f4]">
+              <tr key={r[mod.id] || i} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
                 {mod.columns.map((c) => (
-                  <td key={c.key} className="max-w-xs truncate p-3">
+                  <td key={c.key} className={tdCls}>
                     {mod.toggle && c.key === mod.toggle ? (
                       <ActiveToggle active={r[c.key]} onToggle={(next) => toggle(r, next)} />
                     ) : (
@@ -429,20 +466,21 @@ export default function AdminModulePage({ module: slug, lock }) {
                     )}
                   </td>
                 ))}
-                <td className="whitespace-nowrap p-3 text-right">
+                <td className="whitespace-nowrap px-4 py-3 text-right">
                   {mod.children?.length > 0 && (
                     <button
+                      type="button"
                       onClick={() => { setWorkspace(r); setWorkspaceTab(0); }}
-                      className="mr-3 font-semibold underline"
+                      className={`mr-3 ${rowAction}`}
                     >
                       Open
                     </button>
                   )}
                   {!mod.readOnly && (
                     <>
-                      <button onClick={() => edit(r)} className="mr-3 underline">Edit</button>
+                      <button type="button" onClick={() => edit(r)} className={`mr-3 ${rowAction}`}>Edit</button>
                       {!mod.noDelete && (
-                        <button onClick={() => remove(r)} className="text-red-600 underline">Delete</button>
+                        <button type="button" onClick={() => remove(r)} className={rowDanger}>Delete</button>
                       )}
                     </>
                   )}

@@ -9,8 +9,8 @@ export default async function ProductGrid({ keyword = "" }) {
   let error = "";
   try {
     const [productsRes, mediaRes] = await Promise.all([
-      apiGet("/Products"),
-      apiGet("/Products-Media").catch(() => ({ data: [] })),
+      apiGet("/Products", { params: { pageSize: 200 } }),
+      apiGet("/Products-Media", { params: { pageSize: 200 } }).catch(() => ({ data: [] })),
     ]);
     const apiProducts = unwrap(productsRes);
     const apiMedia = unwrap(mediaRes);

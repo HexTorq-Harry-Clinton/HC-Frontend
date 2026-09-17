@@ -151,22 +151,23 @@ export default function AdminOrdersPage() {
   // Return moderation happens inline in the Returns tab select below.
   if (loading) {
     return (
-      <div className="py-5 text-center">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading orders...</span>
-        </div>
-        <SpinnerStyle />
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-950" />
+        <p className="text-sm text-neutral-500">Loading orders...</p>
       </div>
     );
   }
 
   return (
     <div>
-      <h3 className="mb-4 text-[22px] font-bold">Order Management</h3>
+      <div>
+        <p className="eyebrow text-gold-deep">Harry Clinton</p>
+        <h3 className="font-display text-3xl font-bold tracking-tight text-neutral-900">Order Management</h3>
+      </div>
       {orders.length === 0 ? (
-        <p className="text-neutral-500">No orders found.</p>
+        <p className="mt-4 rounded-xl border border-neutral-200 bg-white p-5 text-sm text-neutral-500 shadow-sm">No orders found.</p>
       ) : (
-        <div className="accordion" id="adminOrdersAccordion">
+        <div className="mt-4 space-y-2">
           {orders.map((o) => {
             const isExpanded = !!expanded[o.order_id];
             const tab = activeTab[o.order_id] || "status";
@@ -177,20 +178,22 @@ export default function AdminOrdersPage() {
             const ship = orderShipment(o.order_id);
             const rets = orderReturns(o.order_id);
             return (
-              <div key={o.order_id} className="mb-2 border border-neutral-200 bg-white">
+              <div key={o.order_id} className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md">
                 <button
+                  type="button"
                   onClick={() => toggleExpand(o.order_id)}
                   aria-expanded={isExpanded}
-                  className={`flex w-full items-center justify-between p-3 text-left ${isExpanded ? "" : "collapsed"}`}
+                  className="flex w-full items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-[#faf8f4]"
                 >
                   <span className="flex items-center gap-3">
-                    <strong>{o.order_number || "Order"}</strong>
+                    <i className={`bi ${isExpanded ? "bi-chevron-down" : "bi-chevron-right"} text-sm text-gold-deep`} />
+                    <strong className="text-neutral-900">{o.order_number || "Order"}</strong>
                     {userName(o.user_id) && <span className="text-sm text-neutral-500">{userName(o.user_id)}</span>}
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="bg-neutral-950 px-2 py-0.5 text-xs font-semibold text-white">{status}</span>
-                    <span className="border border-neutral-300 px-2 py-0.5 text-xs">{o.payment_status}</span>
-                    <span className="font-bold">₹{Number(o.total_amount ?? o.total ?? subtotal).toLocaleString("en-IN")}</span>
+                    <span className="rounded-full bg-neutral-950 px-2.5 py-0.5 text-xs font-semibold text-white">{status}</span>
+                    <span className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600">{o.payment_status}</span>
+                    <span className="font-bold text-neutral-900">₹{Number(o.total_amount ?? o.total ?? subtotal).toLocaleString("en-IN")}</span>
                   </span>
                 </button>
                 {isExpanded && (
@@ -204,11 +207,12 @@ export default function AdminOrdersPage() {
                       ].map(([key, label]) => (
                         <li key={key}>
                           <button
+                            type="button"
                             onClick={() => setActiveTab((m) => ({ ...m, [o.order_id]: key }))}
-                            className={`px-4 py-2 text-[13.5px] font-semibold ${
+                            className={`-mb-px border-b-2 px-4 py-2 text-[13.5px] font-semibold transition-colors ${
                               tab === key
-                                ? "border-b-2 border-[#b08d57] bg-white text-neutral-900"
-                                : "text-neutral-500 hover:text-neutral-900"
+                                ? "border-gold bg-white text-neutral-900"
+                                : "border-transparent text-neutral-500 hover:text-neutral-900"
                             }`}
                           >
                             {label}
@@ -219,22 +223,26 @@ export default function AdminOrdersPage() {
 
                     {tab === "status" && (
                       <div>
-                        <label className="mb-1 block text-sm font-semibold">Update Order Status</label>
+                        <label className="mb-1 block text-sm font-semibold text-neutral-700">Update Order Status</label>
                         <div className="flex flex-wrap items-center gap-2">
                           <select
                             value={statusDraft[o.order_id] || status}
                             onChange={(e) => setStatusDraft((m) => ({ ...m, [o.order_id]: e.target.value }))}
-                            className="w-auto border border-neutral-300 bg-white px-3 py-2 text-sm"
+                            className="w-auto rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                           >
                             {ORDER_STATUSES.map((s) => (
                               <option key={s} value={s}>{s}</option>
                             ))}
                           </select>
-                          <button onClick={() => saveStatus(o)} className="bg-neutral-950 px-4 py-2 text-sm font-semibold text-white">
+                          <button
+                            type="button"
+                            onClick={() => saveStatus(o)}
+                            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                          >
                             Save
                           </button>
                         </div>
-                        <strong className="mt-4 block text-sm">Status History:</strong>
+                        <strong className="mt-4 block text-sm text-neutral-900">Status History:</strong>
                         <ul className="mt-1 space-y-1 text-sm text-neutral-600">
                           {orderHistory(o.order_id).map((h) => (
                             <li key={h.order_status_history_id}>
@@ -250,24 +258,26 @@ export default function AdminOrdersPage() {
                         {list.length === 0 ? (
                           <p className="text-sm text-neutral-500">No items.</p>
                         ) : (
+                          <div className="overflow-x-auto rounded-lg border border-neutral-200">
                           <table className="w-full text-left text-sm">
                             <thead>
-                              <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
-                                <th className="p-2">Product</th><th className="p-2">SKU</th><th className="p-2">Qty</th>
-                                <th className="p-2 text-right">Price</th>
+                              <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+                                <th className="px-3 py-2">Product</th><th className="px-3 py-2">SKU</th><th className="px-3 py-2">Qty</th>
+                                <th className="px-3 py-2 text-right">Price</th>
                               </tr>
                             </thead>
                             <tbody>
                               {list.map((item) => (
-                                <tr key={item.order_item_id} className="border-b last:border-0">
-                                  <td className="p-2">{item.product_name}</td>
-                                  <td className="p-2">{item.sku}</td>
-                                  <td className="p-2">{item.qty}</td>
-                                  <td className="p-2 text-right">₹{(Number(item.unit_price || 0) * Number(item.qty || 0)).toLocaleString("en-IN")}</td>
+                                <tr key={item.order_item_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                                  <td className="px-3 py-2">{item.product_name}</td>
+                                  <td className="px-3 py-2">{item.sku}</td>
+                                  <td className="px-3 py-2">{item.qty}</td>
+                                  <td className="px-3 py-2 text-right">₹{(Number(item.unit_price || 0) * Number(item.qty || 0)).toLocaleString("en-IN")}</td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
+                          </div>
                         )}
                         <div className="mt-2 flex justify-between text-sm">
                           <span>Subtotal: ₹{subtotal.toLocaleString("en-IN")}</span>
@@ -293,13 +303,17 @@ export default function AdminOrdersPage() {
                                 onChange={(e) =>
                                   setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), shipment_status: e.target.value } }))
                                 }
-                                className="w-auto border border-neutral-300 bg-white px-3 py-2 text-sm"
+                                className="w-auto rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                               >
                                 {SHIP_STATUSES.map((s) => (
                                   <option key={s} value={s}>{s}</option>
                                 ))}
                               </select>
-                              <button onClick={() => saveShipment(o, false)} className="bg-neutral-950 px-4 py-2 text-sm font-semibold text-white">
+                              <button
+                                type="button"
+                                onClick={() => saveShipment(o, false)}
+                                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                              >
                                 Save
                               </button>
                             </div>
@@ -311,7 +325,7 @@ export default function AdminOrdersPage() {
                               onChange={(e) =>
                                 setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), courier_partner_id: e.target.value } }))
                               }
-                              className="border border-neutral-300 bg-white px-3 py-2 text-sm"
+                              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                             >
                               <option value="">Select Courier</option>
                               {couriers.map((c) => (
@@ -326,20 +340,24 @@ export default function AdminOrdersPage() {
                                 setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), tracking_number: e.target.value } }))
                               }
                               placeholder="Tracking number"
-                              className="border border-neutral-300 bg-white px-3 py-2 text-sm"
+                              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                             />
                             <select
                               value={(shipForm[o.order_id] || {}).shipment_status || "created"}
                               onChange={(e) =>
                                 setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), shipment_status: e.target.value } }))
                               }
-                              className="border border-neutral-300 bg-white px-3 py-2 text-sm"
+                              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                             >
                               {SHIP_STATUSES.map((s) => (
                                 <option key={s} value={s}>{s}</option>
                               ))}
                             </select>
-                            <button onClick={() => saveShipment(o, true)} className="bg-neutral-950 px-4 py-2 text-sm font-semibold text-white">
+                            <button
+                              type="button"
+                              onClick={() => saveShipment(o, true)}
+                              className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                            >
                               Save
                             </button>
                           </div>
@@ -352,21 +370,22 @@ export default function AdminOrdersPage() {
                         {rets.length === 0 ? (
                           <p className="text-sm text-neutral-500">No return requests for this order.</p>
                         ) : (
+                          <div className="overflow-x-auto rounded-lg border border-neutral-200">
                           <table className="w-full text-left text-sm">
                             <thead>
-                              <tr className="bg-[#17161a] text-[11px] font-bold uppercase text-white">
-                                <th className="p-2">Item</th><th className="p-2">Reason</th><th className="p-2">Status</th><th className="p-2">Action</th>
+                              <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
+                                <th className="px-3 py-2">Item</th><th className="px-3 py-2">Reason</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Action</th>
                               </tr>
                             </thead>
                             <tbody>
                               {rets.map((r) => {
                                 const item = list.find((i) => i.order_item_id === r.order_item_id);
                                 return (
-                                  <tr key={r.return_id} className="border-b last:border-0">
-                                    <td className="p-2">{item?.product_name || "Unknown"}</td>
-                                    <td className="p-2">{r.return_reason}</td>
-                                    <td className="p-2">{r.return_status}</td>
-                                    <td className="p-2">
+                                  <tr key={r.return_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
+                                    <td className="px-3 py-2">{item?.product_name || "Unknown"}</td>
+                                    <td className="px-3 py-2">{r.return_reason}</td>
+                                    <td className="px-3 py-2">{r.return_status}</td>
+                                    <td className="px-3 py-2">
                                       <select
                                         value={returnStatus[r.return_id] || r.return_status}
                                         onChange={(e) => {
@@ -380,7 +399,7 @@ export default function AdminOrdersPage() {
                                             load();
                                           }).catch(() => toast?.error("Failed to update return."));
                                         }}
-                                        className="w-auto border border-neutral-300 bg-white px-2 py-1 text-sm"
+                                        className="w-auto rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                                       >
                                         {RETURN_STATUSES.map((s) => (
                                           <option key={s} value={s}>{s}</option>
@@ -392,6 +411,7 @@ export default function AdminOrdersPage() {
                               })}
                             </tbody>
                           </table>
+                          </div>
                         )}
                       </div>
                     )}
@@ -402,17 +422,6 @@ export default function AdminOrdersPage() {
           })}
         </div>
       )}
-      <SpinnerStyle />
     </div>
-  );
-}
-
-function SpinnerStyle() {
-  return (
-    <style jsx>{`
-      .spinner-border { width: 2rem; height: 2rem; border: 0.25em solid #ddd; border-top-color: #111; border-radius: 50%; animation: sd-spin 0.75s linear infinite; display: inline-block; }
-      @keyframes sd-spin { to { transform: rotate(360deg); } }
-      .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    `}</style>
   );
 }
