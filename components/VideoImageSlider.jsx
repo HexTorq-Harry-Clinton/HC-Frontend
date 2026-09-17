@@ -10,6 +10,7 @@ const FALLBACK_SLIDES = [
     src: "/brand/logo-black.png",
     alt: "Harry Clinton Atelier",
     redirect: "/suits",
+    secs: 4,
   },
 ];
 
@@ -24,6 +25,7 @@ export default function VideoImageSlider() {
   const [paused, setPaused] = useState(false);
   const [failed, setFailed] = useState({});
   const timer = useRef(null);
+  const touchX = useRef(null);
 
   useEffect(() => {
     let live = true;
@@ -37,6 +39,7 @@ export default function VideoImageSlider() {
             src: resolveUploadUrl(item.image_url || item.media_url || item.src),
             alt: item.title || item.alt_text || "Harry Clinton",
             redirect: item.redirect_link || null,
+            secs: Number(item.auto_slide_interval_seconds) || 4,
           }))
           .filter((s) => s.src && !s.src.includes("cdn.example.com") && !s.src.includes("example.com"));
         // If backend has no valid slides (all filtered or empty), fall back to local brand asset so hero is never black.
@@ -58,11 +61,27 @@ export default function VideoImageSlider() {
     [slides.length]
   );
 
+  // Per-slide autoplay: each slide's own auto_slide_interval_seconds
+  // (clamped 2–12s), so the DB controls pacing per image.
   useEffect(() => {
     if (paused || slides.length < 2) return undefined;
-    timer.current = setInterval(() => go(1), 4000);
-    return () => clearInterval(timer.current);
-  }, [paused, slides.length, go]);
+    const secs = Number(slides[index]?.secs) || 4;
+    const ms = Math.min(Math.max(secs, 2), 12) * 1000;
+    timer.current = setTimeout(() => go(1), ms);
+    return () => clearTimeout(timer.current);
+  }, [paused, slides, index, go]);
+
+  // Mobile swipe: horizontal drag flips slides (40px threshold).
+  const onTouchStart = (e) => {
+    touchX.current = e.touches[0]?.clientX ?? null;
+  };
+  const onTouchEnd = (e) => {
+    if (touchX.current == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? touchX.current) - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) < 40 || slides.length < 2) return;
+    go(dx < 0 ? 1 : -1);
+  };
 
   if (loading) {
     return (
@@ -91,6 +110,8 @@ export default function VideoImageSlider() {
       className="slider-container group relative overflow-hidden bg-neutral-950"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
     >
       <div className="relative aspect-[16/7] w-full bg-neutral-900">
         <AnimatePresence mode="popLayout">

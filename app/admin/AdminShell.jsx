@@ -17,7 +17,7 @@ const GROUPS = [
   {
     key: "marketing",
     label: "Marketing & Content",
-    labels: ["Notification Bar", "Running Bar & Items", "Coupons", "Discounts", "Newsletters", "Reviews", "Spotlight Media", "Style Collections", "Home Video", "Home Image Sliders"],
+    labels: ["Notification Bar", "Home Image Sliders", "Running Bar & Items", "Coupons", "Discounts", "Newsletters", "Reviews", "Spotlight Media", "Style Collections", "Home Video"],
   },
   {
     key: "sales",
@@ -56,6 +56,7 @@ const NAV = [
   { href: "/admin/products", label: "Products & Media", group: "catalog" },
   { href: "/admin/categories", label: "Categories & Subcategories", group: "catalog" },
   { href: "/admin/notification-bars", label: "Notification Bar", group: "marketing" },
+  { href: "/admin/image-sliders", label: "Home Image Sliders", group: "marketing" },
   { href: "/admin/running-bars", label: "Running Bar & Items", group: "marketing" },
   { href: "/admin/coupons", label: "Coupons", group: "marketing" },
   { href: "/admin/discounts", label: "Discounts", group: "marketing" },
@@ -64,7 +65,6 @@ const NAV = [
   { href: "/admin/spotlight", label: "Spotlight Media", group: "marketing" },
   { href: "/admin/style-collections", label: "Style Collections", group: "marketing" },
   { href: "/admin/menu-video", label: "Home Video", group: "marketing" },
-  { href: "/admin/image-sliders", label: "Home Image Sliders", group: "marketing" },
   { href: "/admin/orders", label: "Orders", group: "sales" },
   { href: "/admin/payments", label: "Payments", group: "sales" },
   { href: "/admin/invoices", label: "Invoices", group: "sales" },
