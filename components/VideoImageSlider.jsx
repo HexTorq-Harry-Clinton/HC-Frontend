@@ -11,8 +11,15 @@ const FALLBACK_SLIDES = [
     alt: "Harry Clinton Atelier",
     redirect: "/suits",
     secs: 4,
+    kind: "image",
   },
 ];
+
+const kindOf = (item, url) => {
+  const t = String(item.media_type || "").toLowerCase();
+  if (t === "video" || t === "image") return t;
+  return /\.(mp4|webm|mov)(\?|#|$)/i.test(url || "") ? "video" : "image";
+};
 
 // Hero carousel: same behavior as the previous UI — arrows, dots, autoplay,
 // pause on hover, slide counter. Slides come from the Image-Sliders API
@@ -24,8 +31,17 @@ export default function VideoImageSlider() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [failed, setFailed] = useState({});
+  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(true);
   const timer = useRef(null);
   const touchX = useRef(null);
+  const videoRef = useRef(null);
+
+  // Fresh video element per slide starts autoplay-muted; reset controls.
+  useEffect(() => {
+    setMuted(true);
+    setPlaying(true);
+  }, [index]);
 
   useEffect(() => {
     let live = true;
@@ -35,12 +51,16 @@ export default function VideoImageSlider() {
         if (!live) return;
         const list = (Array.isArray(data) ? data : [])
           .filter((s) => s.isactive !== false)
-          .map((item) => ({
-            src: resolveUploadUrl(item.image_url || item.media_url || item.src),
-            alt: item.title || item.alt_text || "Harry Clinton",
-            redirect: item.redirect_link || null,
-            secs: Number(item.auto_slide_interval_seconds) || 4,
-          }))
+          .map((item) => {
+            const url = resolveUploadUrl(item.image_url || item.media_url || item.src);
+            return {
+              src: url,
+              alt: item.title || item.alt_text || "Harry Clinton",
+              redirect: item.redirect_link || null,
+              secs: Number(item.auto_slide_interval_seconds) || 4,
+              kind: kindOf(item, url),
+            };
+          })
           .filter((s) => s.src && !s.src.includes("cdn.example.com") && !s.src.includes("example.com"));
         // If backend has no valid slides (all filtered or empty), fall back to local brand asset so hero is never black.
         setSlides(list.length > 0 ? list : FALLBACK_SLIDES);
@@ -104,6 +124,24 @@ export default function VideoImageSlider() {
   if (slides.length === 0) return null;
 
   const current = effectiveSlides[index] || FALLBACK_SLIDES[0];
+  const isVideo = current.kind === "video" && !failed[index];
+
+  const toggleMute = (e) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    const next = !muted;
+    setMuted(next);
+    if (v) v.muted = next;
+  };
+
+  const togglePlay = (e) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    if (playing) v.pause();
+    else v.play().catch(() => {});
+    setPlaying(!playing);
+  };
 
   return (
     <div
@@ -124,23 +162,62 @@ export default function VideoImageSlider() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             onClick={() => current.redirect && router.push(current.redirect)}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={current.src}
-              alt={current.alt}
-              className="h-full w-full object-cover"
-              loading={index === 0 ? "eager" : "lazy"}
-              onError={() => {
-                if (!failed[index]) setFailed((m) => ({ ...m, [index]: true }));
-              }}
-            />
-            {failed[index] && (
-              <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/70 text-white">
-                <span className="rounded bg-white/15 px-3 py-1 text-xs tracking-widest">HARRY CLINTON</span>
-              </div>
+            {isVideo ? (
+              <video
+                key={current.src}
+                ref={videoRef}
+                src={current.src}
+                className="h-full w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                onError={() => {
+                  if (!failed[index]) setFailed((m) => ({ ...m, [index]: true }));
+                }}
+              />
+            ) : (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={current.src}
+                  alt={current.alt}
+                  className="h-full w-full object-cover"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  onError={() => {
+                    if (!failed[index]) setFailed((m) => ({ ...m, [index]: true }));
+                  }}
+                />
+                {failed[index] && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/70 text-white">
+                    <span className="rounded bg-white/15 px-3 py-1 text-xs tracking-widest">HARRY CLINTON</span>
+                  </div>
+                )}
+              </>
             )}
-          </motion.div>
+            </motion.div>
         </AnimatePresence>
+        {isVideo && (
+          <div className="absolute bottom-3 right-4 flex gap-2">
+            <button
+              type="button"
+              aria-label={playing ? "Pause video" : "Play video"}
+              onClick={togglePlay}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
+            >
+              <i className={`bi ${playing ? "bi-pause-fill" : "bi-play-fill"} leading-none`} />
+            </button>
+            <button
+              type="button"
+              aria-label={muted ? "Unmute video" : "Mute video"}
+              onClick={toggleMute}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
+            >
+              <i className={`bi ${muted ? "bi-volume-mute-fill" : "bi-volume-up-fill"} leading-none`} />
+            </button>
+          </div>
+        )}
         {slides.length > 1 && (
           <>
             <button

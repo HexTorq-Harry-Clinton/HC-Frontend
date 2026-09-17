@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   apiFetch, unwrap, revalidateSite, friendlyError,
-  uploadFile, resolveUploadUrl,
+  uploadFile, resolveUploadUrl, detectMediaType,
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import { useToast } from "../ToastProvider";
@@ -22,17 +22,27 @@ const btnOutline =
 const iconBtn =
   "inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900";
 
-// JPG / PNG / WEBP only, max 3 MB per the hero spec.
-const MAX_BYTES = 3 * 1024 * 1024;
-const OK_EXT = ["jpg", "jpeg", "png", "webp"];
+// Images: JPG / PNG / WEBP, max 3 MB. Videos: MP4 / WEBM / MOV, max 50 MB.
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const OK_IMAGE_EXT = ["jpg", "jpeg", "png", "webp"];
+const OK_VIDEO_EXT = ["mp4", "webm", "mov"];
 
-function checkImage(file) {
-  if (!file) return "Please pick an image file.";
+function checkFile(file) {
+  if (!file) return "Please pick a file.";
   const ext = (file.name?.split(".").pop() || "").toLowerCase();
-  if (!OK_EXT.includes(ext)) return "Only JPG, PNG or WEBP images are allowed.";
-  if (file.size > MAX_BYTES) return "Image must be 3 MB or smaller.";
+  const kind = detectMediaType(file);
+  if (kind === "video") {
+    if (!OK_VIDEO_EXT.includes(ext)) return "Only MP4, WEBM or MOV videos are allowed.";
+    if (file.size > MAX_VIDEO_BYTES) return "Video must be 50 MB or smaller.";
+    return null;
+  }
+  if (!OK_IMAGE_EXT.includes(ext)) return "Only JPG, PNG or WEBP images are allowed.";
+  if (file.size > MAX_IMAGE_BYTES) return "Image must be 3 MB or smaller.";
   return null;
 }
+
+const isVideoUrl = (url) => /\.(mp4|webm|mov)(\?|#|$)/i.test(url || "");
 
 // HC Hero Image Slider: thumbnail list with preview, upload/replace with
 // validation + live preview before publishing, activate toggle, drag-and-drop
@@ -112,12 +122,13 @@ export default function AdminImageSlidersPage() {
       button_text: r.button_text || "", redirect_link: r.redirect_link || "",
       auto_slide_interval_seconds: r.auto_slide_interval_seconds ?? 5,
       image_url: r.image_url || "",
+      media_type: r.media_type || "",
       isactive: r.isactive === 1 || r.isactive === true,
     });
   };
 
   const stage = (file) => {
-    const err = checkImage(file);
+    const err = checkFile(file);
     if (err) {
       setMsg(err);
       toast?.error(err);
@@ -144,11 +155,15 @@ export default function AdminImageSlidersPage() {
     setBusy(true);
     try {
       // Upload first (validated above) — the row is never saved without its file.
+      // media_type follows the staged file, else the kept row value, else URL sniffing.
       let imageUrl = modal.image_url;
+      let mediaType = modal.media_type || "";
       if (staged) {
-        setMsg("Uploading image...");
+        setMsg("Uploading file...");
         imageUrl = await uploadFile(staged);
+        mediaType = detectMediaType(staged);
       }
+      if (!mediaType) mediaType = isVideoUrl(imageUrl) ? "video" : "image";
       if (!imageUrl) {
         setMsg("Please pick an image file.");
         setBusy(false);
@@ -161,6 +176,7 @@ export default function AdminImageSlidersPage() {
         redirect_link: (modal.redirect_link || "").trim(),
         auto_slide_interval_seconds: Math.round(secs),
         image_url: imageUrl,
+        media_type: mediaType,
         isactive: modal.isactive ? 1 : 0,
         luu: "ADMIN_PORTAL",
       };
@@ -276,7 +292,7 @@ export default function AdminImageSlidersPage() {
         Home Image Sliders
       </h1>
       <p className="mt-1 text-xs text-neutral-500">
-        Hero slider • {live.length} slide(s) • /Image-Sliders • JPG/PNG/WEBP ≤ 3 MB
+        Hero slider — images + videos mixed • {live.length} slide(s) • /Image-Sliders • IMG ≤ 3 MB / VID ≤ 50 MB
       </p>
       {msg && (
         <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
@@ -348,13 +364,19 @@ export default function AdminImageSlidersPage() {
                   )}
                   <td className={`${tdCls} font-bold text-neutral-500`}>{i + 1}</td>
                   <td className={tdCls}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={resolveUploadUrl(r.image_url) || "/brand/logo-black.png"}
-                      alt=""
-                      className="h-12 w-24 rounded-md border border-neutral-200 object-cover"
-                      loading="lazy"
-                    />
+                    {(r.media_type === "video" || isVideoUrl(r.image_url)) ? (
+                      <span className="flex h-12 w-24 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold">
+                        <i className="bi bi-film" /> Video
+                      </span>
+                    ) : (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={resolveUploadUrl(r.image_url) || "/brand/logo-black.png"}
+                        alt=""
+                        className="h-12 w-24 rounded-md border border-neutral-200 object-cover"
+                        loading="lazy"
+                      />
+                    )}
                   </td>
                   <td className={`${tdCls} max-w-xs`}>
                     <span className="block truncate font-semibold">{r.title || "—"}</span>
@@ -409,18 +431,22 @@ export default function AdminImageSlidersPage() {
             </h3>
             {previewUrl ? (
               <div className="mt-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={previewUrl} alt="Slide preview" className="aspect-[16/7] w-full rounded-md border border-neutral-200 object-cover" />
+                {isVideoUrl(previewUrl) || (staged && detectMediaType(staged) === "video") ? (
+                  <video src={previewUrl} className="aspect-[16/7] w-full rounded-md border border-neutral-200 bg-neutral-950 object-cover" muted playsInline preload="metadata" />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={previewUrl} alt="Slide preview" className="aspect-[16/7] w-full rounded-md border border-neutral-200 object-cover" />
+                )}
                 <p className="mt-1 text-xs text-neutral-500">Preview — how it looks in the hero.</p>
               </div>
             ) : (
-              <p className="mt-3 rounded-md bg-neutral-100 p-3 text-xs text-neutral-500">No image yet — pick one below to preview.</p>
+              <p className="mt-3 rounded-md bg-neutral-100 p-3 text-xs text-neutral-500">No file yet — pick one below to preview.</p>
             )}
             <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Hero image (JPG/PNG/WEBP ≤ 3 MB){modal.id ? " — leave empty to keep current" : ""}
+              Hero file — image (JPG/PNG/WEBP ≤ 3 MB) or video (MP4/WEBM ≤ 50 MB){modal.id ? " — leave empty to keep current" : ""}
               <input
                 type="file"
-                accept=".jpg,.jpeg,.png,.webp"
+                accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov"
                 onChange={(e) => stage(e.target.files?.[0])}
                 className="mt-1 w-full text-xs"
               />
