@@ -32,7 +32,19 @@ export const revalidate = 300;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  return [...allStorefrontSlugs(), ["coming-soon"], ["the-vision"]].map((slug) => ({ slug }));
+  const base = [...allStorefrontSlugs(), ["coming-soon"], ["the-vision"]];
+  // Pre-render every product page at build time. On-demand renders of
+  // uncached routes are currently unreliable in production, so products
+  // must exist as static output — never rely on first-hit rendering.
+  try {
+    const products = unwrap(await apiGet("/Products", { params: { pageSize: 200 } }));
+    for (const p of Array.isArray(products) ? products : []) {
+      if (p?.product_slug) base.push(["product", p.product_slug]);
+    }
+  } catch {
+    /* backend hiccup at build time: ship static routes, products render on demand */
+  }
+  return base.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }) {

@@ -1,0 +1,182 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - button "Previous announcement" [ref=e3]: ❮
+    - generic [ref=e4]: 50% for Diwali
+    - button "Next announcement" [ref=e6]: ❯
+  - banner [ref=e7]:
+    - generic [ref=e8]:
+      - generic "Menu" [ref=e9] [cursor=pointer]
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - strong [ref=e15]: CATEGORIES
+          - list [ref=e16]:
+            - listitem [ref=e17]:
+              - button "Trousers" [ref=e18]
+            - listitem [ref=e19]:
+              - button "Baby Suits" [ref=e20]
+        - generic [ref=e21]:
+          - strong [ref=e22]: COLLECTIONS
+          - list [ref=e23]:
+            - listitem [ref=e24]:
+              - button "Tuxedo" [ref=e25]
+            - listitem [ref=e26]:
+              - button "Extreme Poppins" [ref=e27]
+            - listitem [ref=e28]:
+              - button "Gurkha Trousers" [ref=e29]
+            - listitem [ref=e30]:
+              - button "Linen Shirts & Trousers" [ref=e31]
+            - listitem [ref=e32]:
+              - button "88 Cigarettes" [ref=e33]
+        - generic [ref=e34]:
+          - strong [ref=e35]: SERVICES
+          - list [ref=e36]:
+            - listitem [ref=e37]:
+              - button "Embroidery" [ref=e38]
+            - listitem [ref=e39]:
+              - button "Alterations" [ref=e40]
+            - listitem [ref=e41]:
+              - button "Personal Styling" [ref=e42]
+            - listitem [ref=e43]:
+              - button "Custom Tailoring" [ref=e44]
+        - generic [ref=e46]:
+          - heading "The Vision" [level=4] [ref=e47]
+          - button "Explore" [ref=e48]
+      - button "Book a custom appointment" [ref=e50] [cursor=pointer]: C
+      - generic "Open search" [ref=e52] [cursor=pointer]: 
+    - link "Harry Clinton home" [ref=e54] [cursor=pointer]:
+      - /url: /
+      - img "Harry Clinton" [ref=e55]
+    - generic [ref=e56]:
+      - link "Wishlist" [ref=e57] [cursor=pointer]:
+        - /url: /wishlist
+        - generic [ref=e58]: 
+      - link "Bag" [ref=e59] [cursor=pointer]:
+        - /url: /cart
+        - generic [ref=e60]: 
+      - generic "Account" [ref=e62] [cursor=pointer]: 
+  - main [ref=e63]:
+    - dialog "Harry Clinton intro" [ref=e64]:
+      - button "Skip" [ref=e67]
+    - generic [ref=e68]:
+      - generic [ref=e69]:
+        - img "wertyuiop" [ref=e71] [cursor=pointer]
+        - button "Previous slide" [ref=e72]: ‹
+        - button "Next slide" [ref=e73]: ›
+      - generic [ref=e74]:
+        - button "Go to slide 1" [ref=e75]
+        - button "Go to slide 2" [ref=e76]
+        - button "Go to slide 3" [ref=e77]
+        - button "Go to slide 4" [ref=e78]
+        - button "Go to slide 5" [ref=e79]
+        - button "Go to slide 6" [ref=e80]
+        - button "Go to slide 7" [ref=e81]
+        - button "Go to slide 8" [ref=e82]
+        - button "Go to slide 9" [ref=e83]
+    - generic [ref=e85]:
+      - generic [ref=e87]:
+        - text: Enjoy an Exclusive 50% Privilege on All Orders Today Only !
+        - img "Black" [ref=e88]
+      - generic [ref=e90]: Enjoy an Exclusive 50% Privilege on All Orders Today Only !
+      - generic [ref=e93]: Enjoy an Exclusive 50% Privilege on All Orders Today Only !
+    - generic [ref=e95]:
+      - generic: HC Spotlight
+      - generic [ref=e97]:
+        - img "Summer look 1" [ref=e99] [cursor=pointer]
+        - img "Summer look 1" [ref=e101] [cursor=pointer]
+        - img "Summer look 1" [ref=e103] [cursor=pointer]
+        - img "Summer look 1" [ref=e105] [cursor=pointer]
+        - img "Summer look 1" [ref=e107] [cursor=pointer]
+        - img "Summer look 1" [ref=e109] [cursor=pointer]
+        - img "Summer look 1" [ref=e111] [cursor=pointer]
+        - img "Summer look 1" [ref=e113] [cursor=pointer]
+        - img "Summer look 1" [ref=e115] [cursor=pointer]
+      - generic [ref=e116]:
+        - generic [ref=e117] [cursor=pointer]
+        - generic [ref=e118] [cursor=pointer]
+        - generic [ref=e119] [cursor=pointer]
+        - generic [ref=e120] [cursor=pointer]
+        - generic [ref=e121] [cursor=pointer]
+        - generic [ref=e122] [cursor=pointer]
+        - generic [ref=e123] [cursor=pointer]
+        - generic [ref=e124] [cursor=pointer]
+        - generic [ref=e125] [cursor=pointer]
+    - generic [ref=e126]:
+      - heading "FAQs" [level=2] [ref=e127]
+      - generic [ref=e128]:
+        - generic [ref=e129]:
+          - button "1) What's the minimum duration required to stitch a bespoke suit? −" [expanded] [ref=e130]:
+            - text: 1) What's the minimum duration required to stitch a bespoke suit?
+            - generic [ref=e131]: −
+          - paragraph [ref=e132]: We usually take 2 weeks for customizing a bespoke suit.
+        - button "2) What are the steps to place a custom order online? +" [ref=e134]:
+          - text: 2) What are the steps to place a custom order online?
+          - generic [ref=e135]: +
+        - button "3) What should I do if I received the wrong or defect products? +" [ref=e137]:
+          - text: 3) What should I do if I received the wrong or defect products?
+          - generic [ref=e138]: +
+        - button "4) How to cancel my order? +" [ref=e140]:
+          - text: 4) How to cancel my order?
+          - generic [ref=e141]: +
+        - button "5) I got the sizing wrong, can I exchange it? +" [ref=e143]:
+          - text: 5) I got the sizing wrong, can I exchange it?
+          - generic [ref=e144]: +
+  - contentinfo [ref=e145]:
+    - generic [ref=e146]:
+      - generic [ref=e147]:
+        - generic [ref=e148]:
+          - heading [level=4] [ref=e149]:
+            - img "HC" [ref=e150]
+          - paragraph [ref=e151]: Empowering innovation with quality and trust. Join us in our journey towards excellence.
+          - paragraph [ref=e152]:
+            - strong [ref=e153]: "Email:"
+            - link "connect@harryclinton.com" [ref=e154] [cursor=pointer]:
+              - /url: mailto:connect@harryclinton.com
+          - paragraph [ref=e155]: "Follow us on:"
+          - generic [ref=e156]:
+            - link "Facebook" [ref=e157] [cursor=pointer]:
+              - /url: https://www.facebook.com/harry.clinton.829484
+              - generic [ref=e158]: 
+            - link "Instagram" [ref=e159] [cursor=pointer]:
+              - /url: https://www.instagram.com/harryclinton_official/
+              - generic [ref=e160]: 
+            - link "YouTube" [ref=e161] [cursor=pointer]:
+              - /url: https://www.youtube.com/@HarryClintonHC
+              - generic [ref=e162]: 
+        - generic [ref=e163]:
+          - heading "Quick Links" [level=6] [ref=e164]
+          - list [ref=e165]:
+            - listitem [ref=e166]:
+              - link "About Us" [ref=e167] [cursor=pointer]:
+                - /url: /aboutUs
+            - listitem [ref=e168]:
+              - button "Contact Us" [ref=e169]
+            - listitem [ref=e170]:
+              - link "Privacy Policy" [ref=e171] [cursor=pointer]:
+                - /url: /privacy-policy
+            - listitem [ref=e172]:
+              - link "Terms & Conditions" [ref=e173] [cursor=pointer]:
+                - /url: /terms-and-conditions
+        - generic [ref=e174]:
+          - heading "Support" [level=6] [ref=e175]
+          - list [ref=e176]:
+            - listitem [ref=e177]:
+              - link "Help Center" [ref=e178] [cursor=pointer]:
+                - /url: /help-center
+            - listitem [ref=e179]:
+              - link "FAQs" [ref=e180] [cursor=pointer]:
+                - /url: /FAQs
+            - listitem [ref=e181]:
+              - link "Shipping, Returns & Cancellation" [ref=e182] [cursor=pointer]:
+                - /url: /Policies
+            - listitem [ref=e183]:
+              - link "Track Order" [ref=e184] [cursor=pointer]:
+                - /url: /FAQs
+        - generic [ref=e185]:
+          - heading "Stay Updated" [level=6] [ref=e186]
+          - paragraph [ref=e187]: Subscribe to our newsletter for the latest updates and promotions.
+          - generic [ref=e188]:
+            - textbox "Your email" [ref=e189]
+            - button "Subscribe" [ref=e190]
+      - separator [ref=e191]
+    - img "Logo-footer" [ref=e193]
+  - alert [ref=e194]

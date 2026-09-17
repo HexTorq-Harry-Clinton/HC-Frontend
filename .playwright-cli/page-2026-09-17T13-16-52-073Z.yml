@@ -1,0 +1,148 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - button "Previous announcement" [ref=e3]: ❮
+    - generic [ref=e4]: Closet under Construction!
+    - button "Next announcement" [ref=e6]: ❯
+  - banner [ref=e7]:
+    - generic [ref=e8]:
+      - generic "Menu" [ref=e9] [cursor=pointer]
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - strong [ref=e15]: CATEGORIES
+          - list [ref=e16]:
+            - listitem [ref=e17]:
+              - button "Trousers" [ref=e18]
+            - listitem [ref=e19]:
+              - button "Baby Suits" [ref=e20]
+        - generic [ref=e21]:
+          - strong [ref=e22]: COLLECTIONS
+          - list [ref=e23]:
+            - listitem [ref=e24]:
+              - button "Tuxedo" [ref=e25]
+            - listitem [ref=e26]:
+              - button "Extreme Poppins" [ref=e27]
+            - listitem [ref=e28]:
+              - button "Gurkha Trousers" [ref=e29]
+            - listitem [ref=e30]:
+              - button "Linen Shirts & Trousers" [ref=e31]
+            - listitem [ref=e32]:
+              - button "88 Cigarettes" [ref=e33]
+        - generic [ref=e34]:
+          - strong [ref=e35]: SERVICES
+          - list [ref=e36]:
+            - listitem [ref=e37]:
+              - button "Embroidery" [ref=e38]
+            - listitem [ref=e39]:
+              - button "Alterations" [ref=e40]
+            - listitem [ref=e41]:
+              - button "Personal Styling" [ref=e42]
+            - listitem [ref=e43]:
+              - button "Custom Tailoring" [ref=e44]
+        - generic [ref=e46]:
+          - heading "The Vision" [level=4] [ref=e47]
+          - button "Explore" [ref=e48]
+      - button "Book a custom appointment" [ref=e50] [cursor=pointer]: C
+      - generic "Open search" [ref=e52] [cursor=pointer]: 
+    - link "Harry Clinton home" [ref=e54] [cursor=pointer]:
+      - /url: /
+      - img "Harry Clinton" [ref=e55]
+    - generic [ref=e56]:
+      - link "Wishlist" [ref=e57] [cursor=pointer]:
+        - /url: /wishlist
+        - generic [ref=e58]: 
+      - link "Bag" [ref=e59] [cursor=pointer]:
+        - /url: /cart
+        - generic [ref=e60]: 
+      - generic "Account" [ref=e62] [cursor=pointer]: 
+  - main [ref=e63]:
+    - dialog "Harry Clinton intro" [ref=e64]:
+      - button "Skip" [ref=e67]
+    - status [ref=e69]:
+      - generic [ref=e70]: Loading slider...
+    - generic [ref=e72]:
+      - generic [ref=e74]:
+        - text: Enjoy an Exclusive 50% Privilege on All Orders Today Only !
+        - img "Black" [ref=e75]
+      - generic [ref=e77]: Enjoy an Exclusive 50% Privilege on All Orders Today Only !
+      - generic [ref=e80]: Enjoy an Exclusive 50% Privilege on All Orders Today Only !
+    - status [ref=e83]: Loading video...
+    - generic [ref=e84]:
+      - heading "FAQs" [level=2] [ref=e85]
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - button "1) What's the minimum duration required to stitch a bespoke suit? −" [expanded] [ref=e88]:
+            - text: 1) What's the minimum duration required to stitch a bespoke suit?
+            - generic [ref=e89]: −
+          - paragraph [ref=e90]: We usually take 2 weeks for customizing a bespoke suit.
+        - button "2) What are the steps to place a custom order online? +" [ref=e92]:
+          - text: 2) What are the steps to place a custom order online?
+          - generic [ref=e93]: +
+        - button "3) What should I do if I received the wrong or defect products? +" [ref=e95]:
+          - text: 3) What should I do if I received the wrong or defect products?
+          - generic [ref=e96]: +
+        - button "4) How to cancel my order? +" [ref=e98]:
+          - text: 4) How to cancel my order?
+          - generic [ref=e99]: +
+        - button "5) I got the sizing wrong, can I exchange it? +" [ref=e101]:
+          - text: 5) I got the sizing wrong, can I exchange it?
+          - generic [ref=e102]: +
+  - contentinfo [ref=e103]:
+    - generic [ref=e104]:
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - heading [level=4] [ref=e107]:
+            - img "HC" [ref=e108]
+          - paragraph [ref=e109]: Empowering innovation with quality and trust. Join us in our journey towards excellence.
+          - paragraph [ref=e110]:
+            - strong [ref=e111]: "Email:"
+            - link "connect@harryclinton.com" [ref=e112] [cursor=pointer]:
+              - /url: mailto:connect@harryclinton.com
+          - paragraph [ref=e113]: "Follow us on:"
+          - generic [ref=e114]:
+            - link "Facebook" [ref=e115] [cursor=pointer]:
+              - /url: https://www.facebook.com/harry.clinton.829484
+              - generic [ref=e116]: 
+            - link "Instagram" [ref=e117] [cursor=pointer]:
+              - /url: https://www.instagram.com/harryclinton_official/
+              - generic [ref=e118]: 
+            - link "YouTube" [ref=e119] [cursor=pointer]:
+              - /url: https://www.youtube.com/@HarryClintonHC
+              - generic [ref=e120]: 
+        - generic [ref=e121]:
+          - heading "Quick Links" [level=6] [ref=e122]
+          - list [ref=e123]:
+            - listitem [ref=e124]:
+              - link "About Us" [ref=e125] [cursor=pointer]:
+                - /url: /aboutUs
+            - listitem [ref=e126]:
+              - button "Contact Us" [ref=e127]
+            - listitem [ref=e128]:
+              - link "Privacy Policy" [ref=e129] [cursor=pointer]:
+                - /url: /privacy-policy
+            - listitem [ref=e130]:
+              - link "Terms & Conditions" [ref=e131] [cursor=pointer]:
+                - /url: /terms-and-conditions
+        - generic [ref=e132]:
+          - heading "Support" [level=6] [ref=e133]
+          - list [ref=e134]:
+            - listitem [ref=e135]:
+              - link "Help Center" [ref=e136] [cursor=pointer]:
+                - /url: /help-center
+            - listitem [ref=e137]:
+              - link "FAQs" [ref=e138] [cursor=pointer]:
+                - /url: /FAQs
+            - listitem [ref=e139]:
+              - link "Shipping, Returns & Cancellation" [ref=e140] [cursor=pointer]:
+                - /url: /Policies
+            - listitem [ref=e141]:
+              - link "Track Order" [ref=e142] [cursor=pointer]:
+                - /url: /FAQs
+        - generic [ref=e143]:
+          - heading "Stay Updated" [level=6] [ref=e144]
+          - paragraph [ref=e145]: Subscribe to our newsletter for the latest updates and promotions.
+          - generic [ref=e146]:
+            - textbox "Your email" [ref=e147]
+            - button "Subscribe" [ref=e148]
+      - separator [ref=e149]
+    - img "Logo-footer" [ref=e151]
+  - alert [ref=e152]
