@@ -17,7 +17,7 @@ const GROUPS = [
   {
     key: "marketing",
     label: "Marketing & Content",
-    labels: ["Running Bar & Items", "Coupons", "Discounts", "Newsletters", "Reviews", "Spotlight Media", "Style Collections", "Home Video", "Home Image Sliders"],
+    labels: ["Notification Bar", "Running Bar & Items", "Coupons", "Discounts", "Newsletters", "Reviews", "Spotlight Media", "Style Collections", "Home Video", "Home Image Sliders"],
   },
   {
     key: "sales",
@@ -55,6 +55,7 @@ const NAV = [
   { href: "/admin/profiles", label: "Customer Profiles", group: "users" },
   { href: "/admin/products", label: "Products & Media", group: "catalog" },
   { href: "/admin/categories", label: "Categories & Subcategories", group: "catalog" },
+  { href: "/admin/notification-bars", label: "Notification Bar", group: "marketing" },
   { href: "/admin/running-bars", label: "Running Bar & Items", group: "marketing" },
   { href: "/admin/coupons", label: "Coupons", group: "marketing" },
   { href: "/admin/discounts", label: "Discounts", group: "marketing" },

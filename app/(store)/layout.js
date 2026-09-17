@@ -1,4 +1,4 @@
-import RunningBar from "@/components/RunningBar";
+import NotificationBar from "@/components/NotificationBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import LoginNudge from "@/components/LoginNudge";
@@ -8,7 +8,7 @@ import LoginNudge from "@/components/LoginNudge";
 export default function StoreLayout({ children }) {
   return (
     <>
-      <RunningBar />
+      <NotificationBar />
       <Header />
       <main>{children}</main>
       <Footer />

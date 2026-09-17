@@ -1,51 +1,99 @@
+"use client";
+
 import Image from "next/image";
-import { apiGet, unwrap } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { apiFetch, unwrap } from "@/lib/api";
+import TrainTicker, { TRAIN_DEFAULT_MS } from "./TrainTicker";
 
-// Offer strip: same structure as the previous UI — scrolling offer text with
-// logo marks, driven by settings (home_offer_bar_text → offer_bar_text).
-const DEFAULT_TEXT = "Enjoy an Exclusive 50% Privilege on All Orders Today Only !";
+// Running bar — the white strip BELOW the hero slider.
+// Data rule (tbl_running_bars 1:N tbl_running_bar_items):
+// - parents: isactive = 1 AND isdeleted = 0 only
+// - children of EACH active parent: isactive = 1 AND isdeleted = 0,
+//   ordered by display_order ASC (queue order)
+// - each child holds center-screen for its own duration_seconds
+const DEFAULT_SLIDES = [
+  { text: "Enjoy an Exclusive 50% Privilege on All Orders Today Only !", ms: TRAIN_DEFAULT_MS },
+];
 
-function pickText(settings) {
-  const get = (key) => {
-    const m = (Array.isArray(settings) ? settings : []).find(
-      (s) => s.setting_key?.toLowerCase() === key || s.key?.toLowerCase() === key
-    );
-    return m?.setting_value ?? m?.value ?? "";
-  };
-  const raw = get("home_offer_bar_text") || get("offer_bar_text");
-  if (!raw) return [DEFAULT_TEXT];
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-  } catch {
-    /* plain string below */
-  }
-  return [raw];
+const isOn = (v) => v === 1 || v === true;
+const isOff = (v) => v === 1 || v === true;
+
+function LogoMark() {
+  return (
+    <Image
+      src="/brand/logo-black.png"
+      alt=""
+      aria-hidden
+      width={28}
+      height={28}
+      className="shrink-0"
+    />
+  );
 }
 
-export default async function OfferBar() {
-  let settings = [];
-  try {
-    settings = unwrap(await apiGet("/Settings"));
-  } catch {
-    settings = [];
-  }
-  const items = pickText(settings);
+export default function OfferBar() {
+  const [slides, setSlides] = useState(DEFAULT_SLIDES);
+
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const [barsRaw, itemsRaw] = await Promise.all([
+          apiFetch("/Running-Bar").then(unwrap).catch(() => []),
+          apiFetch("/Running-Bar-Items").then(unwrap).catch(() => []),
+        ]);
+        const bars = (Array.isArray(barsRaw) ? barsRaw : []).filter(
+          (b) => isOn(b.isactive) && !isOff(b.isdeleted)
+        );
+        const items = (Array.isArray(itemsRaw) ? itemsRaw : []).filter(
+          (it) =>
+            isOn(it.isactive ?? 1) && !isOff(it.isdeleted) && it.itemsdata
+        );
+        // One queue, grouped per active parent family, each family in
+        // display_order ASC.
+        let queue = [];
+        if (bars.length > 0) {
+          for (const bar of bars) {
+            const family = items
+              .filter((it) => String(it.running_bar_id) === String(bar.running_bar_id))
+              .sort((a, b) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0));
+            for (const it of family) {
+              const secs = Number(it.duration_seconds);
+              queue.push({
+                text: String(it.itemsdata).trim(),
+                ms: Number.isFinite(secs) && secs > 0 ? secs * 1000 : TRAIN_DEFAULT_MS,
+              });
+            }
+          }
+        } else {
+          // No active parent (data drift) — still show active items in order.
+          queue = items
+            .sort((a, b) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0))
+            .map((it) => {
+              const secs = Number(it.duration_seconds);
+              return {
+                text: String(it.itemsdata).trim(),
+                ms: Number.isFinite(secs) && secs > 0 ? secs * 1000 : TRAIN_DEFAULT_MS,
+              };
+            });
+        }
+        queue = queue.filter((s) => s.text);
+        if (live && queue.length > 0) setSlides(queue);
+      } catch {
+        /* keep default — strip never breaks the page */
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
 
   return (
-    <div className="overflow-hidden border-y border-neutral-200 bg-white py-2">
-      <div className="animate-marquee items-center">
-        {[0, 1, 2].map((dup) => (
-          <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup > 0}>
-            {items.map((text, index) => (
-              <span key={index} className="flex items-center whitespace-nowrap px-6 text-sm font-medium">
-                {text}
-                <Image src="/brand/logo-black.png" alt="Black" width={28} height={28} className="ml-6 inline-block" />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
+    <TrainTicker
+      slides={slides}
+      arrows={false}
+      flankLeft={<LogoMark />}
+      flankRight={<LogoMark />}
+    />
   );
 }
