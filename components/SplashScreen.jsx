@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
 
 // Opening splash: brand video plays once per session, then reveals the store.
 // Skippable (click / Esc / ends). Frontend-only asset by design.
@@ -43,16 +42,15 @@ export default function SplashScreen() {
     >
       <video
         src="/brand/hc-splash.mp4"
-        className="max-h-full w-full object-contain"
+        className="h-full w-full object-cover"
         autoPlay
         muted
         playsInline
         preload="auto"
         onEnded={dismiss}
       />
-      <div className="absolute bottom-8 flex flex-col items-center gap-3">
-        <Image src="/brand/logo-white.png" alt="Harry Clinton" width={120} height={40} />
-        <button onClick={dismiss} className="text-xs uppercase tracking-[0.3em] text-neutral-400 hover:text-white">
+      <div className="absolute bottom-5 flex flex-col items-center">
+        <button onClick={dismiss} className="px-2 py-1 text-[10px] uppercase leading-none tracking-[0.25em] text-neutral-400/80 hover:text-white">
           Skip
         </button>
       </div>
