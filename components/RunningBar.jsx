@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 // Top black ticker (running bar) — traditional train carousel.
 //
@@ -181,6 +182,9 @@ export default function RunningBar() {
   };
 
   if (slides.length === 0) return null;
+  // itemsdata may be plain text or HTML — HTML is sanitized before render.
+  const raw = slides[currentIndex]?.text || "";
+  const html = /<[a-z][\s\S]*>/i.test(raw) ? sanitizeHtml(raw) : null;
   const animCls =
     phase === "enter"
       ? entry === "left"
@@ -202,9 +206,18 @@ export default function RunningBar() {
         &#10094;
       </button>
       <div ref={viewportRef} className="flex-1 overflow-hidden text-center">
-        <span key={currentIndex} ref={textRef} className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${animCls}`}>
-          {slides[currentIndex]?.text}
-        </span>
+        {html ? (
+          <span
+            key={currentIndex}
+            ref={textRef}
+            className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${animCls}`}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        ) : (
+          <span key={currentIndex} ref={textRef} className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${animCls}`}>
+            {raw}
+          </span>
+        )}
       </div>
       <button type="button" onClick={showNext} aria-label="Next announcement" className="px-2">
         &#10095;
