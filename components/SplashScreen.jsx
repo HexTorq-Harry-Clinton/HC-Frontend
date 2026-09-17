@@ -1,18 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+
+// Runs pre-paint on the client (no-op on the server): lets us hide the
+// splash synchronously for returning visitors without a flash frame.
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 // Opening splash: brand video plays once per session, then reveals the store.
 // Skippable (click / Esc / ends). Frontend-only asset by design.
 export default function SplashScreen() {
-  const [show, setShow] = useState(false);
+  // Start VISIBLE so the server HTML already covers the homepage — no
+  // homepage flash before the splash. Returning visitors are hidden
+  // synchronously pre-paint below, so they never see a flicker either.
+  const [show, setShow] = useState(true);
 
-  // sessionStorage is client-only: read after mount so server HTML (no splash)
-  // matches first client paint. Mount-sync check is intentional.
   /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (!sessionStorage.getItem("hc_splash_seen")) {
-      setShow(true);
+  useIsomorphicLayoutEffect(() => {
+    if (sessionStorage.getItem("hc_splash_seen")) {
+      setShow(false);
     }
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
