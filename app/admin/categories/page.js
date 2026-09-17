@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 import ActiveToggle from "@/components/ActiveToggle";
 import { useConfirm } from "../ConfirmProvider";
@@ -95,6 +95,7 @@ export default function AdminCategoriesPage() {
       setForm(empty);
       setEditing(null);
       load();
+      revalidateSite();
     } catch (err) {
       setMsg(err.message || "Save failed");
     }
@@ -125,6 +126,7 @@ export default function AdminCategoriesPage() {
       body: { menu_subcategory_id: s.menu_subcategory_id, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     load();
+    revalidateSite();
   };
 
   const toggle = async (s, next) => {
@@ -133,6 +135,7 @@ export default function AdminCategoriesPage() {
       body: { menu_subcategory_id: s.menu_subcategory_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     load();
+    revalidateSite();
   };
 
   return (

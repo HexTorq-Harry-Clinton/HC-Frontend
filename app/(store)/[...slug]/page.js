@@ -57,6 +57,15 @@ export async function generateMetadata({ params }) {
     // Not a hardcoded route — maybe an admin-edited DB slug.
     const db = await resolveDbSlug(slug).catch(() => null);
     if (!db) return { title: "Not Found" };
+    if (db.type === "product") {
+      try {
+        const product = await getProduct(db.id);
+        if (product) return { title: product.name, description: product.description };
+      } catch {
+        /* fall through to generic title */
+      }
+      return { title: "Product" };
+    }
     return { title: db.title, description: `${db.title} — bespoke menswear by Harry Clinton.` };
   }
   if (resolved.type === "product") {
@@ -105,11 +114,15 @@ export default async function SlugPage({ params }) {
   if (key === "FAQs") {
     return <FAQsView />;
   }
-  const resolved = resolveSlug(slug);
+  let resolved = resolveSlug(slug);
   if (!resolved) {
     // Admin-edited DB slug (no hardcoded catalog.js entry) — resolve live.
     const db = await resolveDbSlug(slug).catch(() => null);
     if (!db) notFound();
+    // Top-level product slug — flows into the standard product branch below.
+    if (db.type === "product") {
+      resolved = { type: "product", id: db.id };
+    } else {
     if (db.redirect && db.redirect.startsWith("/")) redirect(db.redirect);
     const data = await getCategoryData(null, db.keywords);
     if (db.type === "db-collection") {
@@ -151,6 +164,7 @@ export default async function SlugPage({ params }) {
         />
       </>
     );
+    }
   }
 
   if (resolved.type === "product") {
