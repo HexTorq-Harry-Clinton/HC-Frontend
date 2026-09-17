@@ -16,6 +16,7 @@ export default function HeaderBar({ categories }) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [cPulse, setCPulse] = useState(0);
   const profileRef = useRef(null);
 
   const cartCount = cart?.count || 0;
@@ -35,7 +36,7 @@ export default function HeaderBar({ categories }) {
     <>
       {searchOpen && <SearchDropdown onClose={() => setSearchOpen(false)} />}
 
-      <header className="sticky top-0 z-[80] flex items-center justify-between bg-white px-3 py-2">
+      <header className="topbar-enter sticky top-0 z-[80] flex items-center justify-between bg-white px-3 py-2">
         <div className="flex items-center gap-3">
           <Hamburger categories={categories} />
 
@@ -44,10 +45,11 @@ export default function HeaderBar({ categories }) {
               type="button"
               className="c-icon"
               aria-label="Book a custom appointment"
-              onClick={() => setModalOpen(true)}
+              onClick={() => { setCPulse((n) => n + 1); setModalOpen(true); }}
             >
               C
             </button>
+            {cPulse > 0 && <span key={cPulse} className="c-ring" aria-hidden />}
           </div>
 
           <div className="search">
@@ -107,14 +109,24 @@ export default function HeaderBar({ categories }) {
 
       <style jsx>{`
         .fs-4 { font-size: 1.4rem; }
+        .topbar-enter { animation: topbarDrop 0.55s cubic-bezier(0.16, 0.8, 0.24, 1) both; }
+        @keyframes topbarDrop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
+        .c-home { position: relative; }
         .c-icon {
           width: 38px; height: 38px; border-radius: 50%;
           border: 1.5px solid #111; background: #fff;
           font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
           display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: all 0.25s ease;
+          cursor: pointer; transition: transform 0.15s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }
         .c-icon:hover { background: #111; color: #c6a15b; border-color: #111; }
+        .c-icon:active { transform: scale(0.85); }
+        .c-ring {
+          position: absolute; inset: 0; border-radius: 50%;
+          border: 1.5px solid #c6a15b; pointer-events: none;
+          animation: cRing 0.5s ease-out forwards;
+        }
+        @keyframes cRing { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(1.8); } }
       `}</style>
     </>
   );
