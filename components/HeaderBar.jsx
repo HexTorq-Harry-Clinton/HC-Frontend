@@ -38,11 +38,11 @@ export default function HeaderBar({ categories }) {
     <>
       {searchOpen && <SearchDropdown onClose={() => setSearchOpen(false)} />}
 
-      <header className="topbar-enter sticky top-0 z-[80] flex items-center justify-between bg-white px-3 py-1">
-        <div className="flex items-center gap-3">
+      <header className="topbar-enter sticky top-0 z-[80] flex h-7 items-center justify-between bg-white px-3">
+        <div className="flex items-center gap-2">
           <Hamburger categories={categories} />
 
-          <div className="c-home">
+          <div className="c-home flex h-7 items-center">
             <button
               type="button"
               className="c-icon"
@@ -75,7 +75,7 @@ export default function HeaderBar({ categories }) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link href="/wishlist" className="hicon relative text-neutral-900" aria-label="Wishlist">
             <i className="bi bi-heart"></i>
             {wishlistCount > 0 && (
