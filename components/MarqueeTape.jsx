@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 // Shared flowing marquee tape for the two ticker strips.
@@ -21,12 +20,16 @@ function TapeText({ text, logoMarks, light, pad }) {
     <span className={`flex items-center whitespace-nowrap ${pad} text-xs font-medium uppercase tracking-widest`}>
       {inner}
       {logoMarks && (
-        <Image
+        /* plain img on purpose: next/image wraps each mark in extra layers and
+           re-decodes per copy — with 8 tape copies that janks the scroll */
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
           src={light ? "/brand/logo-white.png" : "/brand/logo-black.png"}
           alt=""
           aria-hidden
           width={20}
           height={20}
+          decoding="async"
           className="ml-6 inline-block"
         />
       )}

@@ -122,6 +122,8 @@ html {
   min-width: 200%;
   animation: marquee 30s linear infinite;
   will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 .animate-marquee:hover {
   animation-play-state: paused;
