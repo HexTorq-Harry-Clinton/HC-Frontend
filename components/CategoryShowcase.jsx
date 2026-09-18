@@ -1,13 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Reveal from "@/components/Reveal";
 import SectionHeading from "@/components/SectionHeading";
+import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { CATEGORIES } from "@/lib/catalog";
 
 const categories = [
   {
+    key: "suits",
     name: "Suits",
     href: "/suits",
     tagline: "For the Men Who Wear Royalty, Not Just Suits.",
@@ -15,6 +18,7 @@ const categories = [
     spanClass: "md:col-span-2 lg:col-span-2 lg:row-span-2 min-h-[400px] lg:min-h-[600px]",
   },
   {
+    key: "shirts",
     name: "Shirts",
     href: "/shirts",
     tagline: "Sharp shirts for every hour of the day.",
@@ -22,6 +26,7 @@ const categories = [
     spanClass: "col-span-1 min-h-[300px]",
   },
   {
+    key: "trousers",
     name: "Trousers",
     href: "/trousers",
     tagline: "Tailored trousers, cut to move with you.",
@@ -29,6 +34,7 @@ const categories = [
     spanClass: "col-span-1 min-h-[300px]",
   },
   {
+    key: "indowestern",
     name: "Indo-Western",
     href: "/indowestern",
     tagline: "Heritage craft meets modern tailoring.",
@@ -36,6 +42,7 @@ const categories = [
     spanClass: "col-span-1 min-h-[300px]",
   },
   {
+    key: "babysuits",
     name: "Baby Suits",
     href: "/babysuits",
     tagline: "Little gentlemen, dressed to the nines.",
@@ -44,7 +51,56 @@ const categories = [
   },
 ];
 
+const CATEGORY_KEYS = ["suits", "shirts", "trousers", "indowestern", "babysuits"];
+
 export default function CategoryShowcase() {
+  // TEMPORARY imagery: random live DB assets per category until the content
+  // team uploads final card photos. Keyword-matched, de-duplicated.
+  const [images, setImages] = useState({});
+
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const [productsRaw, mediaRaw] = await Promise.all([
+          apiFetch("/Products", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+          apiFetch("/Products-Media", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+        ]);
+        const products = (Array.isArray(productsRaw) ? productsRaw : []).filter(
+          (p) => p.isdeleted !== 1 && p.isdeleted !== true
+        );
+        const media = (Array.isArray(mediaRaw) ? mediaRaw : []).filter(
+          (m) => m.isdeleted !== 1 && m.isdeleted !== true && m.media_url
+        );
+        const byProduct = {};
+        for (const m of media) {
+          (byProduct[m.product_id] ||= []).push(m);
+        }
+        const used = new Set();
+        const pick = {};
+        const pool = [...media];
+        for (const key of CATEGORY_KEYS) {
+          const keywords = (CATEGORIES[key]?.keywords || [key]).map((k) => String(k).toLowerCase());
+          const hitProduct = products.find((p) => {
+            const text = `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""} ${p.description || ""} ${p.category || ""}`.toLowerCase();
+            return keywords.some((k) => k && text.includes(k));
+          });
+          let hit = (byProduct[hitProduct?.product_id] || []).find((m) => !used.has(m.product_media_id));
+          if (!hit) hit = pool.find((m) => !used.has(m.product_media_id));
+          if (hit) {
+            used.add(hit.product_media_id);
+            pick[key] = resolveUploadUrl(hit.media_url);
+          }
+        }
+        if (live) setImages(pick);
+      } catch {
+        /* gradients stay — section never breaks */
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
   return (
     <section className="py-24 bg-[#f7f4ec] text-[#101010]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
@@ -66,10 +122,20 @@ export default function CategoryShowcase() {
                 href={category.href}
                 className="group relative block w-full h-full overflow-hidden bg-[#101010]"
               >
-                {/* Background Layer with Scale Effect */}
-                <div 
-                  className={`absolute inset-0 transition-transform duration-1000 ease-out group-hover:scale-105 ${category.bgClass}`}
-                />
+                {/* Background Layer with Scale Effect (live DB photo, gradient fallback) */}
+                {images[category.key] ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={images[category.key]}
+                    alt={category.name}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <div
+                    className={`absolute inset-0 transition-transform duration-1000 ease-out group-hover:scale-105 ${category.bgClass}`}
+                  />
+                )}
                 
                 {/* Overlay gradient to darken on hover */}
                 <div className="absolute inset-0 bg-black/30 transition-colors duration-700 group-hover:bg-black/60" />
