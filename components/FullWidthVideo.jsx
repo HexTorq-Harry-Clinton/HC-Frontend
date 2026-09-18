@@ -2,103 +2,115 @@
 
 import { useEffect, useRef, useState } from "react";
 import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
-import Reveal from "@/components/Reveal";
 
-// Full-bleed brand video with mute toggle — same structure as the previous UI.
-// Video comes from the Menu-Video API (backend-served by design).
+// Homepage video section (tbl_menu_videos) — full-viewport, video-only.
+// Sits below the running bar. Renders EVERY active row in display_order:
+// autoplay / loop / mute_default honored per row, poster before load,
+// play-pause + mute controls per screen.
+const on = (v) => v === 1 || v === true;
+
+function VideoScreen({ row }) {
+  const ref = useRef(null);
+  const [muted, setMuted] = useState(!row.muteOff);
+  const [playing, setPlaying] = useState(!!row.autoplay);
+  const [failed, setFailed] = useState(false);
+
+  const toggleMute = (e) => {
+    e.stopPropagation();
+    const v = ref.current;
+    const next = !muted;
+    setMuted(next);
+    if (v) v.muted = next;
+  };
+
+  const togglePlay = (e) => {
+    e.stopPropagation();
+    const v = ref.current;
+    if (!v) return;
+    if (playing) v.pause();
+    else v.play().catch(() => {});
+    setPlaying(!playing);
+  };
+
+  if (failed) return null;
+  return (
+    <div className="relative h-[100svh] w-full overflow-hidden bg-neutral-950">
+      <video
+        ref={ref}
+        src={row.src}
+        poster={row.poster || undefined}
+        className="h-full w-full object-cover"
+        autoPlay={row.autoplay}
+        muted={!row.muteOff}
+        loop={row.loop}
+        playsInline
+        preload="metadata"
+        onError={() => setFailed(true)}
+      />
+      <div className="absolute bottom-6 right-5 flex gap-2">
+        <button
+          type="button"
+          aria-label={playing ? "Pause video" : "Play video"}
+          onClick={togglePlay}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
+        >
+          <i className={`bi ${playing ? "bi-pause-fill" : "bi-play-fill"} leading-none`} />
+        </button>
+        <button
+          type="button"
+          aria-label={muted ? "Unmute video" : "Mute video"}
+          onClick={toggleMute}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
+        >
+          <i className={`bi ${muted ? "bi-volume-mute-fill" : "bi-volume-up-fill"} leading-none`} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function FullWidthVideo() {
-  const videoRef = useRef(null);
-  const [isMuted, setIsMuted] = useState(true);
-  const [videoUrl, setVideoUrl] = useState("");
-  const [posterUrl, setPosterUrl] = useState("");
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     let live = true;
-    const fetchMenuVideo = async () => {
-      try {
-        const data = unwrap(await apiFetch("/Menu-Video"));
-        const list = Array.isArray(data) ? data : [];
-        const activeVideo =
-          list.find((v) => v.isactive === 1 || v.isactive === true || v.is_active === 1 || v.is_active === true) ||
-          list[0];
-        if (live && activeVideo?.video_url) {
-          setVideoUrl(resolveUploadUrl(activeVideo.video_url));
-          setPosterUrl(resolveUploadUrl(activeVideo.poster_image_url) || "");
-        }
-      } catch {
-        // no video available
-      } finally {
+    apiFetch("/Menu-Video")
+      .then(unwrap)
+      .then((data) => {
+        const list = (Array.isArray(data) ? data : [])
+          .filter((v) => on(v.isactive ?? v.is_active) && !v.isdeleted && v.video_url)
+          .filter((v) => !String(v.video_url).includes("example.com"))
+          .sort((a, b) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0))
+          .map((v) => ({
+            id: v.menu_video_id,
+            src: resolveUploadUrl(v.video_url),
+            poster: resolveUploadUrl(v.poster_image_url) || "",
+            autoplay: v.autoplay === 0 || v.autoplay === false ? false : true,
+            loop: v.loop_video === 0 || v.loop_video === false ? false : true,
+            muteOff: v.mute_default === 0 || v.mute_default === false,
+          }))
+          .filter((v) => v.src);
+        if (live) setRows(list);
+      })
+      .catch(() => {
+        /* section hides when unreachable */
+      })
+      .finally(() => {
         if (live) setLoading(false);
-      }
-    };
-    fetchMenuVideo();
+      });
     return () => {
       live = false;
     };
   }, []);
 
-  const toggleMute = () => {
-    const video = videoRef.current;
-    if (video) {
-      video.muted = !video.muted;
-      setIsMuted(video.muted);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading video...</span>
-        </div>
-        <SpinnerStyle />
-      </div>
-    );
-  }
-
-  if (!videoUrl || videoError) return null;
-
-  // Hide placeholder CDN / example.com videos that always fail (same seed as spotlight).
-  const isPlaceholderVideo = videoUrl.includes("cdn.example.com") || videoUrl.includes("example.com");
-  if (isPlaceholderVideo) return null;
-
+  if (loading) return null;
+  if (rows.length === 0) return null;
   return (
-    <Reveal blur y={24} duration={1}>
-      <div className="video-section relative bg-black">
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          poster={posterUrl || undefined}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="aspect-video w-full object-cover"
-          onError={() => setVideoError(true)}
-        />
-        <button
-          type="button"
-          onClick={toggleMute}
-          aria-label={isMuted ? "Unmute video" : "Mute video"}
-          className="absolute bottom-4 right-4 rounded-full bg-black/60 px-4 py-2 text-sm text-white hover:bg-black"
-        >
-          {isMuted ? <i className="bi bi-volume-mute" /> : <i className="bi bi-volume-up" />}
-        </button>
-        <SpinnerStyle />
-      </div>
-    </Reveal>
-  );
-}
-
-function SpinnerStyle() {
-  return (
-    <style jsx>{`
-      .spinner-border { width: 2rem; height: 2rem; border: 0.25em solid #ddd; border-top-color: #111; border-radius: 50%; animation: sd-spin 0.75s linear infinite; }
-      @keyframes sd-spin { to { transform: rotate(360deg); } }
-      .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    `}</style>
+    <>
+      {rows.map((r) => (
+        <VideoScreen key={r.id} row={r} />
+      ))}
+    </>
   );
 }

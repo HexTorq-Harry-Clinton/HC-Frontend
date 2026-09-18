@@ -23,8 +23,8 @@ export default function HomePage() {
       <SplashScreen />
       <VideoImageSlider />
       <OfferBar />
-      <CategoryShowcase />
       <FullWidthVideo />
+      <CategoryShowcase />
       <FeaturedProducts />
       <Spotlight />
       <CraftsmanshipStory />
