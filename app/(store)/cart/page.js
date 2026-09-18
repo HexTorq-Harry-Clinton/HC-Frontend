@@ -13,6 +13,8 @@ export default function CartPage() {
   const cart = useCart();
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState("");
+  // Item key awaiting remove-confirmation (popup), null when closed.
+  const [pendingRemove, setPendingRemove] = useState(null);
 
   if (!cart?.ready) return <p className="mx-auto max-w-4xl px-4 py-14 text-center">Loading cart...</p>;
 
@@ -58,10 +60,17 @@ export default function CartPage() {
                   </span>
                 </p>
                 <div className="mt-2 flex items-center gap-2 text-sm">
-                  <button onClick={() => cart.updateQty(i.key || i.id, (i.qty || 1) - 1)} className="border border-neutral-300 px-2">-</button>
+                  <button
+                    onClick={() => cart.updateQty(i.key || i.id, (i.qty || 1) - 1)}
+                    disabled={(i.qty || 1) <= 1}
+                    aria-label="Decrease quantity"
+                    className="border border-neutral-300 px-2 disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    -
+                  </button>
                   <span>{i.qty || 1}</span>
                   <button onClick={() => cart.updateQty(i.key || i.id, (i.qty || 1) + 1)} className="border border-neutral-300 px-2">+</button>
-                  <button onClick={() => cart.removeFromCart(i.key || i.id)} className="ml-3 text-xs underline text-neutral-500">Remove</button>
+                  <button onClick={() => setPendingRemove(i.key || i.id)} className="ml-3 text-xs underline text-neutral-500">Remove</button>
                 </div>
               </div>
             </div>
@@ -90,6 +99,41 @@ export default function CartPage() {
           </Link>
         </aside>
       </div>
+
+      {/* Remove confirmation popup */}
+      {pendingRemove && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={() => setPendingRemove(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl"
+          >
+            <h3 className="font-display text-lg font-bold text-neutral-900">Remove this item?</h3>
+            <p className="mt-2 text-sm text-neutral-500">
+              {cart.items.find((x) => (x.key || x.id) === pendingRemove)?.name || "This item"} will be
+              removed from your bag. This cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingRemove(null)}
+                className="rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { cart.removeFromCart(pendingRemove); setPendingRemove(null); }}
+                className="rounded-md bg-red-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-800"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
