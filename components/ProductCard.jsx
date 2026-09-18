@@ -28,7 +28,7 @@ export default function ProductCard({ product, index = 0 }) {
       exit={{ opacity: 0, scale: 0.96 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.45, delay: (index % 4) * 0.06 }}
-      className="group"
+      className="group relative"
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
         <Link href={href} aria-label={product.name}>
@@ -40,12 +40,6 @@ export default function ProductCard({ product, index = 0 }) {
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
           />
         </Link>
-        <WishlistHeart
-          product={product}
-          className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full shadow transition-all duration-300 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${
-            wished ? "bg-gold text-neutral-950" : "bg-white/90 text-neutral-800 hover:bg-gold"
-          }`}
-        />
         <div className="absolute inset-x-0 bottom-0 translate-y-full transition-transform duration-300 ease-out group-hover:translate-y-0">
           <button
             onClick={() => cart?.addToCart({ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image })}
@@ -55,6 +49,14 @@ export default function ProductCard({ product, index = 0 }) {
           </button>
         </div>
       </div>
+      {/* Heart lives on the card root (NOT inside the overflow-hidden image
+          box) so the tap burst is never clipped at the edges. */}
+      <WishlistHeart
+        product={product}
+        className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow transition-all duration-300 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${
+          wished ? "bg-gold text-neutral-950" : "bg-white/90 text-neutral-800 hover:bg-gold"
+        }`}
+      />
       <Link href={href} className="block pt-3 text-center">
         <p className="link-sweep inline text-sm font-medium">{product.name}</p>
         <p className="mt-1 text-sm font-bold">{inr(product.price)}</p>
