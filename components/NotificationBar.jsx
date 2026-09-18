@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
-import MarqueeTape from "./MarqueeTape";
+import TrainTicker, { TRAIN_DEFAULT_MS } from "./TrainTicker";
 
 // TOP black strip (notification bar) — single table, no parent.
-// Flowing right-to-left marquee: isactive = 1 AND isdeleted = 0,
-// ORDER BY orderpriority ASC. The schema carries no per-item duration,
-// so every item counts a default 5s toward the tape speed.
+// Train motion (NOT the running-bar marquee): one item at a time rolls in
+// from the right, holds, rolls out left. Queue: isactive = 1 AND
+// isdeleted = 0, ORDER BY orderpriority ASC. The schema carries no per-item
+// duration, so every item holds the default.
 const DEFAULT_SLIDES = [
-  { text: "Closet under Construction!", secs: 5 },
-  { text: "Fashion Hub coming soon", secs: 5 },
-  { text: "New collection loading", secs: 5 },
+  { text: "Closet under Construction!", ms: TRAIN_DEFAULT_MS },
+  { text: "Fashion Hub coming soon", ms: TRAIN_DEFAULT_MS },
+  { text: "New collection loading", ms: TRAIN_DEFAULT_MS },
 ];
 
 export default function NotificationBar() {
@@ -25,7 +26,7 @@ export default function NotificationBar() {
         const items = (Array.isArray(rows) ? rows : [])
           .filter((r) => (r.isactive === 1 || r.isactive === true) && r.isdeleted !== 1 && r.isdeleted !== true && r.notification_text)
           .sort((a, b) => (Number(a.orderpriority) || 0) - (Number(b.orderpriority) || 0))
-          .map((r) => ({ text: String(r.notification_text).trim(), secs: 5 }))
+          .map((r) => ({ text: String(r.notification_text).trim(), ms: TRAIN_DEFAULT_MS }))
           .filter((s) => s.text);
         if (live && items.length > 0) setSlides(items);
       })
@@ -37,5 +38,5 @@ export default function NotificationBar() {
     };
   }, []);
 
-  return <MarqueeTape slides={slides} dark logoMarks />;
+  return <TrainTicker slides={slides} dark arrows />;
 }
