@@ -36,7 +36,7 @@ export default function HeaderBar({ categories }) {
     <>
       {searchOpen && <SearchDropdown onClose={() => setSearchOpen(false)} />}
 
-      <header className="topbar-enter sticky top-0 z-[80] flex items-center justify-between bg-white px-3 py-2">
+      <header className="topbar-enter sticky top-0 z-[80] flex items-center justify-between bg-white px-3 py-1.5">
         <div className="flex items-center gap-3">
           <Hamburger categories={categories} />
 
@@ -67,10 +67,10 @@ export default function HeaderBar({ categories }) {
             <Image
               src="/brand/logo-black.png"
               alt="Harry Clinton"
-              width={35}
-              height={35}
+              width={28}
+              height={28}
               priority
-              style={{ height: "35px", width: "auto", objectFit: "contain" }}
+              style={{ height: "28px", width: "auto", objectFit: "contain" }}
             />
           </Link>
         </div>
