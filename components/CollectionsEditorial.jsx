@@ -1,13 +1,16 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Reveal from '@/components/Reveal';
 import SectionHeading from '@/components/SectionHeading';
+import { apiFetch, unwrap, resolveUploadUrl } from '@/lib/api';
+import { COLLECTIONS } from '@/lib/catalog';
 
 const collections = [
   {
+    key: "tuxedo",
     name: "Tuxedo",
     href: "/tuxedo",
     eyebrow: "Evening refinement",
@@ -15,6 +18,7 @@ const collections = [
     bgGradient: "bg-gradient-to-r from-gray-900 to-gray-800", // charcoal
   },
   {
+    key: "extreme-poppins",
     name: "Extreme Poppins",
     href: "/extreme-poppins",
     eyebrow: "Statement tailoring",
@@ -22,6 +26,7 @@ const collections = [
     bgGradient: "bg-gradient-to-r from-slate-900 to-blue-950", // navy
   },
   {
+    key: "gurkha-trousers",
     name: "Gurkha Trousers",
     href: "/gurkha-trousers",
     eyebrow: "A tailoring icon",
@@ -29,6 +34,7 @@ const collections = [
     bgGradient: "bg-gradient-to-r from-stone-900 to-red-950", // burgundy
   },
   {
+    key: "linen-shirts-trousers",
     name: "Linen Shirts and Trousers",
     href: "/linen-shirts-trousers",
     eyebrow: "Relaxed sophistication",
@@ -36,6 +42,7 @@ const collections = [
     bgGradient: "bg-gradient-to-r from-zinc-900 to-emerald-950", // olive
   },
   {
+    key: "cigarettes",
     name: "88 Cigarettes",
     href: "/cigarettes",
     eyebrow: "The signature line",
@@ -45,6 +52,56 @@ const collections = [
 ];
 
 export default function CollectionsEditorial() {
+  // TEMPORARY imagery: random live DB assets per collection until the content
+  // team uploads final editorial photos. Keyword-matched, de-duplicated.
+  const [images, setImages] = useState({});
+
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const [productsRaw, mediaRaw] = await Promise.all([
+          apiFetch("/Products", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+          apiFetch("/Products-Media", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+        ]);
+        const products = (Array.isArray(productsRaw) ? productsRaw : []).filter(
+          (p) => p.isdeleted !== 1 && p.isdeleted !== true
+        );
+        const media = (Array.isArray(mediaRaw) ? mediaRaw : []).filter(
+          (m) => m.isdeleted !== 1 && m.isdeleted !== true && m.media_url
+        );
+        const byProduct = {};
+        for (const m of media) {
+          (byProduct[m.product_id] ||= []).push(m);
+        }
+        const used = new Set();
+        const pick = {};
+        const pool = [...media];
+        for (const key of Object.keys(COLLECTIONS)) {
+          const def = COLLECTIONS[key];
+          const keywords = [...(def.keywords || []), def.category, def.title]
+            .map((k) => String(k || "").toLowerCase())
+            .filter(Boolean);
+          const hitProduct = products.find((p) => {
+            const text = `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""} ${p.description || ""} ${p.category || ""}`.toLowerCase();
+            return keywords.some((k) => text.includes(k));
+          });
+          let hit = (byProduct[hitProduct?.product_id] || []).find((m) => !used.has(m.product_media_id));
+          if (!hit) hit = pool.find((m) => !used.has(m.product_media_id));
+          if (hit) {
+            used.add(hit.product_media_id);
+            pick[key] = resolveUploadUrl(hit.media_url);
+          }
+        }
+        if (live) setImages(pick);
+      } catch {
+        /* gradients stay — section never breaks */
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
   return (
     <section className="py-24 px-4 md:px-8 bg-[#f7f4ec]">
       <div className="max-w-7xl mx-auto">
@@ -60,7 +117,18 @@ export default function CollectionsEditorial() {
               <Reveal key={collection.name}>
                 <Link href={collection.href} className="block group">
                   <div className={`relative w-full rounded-2xl overflow-hidden shadow-xl transition-all duration-700 ease-out hover:shadow-2xl hover:scale-[1.01] ${collection.bgGradient}`}>
-                    {/* Abstract decorative element for the empty side */}
+                    {images[collection.key] ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={images[collection.key]}
+                          alt={collection.name}
+                          loading="lazy"
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-neutral-950/55 transition-colors duration-700 group-hover:bg-neutral-950/65" />
+                      </>
+                    ) : null}
                     <div className={`absolute top-0 bottom-0 w-1/2 pointer-events-none opacity-20 bg-gradient-to-b from-white/10 to-transparent transition-opacity duration-700 group-hover:opacity-30 ${isEven ? 'left-0' : 'right-0'}`} />
                     
                     <div className={`flex flex-col relative z-10 px-8 py-16 md:px-16 md:py-24 w-full md:w-3/5 lg:w-1/2 ${isEven ? 'ml-auto text-left' : 'mr-auto text-left md:text-right md:items-end'}`}>
