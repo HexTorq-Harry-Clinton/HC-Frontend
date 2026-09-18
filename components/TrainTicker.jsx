@@ -3,10 +3,14 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 
-// Shared train-carousel engine for the two ticker strips.
-// One slide at a time: rolls in from the right edge (fast start, eases to a
-// stop at center) -> holds slides[i].ms -> rolls out the left edge (slow
-// start, speeds up). Props:
+// Shared train-carousel engine for the ticker strips.
+// One slide at a time, driven by ONE CSS animation pair per mount (no JS
+// phase machine, so there is nothing to stall):
+//   rbIn*  (0.85s, fast right/left entry, eased center stop)
+//   rbOutLeft (0.85s, slow start, fast left exit) delayed by enter+hold
+// The exit's backwards fill IS the center hold. JS only advances the index
+// when the full ride (enter + DB hold + exit) completes.
+// Props:
 // - slides: [{ text, ms }] (text may be plain or HTML, sanitized on render)
 // - dark: black strip (notification bar) vs white strip (running bar)
 // - arrows: show prev/next buttons (default true)
@@ -17,16 +21,12 @@ const EXIT_MS = 850;
 export const TRAIN_DEFAULT_MS = 4000;
 
 export default function TrainTicker({ slides, dark = true, arrows = true, flankLeft = null, flankRight = null }) {
-  // Stable identity: a fresh array literal here would re-fire the motion
-  // chain on EVERY render, endlessly resetting enter/hold and killing both
-  // the animation and the auto-advance.
   const list = useMemo(
     () => (Array.isArray(slides) && slides.length > 0 ? slides : []),
     [slides]
   );
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [entry, setEntry] = useState("right");
-  const [phase, setPhase] = useState("enter");
+  const [fromLeft, setFromLeft] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const viewportRef = useRef(null);
   const textRef = useRef(null);
@@ -43,44 +43,27 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
     vp.style.setProperty("--rb-travel", `${travel}px`);
   }, [currentIndex, list]);
 
-  const arm = (ms, run) => {
-    clearTimeout(timerRef.current);
-    pendingRef.current = { run, deadline: Date.now() + ms, remaining: null };
-    timerRef.current = setTimeout(() => {
-      pendingRef.current = null;
-      run();
-    }, ms);
-  };
+  const rideMs = (list[currentIndex]?.ms || TRAIN_DEFAULT_MS) + ENTER_MS + EXIT_MS;
 
-  // Motion chain per slide: enter -> hold (slide ms) -> exit -> next.
+  // Single timer per slide: when the full ride ends, roll the next item in.
   useEffect(() => {
     if (list.length === 0) return undefined;
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const enterMs = reduce ? 0 : ENTER_MS;
-    const exitMs = reduce ? 0 : EXIT_MS;
-    const holdMs = list[currentIndex]?.ms || TRAIN_DEFAULT_MS;
-    setPhase("enter");
-    arm(enterMs, () => {
-      setPhase("hold");
-      arm(holdMs, () => {
-        setPhase("exit");
-        arm(exitMs, () => {
-          setEntry("right");
-          setCurrentIndex((prev) => (prev + 1) % list.length);
-        });
-      });
-    });
+    clearTimeout(timerRef.current);
+    pendingRef.current = { deadline: Date.now() + rideMs };
+    timerRef.current = setTimeout(() => {
+      pendingRef.current = null;
+      setFromLeft(false);
+      setCurrentIndex((prev) => (prev + 1) % list.length);
+    }, rideMs);
     return () => {
       clearTimeout(timerRef.current);
       pendingRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, list, entry]);
+  }, [currentIndex, list]);
 
-  // Hover pause: freeze CSS mid-flight + suspend the pending step, resume
-  // with remaining time so configured seconds stay exact.
+  // Hover pause: freeze CSS mid-flight + suspend the ride timer, resume with
+  // remaining time so configured seconds stay exact.
   const handleEnter = () => {
     setIsPaused(true);
     const p = pendingRef.current;
@@ -94,11 +77,12 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
     setIsPaused(false);
     const p = pendingRef.current;
     if (p && p.remaining != null) {
-      const { run, remaining } = p;
-      pendingRef.current = { run, deadline: Date.now() + remaining, remaining: null };
+      const remaining = p.remaining;
+      pendingRef.current = { deadline: Date.now() + remaining, remaining: null };
       timerRef.current = setTimeout(() => {
         pendingRef.current = null;
-        run();
+        setFromLeft(false);
+        setCurrentIndex((prev) => (prev + 1) % list.length);
       }, remaining);
     }
   };
@@ -106,14 +90,14 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
   const showPrev = () => {
     clearTimeout(timerRef.current);
     pendingRef.current = null;
-    setEntry("left");
+    setFromLeft(true);
     setCurrentIndex((prev) => (prev - 1 + list.length) % list.length);
   };
 
   const showNext = () => {
     clearTimeout(timerRef.current);
     pendingRef.current = null;
-    setEntry("right");
+    setFromLeft(false);
     setCurrentIndex((prev) => (prev + 1) % list.length);
   };
 
@@ -121,14 +105,7 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
   // itemsdata may be plain text or HTML — HTML is sanitized before render.
   const raw = list[currentIndex]?.text || "";
   const html = /<[a-z][\s\S]*>/i.test(raw) ? sanitizeHtml(raw) : null;
-  const animCls =
-    phase === "enter"
-      ? entry === "left"
-        ? "rb-in-left"
-        : "rb-in-right"
-      : phase === "exit"
-        ? "rb-out-left"
-        : "";
+  const holdMs = list[currentIndex]?.ms || TRAIN_DEFAULT_MS;
   const skin = dark
     ? "bg-neutral-950 text-white"
     : "border-y border-neutral-200 bg-white text-neutral-900";
@@ -138,11 +115,17 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
     <span
       key={currentIndex}
       ref={textRef}
-      className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${animCls}`}
+      className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${fromLeft ? "rb-in-left" : "rb-in-right"}`}
+      style={{ "--rb-hold": `${holdMs}ms` }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   ) : (
-    <span key={currentIndex} ref={textRef} className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${animCls}`}>
+    <span
+      key={currentIndex}
+      ref={textRef}
+      className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${fromLeft ? "rb-in-left" : "rb-in-right"}`}
+      style={{ "--rb-hold": `${holdMs}ms` }}
+    >
       {raw}
     </span>
   );
@@ -172,9 +155,16 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
       {flankRight}
       <style jsx>{`
         .rb-anim { display: inline-block; will-change: transform; }
-        .rb-in-right { animation: rb-in-right 0.85s cubic-bezier(0.16, 0.8, 0.24, 1) both; }
-        .rb-in-left { animation: rb-in-left 0.85s cubic-bezier(0.16, 0.8, 0.24, 1) both; }
-        .rb-out-left { animation: rb-out-left 0.85s cubic-bezier(0.55, 0.06, 0.75, 0.4) both; }
+        .rb-in-right {
+          animation:
+            rb-in-right 0.85s cubic-bezier(0.16, 0.8, 0.24, 1) both,
+            rb-out-left 0.85s cubic-bezier(0.55, 0.06, 0.75, 0.4) calc(0.85s + var(--rb-hold, 4000ms)) both;
+        }
+        .rb-in-left {
+          animation:
+            rb-in-left 0.85s cubic-bezier(0.16, 0.8, 0.24, 1) both,
+            rb-out-left 0.85s cubic-bezier(0.55, 0.06, 0.75, 0.4) calc(0.85s + var(--rb-hold, 4000ms)) both;
+        }
         .rb-paused .rb-anim { animation-play-state: paused; }
         @keyframes rb-in-right {
           from { opacity: 0; transform: translateX(var(--rb-travel, 60vw)); }
@@ -192,7 +182,7 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
           to { opacity: 0; transform: translateX(calc(var(--rb-travel, 60vw) * -1)); }
         }
         @media (prefers-reduced-motion: reduce) {
-          .rb-in-right, .rb-in-left, .rb-out-left { animation: none; }
+          .rb-in-right, .rb-in-left { animation: none; }
         }
       `}</style>
     </div>
