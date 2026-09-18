@@ -24,9 +24,9 @@ export default function HomePage() {
       <VideoImageSlider />
       <OfferBar />
       <FullWidthVideo />
+      <Spotlight />
       <CategoryShowcase />
       <FeaturedProducts />
-      <Spotlight />
       <CraftsmanshipStory />
       <CollectionsEditorial />
       <StyleByHC />
