@@ -94,9 +94,9 @@ export default function Footer() {
 
   return (
     <>
-      <footer id="site-footer" className="flex min-h-[100svh] flex-col justify-between bg-black py-12 text-white">
-        <div className="mx-auto w-full max-w-7xl px-4">
-          <div className="grid gap-8 md:grid-cols-12">
+      <footer id="site-footer" className="flex h-[100svh] flex-col justify-between overflow-hidden bg-black py-6 text-white">
+        <div className="mx-auto w-full max-w-7xl shrink-0 px-4">
+          <div className="grid gap-6 md:grid-cols-12">
             <div className="md:col-span-4">
               <h4 className="font-bold">
                 <Image src="/brand/logo-white.png" alt="HC" width={120} height={40} />
@@ -201,16 +201,16 @@ export default function Footer() {
           <hr className="my-6 border-neutral-800" />
         </div>
 
-        <div className="mx-auto mt-10 w-full max-w-7xl px-4 pb-4">
+        <div className="mx-auto flex w-full max-w-7xl min-h-0 flex-1 flex-col items-center justify-center px-4 pb-2">
           <Image
             src="/brand/logo-white.png"
             alt="Harry Clinton"
             width={1200}
             height={520}
-            className="mx-auto h-auto w-full max-w-5xl"
+            className="h-auto max-h-[32vh] w-auto max-w-full object-contain"
             loading="lazy"
           />
-          <p className="mt-6 text-center text-xs uppercase tracking-[0.3em] text-neutral-500">
+          <p className="mt-4 text-center text-xs uppercase tracking-[0.3em] text-neutral-500">
             © {new Date().getFullYear()} Harry Clinton
           </p>
         </div>
