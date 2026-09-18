@@ -91,10 +91,29 @@ export default function FullWidthVideo() {
             muteOff: v.mute_default === 0 || v.mute_default === false,
           }))
           .filter((v) => v.src);
-        if (live) setRows(list);
+        if (live && list.length > 0) setRows(list);
+        else if (live) {
+          // Fallback to local video if API fails or empty
+          setRows([{
+            id: 'local-luxury',
+            src: '/brand/luxury-wedding-home.mp4',
+            poster: '',
+            autoplay: true,
+            loop: true,
+            muteOff: false,
+          }]);
+        }
       })
       .catch(() => {
-        /* section hides when unreachable */
+        // Fallback to local video
+        if (live) setRows([{
+          id: 'local-luxury',
+          src: '/brand/luxury-wedding-home.mp4',
+          poster: '',
+          autoplay: true,
+          loop: true,
+          muteOff: false,
+        }]);
       })
       .finally(() => {
         if (live) setLoading(false);
