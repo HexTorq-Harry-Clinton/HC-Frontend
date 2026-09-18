@@ -1,43 +1,26 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
-import { sanitizeHtml } from "@/lib/sanitize";
+import MarqueeTape from "./MarqueeTape";
 
 // Running bar — the white strip BELOW the hero slider.
-// Continuous scrollbar tape (NOT one-at-a-time): items stream in queue order
-// and the next follows while the first is still exiting, seamless loop.
+// Flowing right-to-left marquee tape.
 // Data rule (tbl_running_bars 1:N tbl_running_bar_items):
 // - parents: isactive = 1 AND isdeleted = 0 only
 // - children of EACH active parent: isactive = 1 AND isdeleted = 0,
 //   ordered by display_order ASC
-// - tape speed honors the DB: one full loop takes the SUM of duration_seconds
-const DEFAULT_TEXT = "Enjoy an Exclusive 50% Privilege on All Orders Today Only !";
-const DEFAULT_SECS = 30;
+// - tape speed honors the DB: loop time = sum of duration_seconds
+const DEFAULT_SLIDES = [
+  { text: "Enjoy an Exclusive 50% Privilege on All Orders Today Only !", secs: 30, showLogo: true },
+];
 
 const isOn = (v) => v === 1 || v === true;
 const isOff = (v) => v === 1 || v === true;
 
-function TapeText({ text, showLogo = true }) {
-  const inner = /<[a-z][\s\S]*>/i.test(text) ? (
-    <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }} />
-  ) : (
-    text
-  );
-  return (
-    <span className="flex items-center whitespace-nowrap px-6 text-sm font-medium">
-      {inner}
-      {showLogo && (
-        <Image src="/brand/logo-black.png" alt="" aria-hidden width={28} height={28} className="ml-6 inline-block" />
-      )}
-    </span>
-  );
-}
-
 export default function OfferBar() {
-  // slides: [{ text, secs }] in queue order.
-  const [slides, setSlides] = useState([{ text: DEFAULT_TEXT, secs: DEFAULT_SECS }]);
+  // slides: [{ text, secs, showLogo }] in queue order.
+  const [slides, setSlides] = useState(DEFAULT_SLIDES);
 
   useEffect(() => {
     let live = true;
@@ -61,7 +44,6 @@ export default function OfferBar() {
           return {
             text: String(it.itemsdata).trim(),
             secs: Number.isFinite(secs) && secs > 0 ? secs : 5,
-            // show_logo defaults ON (pre-migration rows carry no column).
             showLogo: it.show_logo === 0 || it.show_logo === false ? false : true,
           };
         };
@@ -89,28 +71,5 @@ export default function OfferBar() {
     };
   }, []);
 
-  // Full loop = sum of DB seconds x copies (speed stays proportional to the
-  // configured seconds no matter how many repeats fill the screen).
-  // The queue repeats 4x per half so the tape is always wider than the
-  // viewport — no blank gap, no pop-in, seamless -50% loop.
-  const COPIES = 4;
-  const tape = Array(COPIES).fill(slides).flat();
-  const loopSecs = Math.max(
-    slides.reduce((s, it) => s + (Number(it.secs) || 0), 0) * COPIES,
-    10
-  );
-
-  return (
-    <div className="overflow-hidden border-y border-neutral-200 bg-white py-2">
-      <div className="animate-marquee items-center" style={{ animationDuration: `${loopSecs}s` }}>
-        {[0, 1].map((dup) => (
-          <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup > 0}>
-            {tape.map((s, i) => (
-              <TapeText key={i} text={s.text} showLogo={s.showLogo} />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <MarqueeTape slides={slides} logoMarks={false} showLogoPerItem />;
 }
