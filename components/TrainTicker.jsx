@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 // Shared train-carousel engine for the two ticker strips.
@@ -17,7 +17,13 @@ const EXIT_MS = 850;
 export const TRAIN_DEFAULT_MS = 4000;
 
 export default function TrainTicker({ slides, dark = true, arrows = true, flankLeft = null, flankRight = null }) {
-  const list = Array.isArray(slides) && slides.length > 0 ? slides : [];
+  // Stable identity: a fresh array literal here would re-fire the motion
+  // chain on EVERY render, endlessly resetting enter/hold and killing both
+  // the animation and the auto-advance.
+  const list = useMemo(
+    () => (Array.isArray(slides) && slides.length > 0 ? slides : []),
+    [slides]
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [entry, setEntry] = useState("right");
   const [phase, setPhase] = useState("enter");
