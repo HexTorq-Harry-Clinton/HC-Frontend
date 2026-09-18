@@ -11,14 +11,14 @@ import { sanitizeHtml } from "@/lib/sanitize";
 // - logoMarks: show brand logo separators between messages (running bar)
 const COPIES = 4;
 
-function TapeText({ text, logoMarks, light }) {
+function TapeText({ text, logoMarks, light, pad }) {
   const inner = /<[a-z][\s\S]*>/i.test(text) ? (
     <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }} />
   ) : (
     text
   );
   return (
-    <span className="flex items-center whitespace-nowrap px-6 text-xs font-medium uppercase tracking-widest">
+    <span className={`flex items-center whitespace-nowrap ${pad} text-xs font-medium uppercase tracking-widest`}>
       {inner}
       {logoMarks && (
         <Image
@@ -34,7 +34,7 @@ function TapeText({ text, logoMarks, light }) {
   );
 }
 
-export default function MarqueeTape({ slides, dark = true, logoMarks = false, showLogoPerItem = false }) {
+export default function MarqueeTape({ slides, dark = true, logoMarks = false, showLogoPerItem = false, pad = "px-6" }) {
   const list = Array.isArray(slides) ? slides.filter((s) => s.text) : [];
   // The queue repeats per half so the tape is always wider than the viewport
   // — no blank gap, no pop-in. Loop time = sum of DB seconds x copies, so
@@ -59,6 +59,7 @@ export default function MarqueeTape({ slides, dark = true, logoMarks = false, sh
                 text={s.text}
                 logoMarks={showLogoPerItem ? s.showLogo !== false : logoMarks}
                 light={dark}
+                pad={pad}
               />
             ))}
           </div>

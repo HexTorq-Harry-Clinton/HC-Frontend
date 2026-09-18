@@ -71,5 +71,5 @@ export default function OfferBar() {
     };
   }, []);
 
-  return <MarqueeTape slides={slides} logoMarks={false} showLogoPerItem />;
+  return <MarqueeTape slides={slides} logoMarks={false} showLogoPerItem pad="px-12" />;
 }
