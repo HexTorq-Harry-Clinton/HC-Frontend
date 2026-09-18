@@ -7,7 +7,8 @@ import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 // Opening splash: brand video plays once per session, then reveals the store.
-// Skippable (click / Esc / ends). Frontend-only asset by design.
+// Dismiss ONLY via the Skip button, Esc key, or video end — taps elsewhere
+// on the screen must NOT skip it. Frontend-only asset by design.
 export default function SplashScreen() {
   // Start VISIBLE so the server HTML already covers the homepage — no
   // homepage flash before the splash. Returning visitors are hidden
@@ -50,7 +51,6 @@ export default function SplashScreen() {
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-950"
-      onClick={dismiss}
       role="dialog"
       aria-label="Harry Clinton intro"
     >
