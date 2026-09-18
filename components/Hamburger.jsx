@@ -111,19 +111,19 @@ export default function Hamburger({ categories }) {
         </div>
       </div>
       <style jsx>{`
-        .hamburger { width: 38px; height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
+        .hamburger { width: 28px; height: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
         .hamburger span {
-          display: block; width: 22px; height: 2px; background: #111;
+          display: block; width: 18px; height: 2px; background: #111;
           transform-origin: left center; transition: all 0.3s ease;
           animation: lineIn 0.5s ease backwards;
         }
         .hamburger span:nth-child(2) { animation-delay: 0.08s; }
         .hamburger span:nth-child(3) { animation-delay: 0.16s; }
         @keyframes lineIn { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
-        .hamburger:hover span:nth-child(2) { width: 15px; }
-        .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger:hover span:nth-child(2) { width: 12px; }
+        .hamburger.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
         .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+        .hamburger.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
         .topmenu {
           position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 70;
           max-height: 0; opacity: 0; transform: translateY(-14px); overflow: hidden;

@@ -38,7 +38,7 @@ export default function HeaderBar({ categories }) {
     <>
       {searchOpen && <SearchDropdown onClose={() => setSearchOpen(false)} />}
 
-      <header className="topbar-enter sticky top-0 z-[80] flex items-center justify-between bg-white px-3 py-1.5">
+      <header className="topbar-enter sticky top-0 z-[80] flex items-center justify-between bg-white px-3 py-1">
         <div className="flex items-center gap-3">
           <Hamburger categories={categories} />
 
@@ -67,10 +67,10 @@ export default function HeaderBar({ categories }) {
             <Image
               src="/brand/logo-black.png"
               alt="Harry Clinton"
-              width={28}
-              height={28}
+              width={20}
+              height={20}
               priority
-              style={{ height: "28px", width: "auto", objectFit: "contain" }}
+              style={{ height: "20px", width: "auto", objectFit: "contain" }}
             />
           </Link>
         </div>
@@ -113,18 +113,18 @@ export default function HeaderBar({ categories }) {
         /* every topbar control rides in an identical 38px box so icons share
            one optical center — no floaters, no size drift. */
         .hicon {
-          width: 38px; height: 38px; flex: none;
+          width: 28px; height: 28px; flex: none;
           display: flex; align-items: center; justify-content: center;
-          font-size: 20px; cursor: pointer;
+          font-size: 16px; cursor: pointer;
         }
         .hicon > i { display: block; line-height: 1; }
         .topbar-enter { animation: topbarDrop 0.55s cubic-bezier(0.16, 0.8, 0.24, 1) both; }
         @keyframes topbarDrop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
         .c-home { position: relative; }
         .c-icon {
-          width: 38px; height: 38px; border-radius: 50%;
+          width: 26px; height: 26px; border-radius: 50%;
           border: 1.5px solid #111; background: #fff;
-          font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+          font-family: var(--font-display); font-weight: 700; font-size: 0.85rem;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer; transition: transform 0.15s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }
