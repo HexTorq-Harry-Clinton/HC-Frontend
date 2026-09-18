@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "./CartProvider";
 import { PLACEHOLDER_IMAGE } from "./ProductCard";
+import WishlistHeart from "./WishlistHeart";
 
 // New Arrivals grid: count, Newest First sort, New badge,
 // Quick Add / Added to Bag, Price on request — as before.
@@ -45,6 +46,10 @@ export default function NewArrivalsGrid({ products }) {
               <span className="absolute left-3 top-3 z-10 bg-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-950">
                 New
               </span>
+              <WishlistHeart
+                product={p}
+                className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow transition hover:bg-gold"
+              />
               <Link href={`/product/${p.slug || p.id}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

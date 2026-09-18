@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { inr } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useCart } from "./CartProvider";
+import WishlistHeart from "./WishlistHeart";
 import { PLACEHOLDER_IMAGE } from "./ProductCard";
 import ProductCard from "./ProductCard";
 import Breadcrumb from "./Breadcrumb";
@@ -145,13 +146,10 @@ export default function ProductDetail({ product }) {
             <button onClick={addToBag} className={`flex-1 py-3 text-sm font-semibold text-white transition ${added ? "bg-green-700" : "bg-neutral-950 hover:bg-neutral-800"}`}>
               {added ? "Added to Cart" : "Add to Cart"}
             </button>
-            <button
-              onClick={() => cart?.toggleWishlist({ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] })}
-              title="Add to wishlist"
+            <WishlistHeart
+              product={{ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] }}
               className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
-            >
-              ♡
-            </button>
+            />
           </div>
           <button onClick={() => router.back()} className="link-sweep mt-4 text-sm font-semibold">
             ← Continue Shopping

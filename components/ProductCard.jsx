@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { inr } from "@/lib/api";
 import { useCart } from "./CartProvider";
+import WishlistHeart from "./WishlistHeart";
 
 export const PLACEHOLDER_IMAGE =
   "data:image/svg+xml;charset=UTF-8," +
@@ -39,15 +40,12 @@ export default function ProductCard({ product, index = 0 }) {
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
           />
         </Link>
-        <button
-          onClick={() => cart?.toggleWishlist(product)}
-          aria-label="Toggle wishlist"
+        <WishlistHeart
+          product={product}
           className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full shadow transition-all duration-300 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 ${
             wished ? "bg-gold text-neutral-950" : "bg-white/90 text-neutral-800 hover:bg-gold"
           }`}
-        >
-          ♥
-        </button>
+        />
         <div className="absolute inset-x-0 bottom-0 translate-y-full transition-transform duration-300 ease-out group-hover:translate-y-0">
           <button
             onClick={() => cart?.addToCart({ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image })}
