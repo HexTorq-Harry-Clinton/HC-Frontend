@@ -54,12 +54,10 @@ export default function HeaderBar({ categories }) {
             {cPulse > 0 && <span key={cPulse} className="c-ring" aria-hidden />}
           </div>
 
-          <div className="search">
+          <div className="search hicon" onClick={() => setSearchOpen(true)} aria-label="Open search">
             <i
-              className="bi bi-search fs-4"
+              className="bi bi-search"
               style={{ cursor: "pointer" }}
-              onClick={() => setSearchOpen(true)}
-              aria-label="Open search"
             />
           </div>
         </div>
@@ -78,16 +76,16 @@ export default function HeaderBar({ categories }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/wishlist" className="relative text-neutral-900" aria-label="Wishlist">
-            <i className="bi bi-heart fs-4"></i>
+          <Link href="/wishlist" className="hicon relative text-neutral-900" aria-label="Wishlist">
+            <i className="bi bi-heart"></i>
             {wishlistCount > 0 && (
               <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
                 {wishlistCount}
               </span>
             )}
           </Link>
-          <button type="button" onClick={() => setBagOpen(true)} className="relative text-neutral-900" aria-label="Open bag">
-            <i className="bi bi-bag fs-4"></i>
+          <button type="button" onClick={() => setBagOpen(true)} className="hicon relative text-neutral-900" aria-label="Open bag">
+            <i className="bi bi-bag"></i>
             {cartCount > 0 && (
               <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
                 {cartCount}
@@ -95,9 +93,9 @@ export default function HeaderBar({ categories }) {
             )}
           </button>
 
-          <div ref={profileRef} style={{ position: "relative" }}>
+          <div ref={profileRef} className="hicon" style={{ position: "relative" }}>
             <i
-              className="bi bi-person-circle fs-4"
+              className="bi bi-person-circle"
               style={{ cursor: "pointer" }}
               onClick={() => setOpen((prev) => !prev)}
               aria-label="Account"
@@ -112,6 +110,14 @@ export default function HeaderBar({ categories }) {
 
       <style jsx>{`
         .fs-4 { font-size: 1.4rem; }
+        /* every topbar control rides in an identical 38px box so icons share
+           one optical center — no floaters, no size drift. */
+        .hicon {
+          width: 38px; height: 38px; flex: none;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px; cursor: pointer;
+        }
+        .hicon > i { display: block; line-height: 1; }
         .topbar-enter { animation: topbarDrop 0.55s cubic-bezier(0.16, 0.8, 0.24, 1) both; }
         @keyframes topbarDrop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
         .c-home { position: relative; }
