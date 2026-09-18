@@ -333,6 +333,7 @@ export default function AdminMenuVideosPage() {
             <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
               {orderMode && <th className="w-[44px] px-4 py-3" />}
               <th className={thCls}>#</th>
+              <th className={thCls}>Preview</th>
               <th className={thCls}>Type</th>
               <th className={thCls}>Auto / Loop / Mute</th>
               <th className="w-[150px] px-4 py-3 text-right">Actions</th>
@@ -341,7 +342,7 @@ export default function AdminMenuVideosPage() {
           <tbody>
             {ordered.length === 0 ? (
               <tr>
-                <td colSpan={orderMode ? 5 : 4} className="p-5 text-center text-neutral-500">
+                <td colSpan={orderMode ? 6 : 5} className="p-5 text-center text-neutral-500">
                   No videos yet — add the first one.
                 </td>
               </tr>
@@ -361,6 +362,21 @@ export default function AdminMenuVideosPage() {
                     </td>
                   )}
                   <td className={`${tdCls} font-bold text-neutral-500`}>{i + 1}</td>
+                  <td className={tdCls}>
+                    {r.poster_image_url ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={resolveUploadUrl(r.poster_image_url)}
+                        alt=""
+                        className="h-12 w-24 rounded-md border border-neutral-200 object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-24 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold">
+                        <i className="bi bi-film" /> Video
+                      </span>
+                    )}
+                  </td>
                   <td className={tdCls}>
                     <span className="font-semibold">{r.video_type || "brand"}</span>
                     {(r.isactive !== 1 && r.isactive !== true) && (
@@ -410,6 +426,31 @@ export default function AdminMenuVideosPage() {
             <h3 className="font-display text-lg font-bold text-neutral-900">
               {modal.id ? "Edit video" : "New video"}
             </h3>
+            {(stagedVideo || modal.video_url) && (
+              <div className="mt-3">
+                <video
+                  src={stagedVideo ? URL.createObjectURL(stagedVideo) : resolveUploadUrl(modal.video_url)}
+                  className="aspect-video w-full rounded-md border border-neutral-200 bg-neutral-950 object-cover"
+                  muted
+                  playsInline
+                  preload="metadata"
+                />
+                <p className="mt-1 text-xs text-neutral-500">
+                  Preview{stagedVideo ? " (staged file)" : " (current file)"} — poster below.
+                </p>
+              </div>
+            )}
+            {(stagedPoster || modal.poster_image_url) && (
+              <div className="mt-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={stagedPoster ? URL.createObjectURL(stagedPoster) : resolveUploadUrl(modal.poster_image_url)}
+                  alt="Poster preview"
+                  className="aspect-video w-full rounded-md border border-neutral-200 object-cover"
+                />
+                <p className="mt-1 text-xs text-neutral-500">Poster preview.</p>
+              </div>
+            )}
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500">
                 Type
