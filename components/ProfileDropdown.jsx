@@ -34,9 +34,19 @@ export default function ProfileDropdown({ onClose }) {
     router.push("/login");
   };
 
+  // Inline positioning (not just the stylesheet) so the menu can NEVER join
+  // the header flow and stretch the navbar — it always floats near the icon.
+  const floatStyle = {
+    position: "absolute",
+    right: 0,
+    top: "calc(100% + 10px)",
+    zIndex: 95,
+    whiteSpace: "nowrap",
+  };
+
   if (!user) {
     return (
-      <div className="profile-dropdown">
+      <div className="profile-dropdown" style={floatStyle}>
         <div className="dropdown-item" onClick={() => go("/login")}>
           <i className="bi bi-box-arrow-in-right"></i> Login
         </div>
@@ -49,7 +59,7 @@ export default function ProfileDropdown({ onClose }) {
   }
 
   return (
-    <div className="profile-dropdown">
+    <div className="profile-dropdown" style={floatStyle}>
       <div className="dropdown-header">
         <strong>{user.full_name || user.fullname || user.name || user.email_id || user.email || "User"}</strong>
         {user.role && <p className="dropdown-role">{user.role}</p>}
