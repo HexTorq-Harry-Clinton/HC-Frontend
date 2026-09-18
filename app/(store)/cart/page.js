@@ -67,7 +67,7 @@ export default function CartPage() {
             </div>
           ))}
         </div>
-        <aside className="h-fit border border-neutral-200 bg-white p-6">
+        <aside className="h-fit self-start border border-neutral-200 bg-white p-6 lg:sticky lg:top-24">
           <h4 className="font-semibold">Order Summary</h4>
           <p className="mt-3 flex justify-between text-sm"><span>Subtotal</span><span>₹{cart.subtotal.toLocaleString("en-IN")}</span></p>
           {cart.coupon && (
