@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap } from "@/lib/api";
 import ShowcaseCarousel from "./ShowcaseCarousel";
+import SpotlightMarquee from "./SpotlightMarquee";
 
 // Spotlight + Style carousels with settings-driven titles, exactly like before.
 export function Spotlight() {
@@ -27,12 +28,8 @@ export function Spotlight() {
   }, []);
 
   return (
-    <ShowcaseCarousel
+    <SpotlightMarquee
       title={title}
-      entriesEndpoint="/Spotlight-Entries"
-      mediaEndpoint="/Spotlight-Media"
-      fallbackLink="/hc-spotlight"
-      intervalMs={1800}
     />
   );
 }
