@@ -94,8 +94,8 @@ export default function Footer() {
 
   return (
     <>
-      <footer id="site-footer" className="mt-16 bg-black py-12 text-white">
-        <div className="mx-auto max-w-7xl px-4">
+      <footer id="site-footer" className="flex min-h-[100svh] flex-col justify-between bg-black py-12 text-white">
+        <div className="mx-auto w-full max-w-7xl px-4">
           <div className="grid gap-8 md:grid-cols-12">
             <div className="md:col-span-4">
               <h4 className="font-bold">
@@ -201,8 +201,18 @@ export default function Footer() {
           <hr className="my-6 border-neutral-800" />
         </div>
 
-        <div className="mb-4 text-center">
-          <Image src="/brand/logo-white.png" alt="Logo-footer" width={220} height={60} className="mx-auto" />
+        <div className="mx-auto mt-10 w-full max-w-7xl px-4 pb-4">
+          <Image
+            src="/brand/logo-white.png"
+            alt="Harry Clinton"
+            width={1200}
+            height={520}
+            className="mx-auto h-auto w-full max-w-5xl"
+            loading="lazy"
+          />
+          <p className="mt-6 text-center text-xs uppercase tracking-[0.3em] text-neutral-500">
+            © {new Date().getFullYear()} Harry Clinton
+          </p>
         </div>
       </footer>
 
