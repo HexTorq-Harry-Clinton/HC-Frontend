@@ -32,7 +32,7 @@ export default function AdminNotificationBarsPage() {
   const [refresh, setRefresh] = useState(0);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
-  // null | { notification_text, orderpriority, isactive } — create popup.
+  // null | { notification_text, duration_seconds, orderpriority, isactive }.
   const [modal, setModal] = useState(null);
   // false | array of ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
@@ -76,13 +76,22 @@ export default function AdminNotificationBarsPage() {
   const create = async (e) => {
     e?.preventDefault();
     const text = (modal?.notification_text || "").trim();
+    const secs = Number(modal?.duration_seconds);
     if (!text) {
       setMsg("Please enter the notification text or HTML.");
       return;
     }
+    if (!Number.isFinite(secs) || secs <= 0) {
+      setMsg("Please enter hold seconds (greater than 0).");
+      return;
+    }
     setBusy(true);
     try {
-      const body = { notification_text: text, rcu: "ADMIN_PORTAL" };
+      const body = {
+        notification_text: text,
+        duration_seconds: Math.round(secs),
+        rcu: "ADMIN_PORTAL",
+      };
       const n = Number(modal?.orderpriority);
       if (Number.isFinite(n) && n > 0) body.orderpriority = Math.round(n);
       const res = await apiFetch("/Notification-Bar", { method: "POST", body });
@@ -204,7 +213,7 @@ export default function AdminNotificationBarsPage() {
           <>
             <button
               type="button"
-              onClick={() => setModal({ notification_text: "", orderpriority: "", isactive: true })}
+              onClick={() => setModal({ notification_text: "", duration_seconds: 4, orderpriority: "", isactive: true })}
               className={btnPrimary}
             >
               <i className="bi bi-plus-lg" /> New notification
@@ -267,6 +276,9 @@ export default function AdminNotificationBarsPage() {
                     <td className={`${tdCls} font-bold text-neutral-500`}>{i + 1}</td>
                     <td className={`${tdCls} max-w-md`}>
                       <span className="block truncate">{preview.slice(0, 90)}</span>
+                      <span className="mt-1 inline-block rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-600">
+                        {Number(r.duration_seconds) || 4}s hold
+                      </span>
                       {isHtml(r.notification_text) && (
                         <span className="mt-1 inline-block rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gold-deep">
                           HTML
@@ -321,6 +333,16 @@ export default function AdminNotificationBarsPage() {
                 rows={4}
                 placeholder="e.g. Festive edit is live — or <strong>HTML</strong>"
                 className={`${inputCls} mt-1 font-normal normal-case tracking-normal`}
+              />
+            </label>
+            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+              Hold seconds (center-screen stay)
+              <input
+                type="number"
+                min={1}
+                value={modal.duration_seconds}
+                onChange={(e) => setModal({ ...modal, duration_seconds: e.target.value })}
+                className={`${inputCls} mt-1 font-normal`}
               />
             </label>
             <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">

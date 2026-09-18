@@ -26,7 +26,13 @@ export default function NotificationBar() {
         const items = (Array.isArray(rows) ? rows : [])
           .filter((r) => (r.isactive === 1 || r.isactive === true) && r.isdeleted !== 1 && r.isdeleted !== true && r.notification_text)
           .sort((a, b) => (Number(a.orderpriority) || 0) - (Number(b.orderpriority) || 0))
-          .map((r) => ({ text: String(r.notification_text).trim(), ms: TRAIN_DEFAULT_MS }))
+          .map((r) => {
+            const secs = Number(r.duration_seconds);
+            return {
+              text: String(r.notification_text).trim(),
+              ms: Number.isFinite(secs) && secs > 0 ? secs * 1000 : TRAIN_DEFAULT_MS,
+            };
+          })
           .filter((s) => s.text);
         if (live && items.length > 0) setSlides(items);
       })
