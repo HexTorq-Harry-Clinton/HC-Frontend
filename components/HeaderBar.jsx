@@ -7,6 +7,7 @@ import { useCart } from "./CartProvider";
 import Hamburger from "./Hamburger";
 import ProfileDropdown from "./ProfileDropdown";
 import SearchDropdown from "./SearchDropdown";
+import CartDrawer from "./CartDrawer";
 import CIconModal from "./CIconModal";
 
 // Header: exact structure of the previous UI —
@@ -15,6 +16,7 @@ export default function HeaderBar({ categories }) {
   const cart = useCart();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [bagOpen, setBagOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [cPulse, setCPulse] = useState(0);
   const profileRef = useRef(null);
@@ -84,14 +86,14 @@ export default function HeaderBar({ categories }) {
               </span>
             )}
           </Link>
-          <Link href="/cart" className="relative text-neutral-900" aria-label="Bag">
+          <button type="button" onClick={() => setBagOpen(true)} className="relative text-neutral-900" aria-label="Open bag">
             <i className="bi bi-bag fs-4"></i>
             {cartCount > 0 && (
               <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
 
           <div ref={profileRef} style={{ position: "relative" }}>
             <i
@@ -106,6 +108,7 @@ export default function HeaderBar({ categories }) {
       </header>
 
       <CIconModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <CartDrawer open={bagOpen} onClose={() => setBagOpen(false)} />
 
       <style jsx>{`
         .fs-4 { font-size: 1.4rem; }
