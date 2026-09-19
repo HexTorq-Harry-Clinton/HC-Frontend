@@ -1,30 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiCached } from "@/lib/api";
+import { homeKV } from "@/lib/api";
 import ShowcaseCarousel from "./ShowcaseCarousel";
 import SpotlightMarquee from "./SpotlightMarquee";
 
-// Spotlight + Style carousels with admin titles (tbl_settings columns,
+// Spotlight + Style carousels with admin titles (key-value store,
 // legacy key rows, then defaults).
 function useHomeTitle(column, legacyKey, fallback) {
   const [title, setTitle] = useState(fallback);
 
   useEffect(() => {
     let live = true;
-    apiCached("/Settings")
-      .then((settings) => {
+    homeKV()
+      .then((kv) => {
         if (!live) return;
-        const list = Array.isArray(settings) ? settings : [];
-        const row = list[0] || {};
-        if (row[column]) {
-          setTitle(row[column]);
+        if (kv[column]) {
+          setTitle(kv[column]);
           return;
         }
-        const match = list.find(
-          (s) => s.setting_key?.toLowerCase() === legacyKey || s.key?.toLowerCase() === legacyKey
-        );
-        if (match?.setting_value || match?.value) setTitle(match.setting_value || match.value);
       })
       .catch(() => {});
     return () => {

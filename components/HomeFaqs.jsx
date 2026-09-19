@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiCached } from "@/lib/api";
+import { apiCached, homeKV } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 const DEFAULT_FAQS = [
@@ -39,9 +39,9 @@ export default function HomeFaqs() {
     let live = true;
     const fetchData = async () => {
       try {
-        const [faqsRes, settingsRes] = await Promise.all([
+        const [faqsRes, kv] = await Promise.all([
           apiCached("/FAQs").catch(() => []),
-          apiCached("/Settings").catch(() => []),
+          homeKV().catch(() => ({})),
         ]);
         if (!live) return;
         const list = Array.isArray(faqsRes) ? faqsRes : [];
@@ -62,17 +62,9 @@ export default function HomeFaqs() {
             }))
           );
         }
-        const settings = Array.isArray(settingsRes) ? settingsRes : [];
-        // Admin columns first (tbl_settings home_faqs_*), legacy key rows, then default.
-        const row = settings[0] || {};
-        if (row.home_faqs_title) setTitle(row.home_faqs_title);
-        else {
-          const match = settings.find(
-            (s) => s.setting_key?.toLowerCase() === "home_faqs_title" || s.key?.toLowerCase() === "home_faqs_title"
-          );
-          if (match?.setting_value || match?.value) setTitle(match.setting_value || match.value);
-        }
-        if (row.home_faqs_subtitle) setSubtitle(row.home_faqs_subtitle);
+        // Admin key-value first (home_faqs_*), else keep defaults.
+        if (kv.home_faqs_title) setTitle(kv.home_faqs_title);
+        if (kv.home_faqs_subtitle) setSubtitle(kv.home_faqs_subtitle);
       } catch {
         /* keep defaults */
       }

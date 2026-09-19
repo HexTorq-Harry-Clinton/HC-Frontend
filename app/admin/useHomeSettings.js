@@ -1,27 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
+import { homeKV, upsertHomeKV } from "@/lib/api";
 
-// Shared singleton-settings driver for Home Screen Content pages.
-// Loads the first /Settings row, exposes patch + save (PUT by setting_id).
-// Returns { settings, settingId, loading, saving, msg, setMsg, patch, save }.
+// Shared home-config driver for Home Screen Content pages.
+// Reads/writes the generic key-value store (tbl_home_settings via
+// /Home-Settings): custom rows with setting_key + setting_value, grouped.
+// Same API as before: { settings, loading, saving, msg, setMsg, patch, save }.
+// save(fields, okMsg) upserts each key idempotently.
 export default function useHomeSettings() {
   const [settings, setSettings] = useState({});
-  const [settingId, setSettingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
     let live = true;
-    apiFetch("/Settings")
-      .then(unwrap)
-      .then((list) => {
-        if (!live) return;
-        const row = (Array.isArray(list) ? list : [])[0] || {};
-        if (row.setting_id) setSettingId(row.setting_id);
-        setSettings(row);
+    homeKV()
+      .then((map) => {
+        if (live) setSettings(map);
       })
       .catch(() => {
         if (live) setMsg("Could not load settings.");
@@ -38,30 +35,19 @@ export default function useHomeSettings() {
     setSettings((s) => ({ ...s, ...fields }));
   }, []);
 
-  const save = useCallback(
-    async (fields, okMsg) => {
-      if (!settingId) {
-        setMsg("No settings row found — create one in Settings first.");
-        return false;
-      }
-      setSaving(true);
-      try {
-        await apiFetch("/Settings", {
-          method: "PUT",
-          body: { setting_id: settingId, ...fields, luu: "ADMIN_PORTAL" },
-        });
-        setMsg(okMsg || "Saved.");
-        revalidateSite();
-        return true;
-      } catch (err) {
-        setMsg(err.message || "Save failed.");
-        return false;
-      } finally {
-        setSaving(false);
-      }
-    },
-    [settingId]
-  );
+  const save = useCallback(async (fields, okMsg, group) => {
+    setSaving(true);
+    try {
+      await upsertHomeKV(fields, group);
+      setMsg(okMsg || "Saved.");
+      return true;
+    } catch (err) {
+      setMsg(err.message || "Save failed.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
-  return { settings, settingId, loading, saving, msg, setMsg, patch, save };
+  return { settings, loading, saving, msg, setMsg, patch, save };
 }

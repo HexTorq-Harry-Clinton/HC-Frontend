@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
+import { apiCached, homeKV, precacheMedia, resolveUploadUrl } from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
 import SectionHeading from "@/components/SectionHeading";
 import Reveal from "@/components/Reveal";
@@ -24,21 +24,20 @@ export default function FeaturedProducts() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const [productsData, mediaData, settingsData] = await Promise.all([
+        const [productsData, mediaData, kv] = await Promise.all([
           apiCached("/Products"),
           apiCached("/Products-Media"),
-          apiCached("/Settings").catch(() => []),
+          homeKV().catch(() => ({})),
         ]);
 
-        const row = (Array.isArray(settingsData) ? settingsData : [])[0] || {};
-        const count = Math.min(24, Math.max(1, Number(row.home_new_arrivals_count) || 8));
-        const cols = [2, 3, 4, 5].includes(Number(row.home_new_arrivals_cols))
-          ? Number(row.home_new_arrivals_cols)
+        const count = Math.min(24, Math.max(1, Number(kv.home_new_arrivals_count) || 8));
+        const cols = [2, 3, 4, 5].includes(Number(kv.home_new_arrivals_cols))
+          ? Number(kv.home_new_arrivals_cols)
           : 4;
         setCfg({
-          eyebrow: row.home_new_arrivals_eyebrow || "CURATED FOR YOU",
-          title: row.home_new_arrivals_title || "New Arrivals",
-          sub: row.home_new_arrivals_subtitle || "The latest additions to our bespoke collection.",
+          eyebrow: kv.home_new_arrivals_eyebrow || "CURATED FOR YOU",
+          title: kv.home_new_arrivals_title || "New Arrivals",
+          sub: kv.home_new_arrivals_subtitle || "The latest additions to our bespoke collection.",
           count,
           cols,
         });

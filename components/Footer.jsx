@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiCached, subscribeNewsletter } from "@/lib/api";
+import { apiCached, homeKV, subscribeNewsletter } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 // Footer: admin-driven bottom content (tbl_settings footer_*/brand_description
@@ -51,10 +51,12 @@ export default function Footer() {
     Promise.all([
       apiCached("/Support-Contacts").catch(() => []),
       apiCached("/Settings").catch(() => []),
-    ]).then(([contacts, settings]) => {
+      homeKV().catch(() => ({})),
+    ]).then(([contacts, settings, kv]) => {
       if (!live) return;
       setSupportContacts(Array.isArray(contacts) ? contacts : []);
-      setCfg((Array.isArray(settings) ? settings : [])[0] || {});
+      // Singleton row keeps brand/newsletter copy; footer_* lives in KV.
+      setCfg({ ...((Array.isArray(settings) ? settings : [])[0] || {}), ...kv });
     });
     return () => {
       live = false;

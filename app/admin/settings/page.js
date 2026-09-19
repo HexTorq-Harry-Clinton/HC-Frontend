@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, resolveUploadUrl, revalidateSite } from "@/lib/api";
+import { apiFetch, unwrap, resolveUploadUrl, revalidateSite, upsertHomeKV, homeKV } from "@/lib/api";
 import FilePick from "../FilePick";
 import UploadRing from "../UploadRing";
 import useLockBody from "../useLockBody";
@@ -43,16 +43,19 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     let live = true;
-    apiFetch("/Settings")
-      .then(unwrap)
-      .then((list) => {
+    Promise.all([
+      apiFetch("/Settings").then(unwrap).catch(() => []),
+      homeKV().catch(() => ({})),
+    ])
+      .then(([list, kv]) => {
         if (!live) return;
         const row = (Array.isArray(list) ? list : [])[0];
         if (row) {
           setSettingId(row.setting_id);
           const f = {};
           FIELDS.forEach((fld) => {
-            const v = row[fld.key];
+            // home_* titles come from the key-value store, rest from the row.
+            const v = fld.key.startsWith("home_") ? kv[fld.key] : row[fld.key];
             f[fld.key] = fld.type === "checkbox" ? v === 1 || v === true : v || "";
           });
           setForm(f);
@@ -103,6 +106,16 @@ export default function AdminSettingsPage() {
     }
     setBusy("saving");
     try {
+      // Section titles (home_*) live in the key-value store; the rest stays
+      // on the singleton Settings row.
+      const kv = {};
+      for (const k of Object.keys(body)) {
+        if (k.startsWith("home_")) {
+          kv[k] = body[k];
+          delete body[k];
+        }
+      }
+      if (Object.keys(kv).length > 0) await upsertHomeKV(kv, "titles");
       if (settingId) {
         await apiFetch("/Settings", { method: "PUT", body: { setting_id: settingId, ...body } });
       } else {

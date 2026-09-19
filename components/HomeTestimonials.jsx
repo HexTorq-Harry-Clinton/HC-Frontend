@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiCached } from "@/lib/api";
+import { apiCached, homeKV } from "@/lib/api";
 import Reveal from "@/components/Reveal";
 import SectionHeading from "@/components/SectionHeading";
 
@@ -35,15 +35,14 @@ export default function HomeTestimonials() {
   useEffect(() => {
     async function fetchReviews() {
       try {
-        const [data, settingsData] = await Promise.all([
+        const [data, kv] = await Promise.all([
           apiCached("/Reviews"),
-          apiCached("/Settings").catch(() => []),
+          homeKV().catch(() => ({})),
         ]);
-        const row = (Array.isArray(settingsData) ? settingsData : [])[0] || {};
         setCopy({
-          eyebrow: row.home_reviews_eyebrow || "WHAT OUR CLIENTS SAY",
-          title: row.home_reviews_title || "Voices of Distinction",
-          sub: row.home_reviews_subtitle || "",
+          eyebrow: kv.home_reviews_eyebrow || "WHAT OUR CLIENTS SAY",
+          title: kv.home_reviews_title || "Voices of Distinction",
+          sub: kv.home_reviews_subtitle || "",
         });
         let fetchedReviews = [];
         if (Array.isArray(data)) {

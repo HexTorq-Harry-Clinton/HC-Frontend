@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Reveal from "@/components/Reveal";
 import SectionHeading from "@/components/SectionHeading";
-import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
+import { apiCached, homeKV, precacheMedia, resolveUploadUrl } from "@/lib/api";
 import { CATEGORIES } from "@/lib/catalog";
 
 const FALLBACK_TILES = [
@@ -86,14 +86,13 @@ export default function CategoryShowcase() {
 
   useEffect(() => {
     let live = true;
-    apiCached("/Settings")
-      .then((list) => {
+    homeKV()
+      .then((kv) => {
         if (!live) return;
-        const row = (Array.isArray(list) ? list : [])[0] || {};
-        if (row.home_collection_eyebrow) setEyebrow(row.home_collection_eyebrow);
-        if (row.home_collection_title) setTitle(row.home_collection_title);
+        if (kv.home_collection_eyebrow) setEyebrow(kv.home_collection_eyebrow);
+        if (kv.home_collection_title) setTitle(kv.home_collection_title);
         try {
-          const arr = JSON.parse(row.home_collection_json || "[]");
+          const arr = JSON.parse(kv.home_collection_json || "[]");
           if (Array.isArray(arr) && arr.length > 0) {
             const liveTiles = arr
               .filter((t) => t.active !== false && t.active !== 0)
