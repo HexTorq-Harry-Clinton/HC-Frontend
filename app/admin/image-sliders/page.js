@@ -289,7 +289,7 @@ export default function AdminImageSlidersPage() {
     <div>
       <p className="eyebrow text-gold-deep">Harry Clinton</p>
       <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-neutral-900">
-        Home Image Sliders
+        Home Slider
       </h1>
       <p className="mt-1 text-xs text-neutral-500">
         Hero slider — images + videos mixed • {live.length} slide(s) • /Image-Sliders • IMG ≤ 3 MB / VID ≤ 50 MB
