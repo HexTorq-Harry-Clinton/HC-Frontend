@@ -90,6 +90,24 @@ export default function AdminNotificationBarsPage() {
     }
     setBusy(true);
     try {
+      if (modal?.id) {
+        // Edit existing row.
+        const body = {
+          notification_bar_id: modal.id,
+          notification_text: text,
+          duration_seconds: Math.round(secs),
+          isactive: modal.isactive ? 1 : 0,
+          luu: "ADMIN_PORTAL",
+        };
+        const n = Number(modal?.orderpriority);
+        if (Number.isFinite(n) && n > 0) body.orderpriority = Math.round(n);
+        await apiFetch("/Notification-Bar", { method: "PUT", body });
+        setModal(null);
+        setMsg("Notification updated.");
+        toast?.success("Notification updated.");
+        reload();
+        return;
+      }
       const body = {
         notification_text: text,
         duration_seconds: Math.round(secs),
@@ -111,10 +129,20 @@ export default function AdminNotificationBarsPage() {
       toast?.success("Notification created.");
       reload();
     } catch (err) {
-      fail(err, "Could not create notification.");
+      fail(err, modal?.id ? "Could not update notification." : "Could not create notification.");
     } finally {
       setBusy(false);
     }
+  };
+
+  const openEdit = (r) => {
+    setModal({
+      id: r.notification_bar_id,
+      notification_text: r.notification_text || "",
+      duration_seconds: Number(r.duration_seconds) || 4,
+      orderpriority: Number(r.orderpriority) || "",
+      isactive: r.isactive === 1 || r.isactive === true,
+    });
   };
 
   const toggle = async (r, next) => {
@@ -298,6 +326,9 @@ export default function AdminNotificationBarsPage() {
                         <span className="text-xs text-neutral-400">drag me</span>
                       ) : (
                         <>
+                          <button type="button" onClick={() => openEdit(r)} title="Edit notification" className={iconBtn}>
+                            <i className="bi bi-pencil" />
+                          </button>
                           <span className="mr-2 inline-block align-middle">
                             <ActiveToggle active={r.isactive} onToggle={(next) => toggle(r, next)} />
                           </span>
@@ -315,7 +346,7 @@ export default function AdminNotificationBarsPage() {
         </table>
       </div>
 
-      {/* ---- create popup ---- */}
+      {/* ---- create/edit popup ---- */}
       {modal && (
         <div
           className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
@@ -326,7 +357,9 @@ export default function AdminNotificationBarsPage() {
             onClick={(e) => e.stopPropagation()}
             className={`w-full max-w-md ${panelCls}`}
           >
-            <h3 className="font-display text-lg font-bold text-neutral-900">New notification</h3>
+            <h3 className="font-display text-lg font-bold text-neutral-900">
+              {modal.id ? "Edit notification" : "New notification"}
+            </h3>
             <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
               Text / HTML
               <textarea
@@ -370,7 +403,7 @@ export default function AdminNotificationBarsPage() {
                 Cancel
               </button>
               <button type="submit" disabled={busy} className={btnPrimary}>
-                {busy ? "Creating..." : "Create"}
+                {busy ? "Saving..." : modal.id ? "Update" : "Create"}
               </button>
             </div>
           </form>
