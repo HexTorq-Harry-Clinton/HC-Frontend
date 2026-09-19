@@ -9,6 +9,9 @@ import { sanitizeHtml } from "@/lib/sanitize";
 // - dark: black strip (notification bar) vs white strip (running bar)
 // - logoMarks: show brand logo separators between messages (running bar)
 const COPIES = 4;
+// Tape pace: HALF speed — loop time is doubled so the strip drifts slow and
+// readable. Logo separators fill the strip height (container unchanged).
+const SPEED_DIVISOR = 2;
 
 function TapeText({ text, logoMarks, light, pad }) {
   const inner = /<[a-z][\s\S]*>/i.test(text) ? (
@@ -27,10 +30,10 @@ function TapeText({ text, logoMarks, light, pad }) {
           src={light ? "/brand/logo-white.png" : "/brand/logo-black.png"}
           alt=""
           aria-hidden
-          width={20}
-          height={20}
+          width={72}
+          height={32}
           decoding="async"
-          className="ml-6 inline-block"
+          className="ml-8 inline-block h-8 w-auto object-contain"
         />
       )}
     </span>
@@ -40,12 +43,12 @@ function TapeText({ text, logoMarks, light, pad }) {
 export default function MarqueeTape({ slides, dark = true, logoMarks = false, showLogoPerItem = false, pad = "px-6" }) {
   const list = Array.isArray(slides) ? slides.filter((s) => s.text) : [];
   // The queue repeats per half so the tape is always wider than the viewport
-  // — no blank gap, no pop-in. Loop time = sum of DB seconds x copies, so
-  // scroll speed stays proportional to the configured seconds.
+  // — no blank gap, no pop-in. Loop time = sum of DB seconds x copies x
+  // SPEED_DIVISOR, so the tape runs at half speed: slow, readable drift.
   const tape = Array(COPIES).fill(list.length > 0 ? list : [{ text: "", secs: 5 }]).flat();
   const loopSecs = Math.max(
-    list.reduce((s, it) => s + (Number(it.secs) || 0), 0) * COPIES,
-    10
+    list.reduce((s, it) => s + (Number(it.secs) || 0), 0) * COPIES * SPEED_DIVISOR,
+    20
   );
   const skin = dark
     ? "bg-neutral-950 text-white"
