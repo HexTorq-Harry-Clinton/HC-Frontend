@@ -47,11 +47,17 @@ export default function CartPage() {
         <div className="space-y-6">
           {cart.items.map((i) => (
             <div key={i.key || i.id} className="flex gap-4 border-b border-neutral-200 pb-6">
-              <div className="relative h-36 w-28 shrink-0 bg-neutral-100">
+              <Link
+                href={`/product/${i.slug || i.product_id || i.id}`}
+                className="relative block h-36 w-28 shrink-0 bg-neutral-100"
+                aria-label={i.name}
+              >
                 <Image src={i.image || PLACEHOLDER_IMAGE} alt={i.name} fill sizes="120px" className="object-cover" />
-              </div>
+              </Link>
               <div className="flex-1">
-                <h5 className="font-medium">{i.name}</h5>
+                <Link href={`/product/${i.slug || i.product_id || i.id}`} className="link-sweep font-medium">
+                  {i.name}
+                </Link>
                 {i.size && <p className="text-xs text-neutral-500">Size: {i.size}</p>}
                 <p className="mt-1 text-sm text-neutral-600">
                   ₹{Number(i.price).toLocaleString("en-IN")} × {i.qty || 1} ={" "}
