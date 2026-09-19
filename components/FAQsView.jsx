@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { apiGet, unwrap } from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 // FAQs page: same structure as the previous UI —
 // H2 title, accordion, footer block with links.
@@ -17,7 +18,11 @@ export default async function FAQsView() {
           {list.map((f) => (
             <details key={f.faq_id} className="border border-neutral-200">
               <summary className="cursor-pointer p-4 font-medium">{f.question}</summary>
-              <p className="px-4 pb-4 text-sm text-neutral-600">{f.answer}</p>
+              {/<[a-z][\s\S]*>/i.test(f.answer || "") ? (
+                <div className="px-4 pb-4 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: sanitizeHtml(f.answer) }} />
+              ) : (
+                <p className="px-4 pb-4 text-sm text-neutral-600">{f.answer}</p>
+              )}
             </details>
           ))}
         </div>

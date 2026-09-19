@@ -5,6 +5,7 @@ import { apiFetch, unwrap, revalidateSite, detectMediaType } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "./FilePick";
+import HtmlEditor from "./HtmlEditor";
 import UploadRing from "./UploadRing";
 import useUploader from "./useUploader";
 import { useToast } from "./ToastProvider";
@@ -332,6 +333,18 @@ export default function AdminModulePage({ module: slug, lock }) {
     if (c.type === "textarea") {
       return <textarea value={form[c.key] || ""} onChange={set(c.key)} rows={2} className={`${inputCls} mt-1 font-normal`} />;
     }
+    // Rich HTML field (TipTap editor) — stored as HTML, rendered sanitized.
+    if (c.type === "rich") {
+      return (
+        <span className="mt-1 block font-normal">
+          <HtmlEditor
+            value={form[c.key] || ""}
+            onChange={(html) => setForm((f) => ({ ...f, [c.key]: html }))}
+            placeholder={`${c.label}…`}
+          />
+        </span>
+      );
+    }
     if (c.type === "checkbox") {
       return <input type="checkbox" checked={!!form[c.key]} onChange={set(c.key, "checkbox")} className="ml-2" />;
     }
@@ -436,7 +449,7 @@ export default function AdminModulePage({ module: slug, lock }) {
           {mod.columns.filter((c) => !lock || c.key !== lock.field).map((c) => (
             <label
               key={c.key}
-              className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${c.type === "textarea" ? "md:col-span-2" : ""}`}
+              className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${c.type === "textarea" || c.type === "rich" ? "md:col-span-2" : ""}`}
             >
               {c.label}
               {renderField(c)}

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch, unwrap, revalidateSite, friendlyError } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
+import HtmlEditor from "../HtmlEditor";
 import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
@@ -197,7 +198,8 @@ export default function AdminRunningBarsPage() {
     e?.preventDefault();
     const text = (itemModal?.itemsdata || "").trim();
     const secs = Number(itemModal?.duration_seconds);
-    if (!text) {
+    // Rich editor emits <p></p> for empty — visible text is the real check.
+    if (!stripTags(text)) {
       setMsg("Please enter the item text or HTML.");
       return;
     }
@@ -598,17 +600,18 @@ export default function AdminRunningBarsPage() {
             <p className="mt-1 text-xs text-neutral-500">
               In: {openBar?.running_bar_name} — order auto-attached at the end, reorder via Edit order.
             </p>
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Text / HTML
-              <textarea
-                autoFocus
-                value={itemModal.itemsdata}
-                onChange={(e) => setItemModal({ ...itemModal, itemsdata: e.target.value })}
-                rows={4}
-                placeholder="e.g. Festive edit is live — or <strong>HTML</strong>"
-                className={`${inputCls} mt-1 font-normal normal-case tracking-normal`}
-              />
-            </label>
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                Text / HTML — format with the toolbar or flip to HTML source
+              </p>
+              <div className="mt-1">
+                <HtmlEditor
+                  value={itemModal.itemsdata || ""}
+                  onChange={(html) => setItemModal({ ...itemModal, itemsdata: html })}
+                  placeholder="e.g. Festive edit is live"
+                />
+              </div>
+            </div>
             <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
               Duration (seconds)
               <input

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiCached, subscribeNewsletter } from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 // Footer: admin-driven bottom content (tbl_settings footer_*/brand_description
 // + newsletter_*) with the previous UI as fallback. Contact email/phone stay
@@ -143,9 +144,13 @@ export default function Footer() {
               <h4 className="font-bold">
                 <Image src="/brand/logo-white.png" alt="HC" width={120} height={40} />
               </h4>
-              <p className="mt-3 text-sm">
-                {blurb}
-              </p>
+              {/<[a-z][\s\S]*>/i.test(blurb) ? (
+                <span className="mt-3 block text-sm" dangerouslySetInnerHTML={{ __html: sanitizeHtml(blurb) }} />
+              ) : (
+                <p className="mt-3 text-sm">
+                  {blurb}
+                </p>
+              )}
               {primaryEmail && (
                 <p className="mb-1 mt-2 text-sm">
                   <strong>Email:</strong>{" "}

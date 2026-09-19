@@ -1,5 +1,6 @@
 "use client";
 
+import HtmlEditor from "../HtmlEditor";
 import useHomeSettings from "../useHomeSettings";
 import { useToast } from "../ToastProvider";
 
@@ -119,16 +120,18 @@ export default function AdminHomeFooterPage() {
       )}
 
       <div className={`mt-4 ${panelCls}`}>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-          Brand blurb (under HC logo)
-          <textarea
-            value={settings.brand_description || ""}
-            onChange={(e) => patch({ brand_description: e.target.value })}
-            rows={2}
-            placeholder="Empowering innovation with quality and trust. Join us in our journey towards excellence."
-            className={`${inputCls} mt-1 font-normal normal-case tracking-normal`}
-          />
-        </label>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            Brand blurb (under HC logo)
+          </p>
+          <div className="mt-1">
+            <HtmlEditor
+              value={settings.brand_description || ""}
+              onChange={(html) => patch({ brand_description: html })}
+              placeholder="Empowering innovation with quality and trust…"
+            />
+          </div>
+        </div>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500">
             Facebook URL
