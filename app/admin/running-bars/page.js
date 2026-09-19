@@ -338,7 +338,7 @@ export default function AdminRunningBarsPage() {
         Running Bar &amp; Items
       </h1>
       <p className="mt-1 text-xs text-neutral-500">
-        {liveBars.length} group(s) • /Running-Bar + /Running-Bar-Items
+        {liveBars.length} group(s) • white strip below the hero
       </p>
       {msg && (
         <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">

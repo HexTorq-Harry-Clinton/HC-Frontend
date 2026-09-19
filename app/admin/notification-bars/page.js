@@ -233,7 +233,7 @@ export default function AdminNotificationBarsPage() {
         Notification Bar
       </h1>
       <p className="mt-1 text-xs text-neutral-500">
-        Top black strip • {live.length} item(s) • /Notification-Bar
+        Top black strip • {live.length} item(s)
       </p>
       {msg && (
         <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">

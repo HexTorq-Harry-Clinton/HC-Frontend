@@ -312,7 +312,7 @@ export default function AdminImageSlidersPage() {
         Home Slider
       </h1>
       <p className="mt-1 text-xs text-neutral-500">
-        Hero slider — images + videos mixed • {live.length} slide(s) • /Image-Sliders • IMG ≤ 3 MB / VID ≤ 50 MB
+        Hero slider — images + videos mixed • {live.length} slide(s) • IMG ≤ 3 MB / VID ≤ 50 MB
       </p>
       {msg && (
         <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">

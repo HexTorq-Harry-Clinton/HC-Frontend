@@ -300,7 +300,7 @@ export default function AdminMenuVideosPage() {
         Home Video
       </h1>
       <p className="mt-1 text-xs text-neutral-500">
-        Full-viewport section below the running bar • {live.length} video(s) • /Menu-Video • MP4/WEBM ≤ 50 MB
+        Full-viewport section below the running bar • {live.length} video(s) • MP4/WEBM ≤ 50 MB
       </p>
       {msg && (
         <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">

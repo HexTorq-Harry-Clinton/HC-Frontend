@@ -410,7 +410,7 @@ export default function AdminModulePage({ module: slug, lock }) {
         <div>
           <p className="eyebrow text-gold-deep">Harry Clinton</p>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-neutral-900">{mod.title}</h1>
-          <p className="mt-1 text-xs text-neutral-500">{rows.length} record(s) • {mod.endpoint}</p>
+          <p className="mt-1 text-xs text-neutral-500">{rows.length} record(s)</p>
         </div>
         <input
           value={search}
