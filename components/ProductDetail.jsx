@@ -43,6 +43,12 @@ export default function ProductDetail({ product }) {
 
   const selected = baseSizes.find((s) => s.key === size);
   const displayPrice = selected?.price ?? product.price;
+  // Bag line for THIS product + size/variant (same key as the cart): when it
+  // exists the page shows its stepper + qty instead of Add to Bag.
+  const bagKey = [product.id, selected?.variant?.product_variant_id || null, selected?.label || baseSizes[0].label]
+    .filter((v) => v !== undefined && v !== null && v !== "")
+    .join("|");
+  const bagLine = (cart?.items || []).find((i) => (i.key || [i.id, i.product_variant_id, i.size].filter((v) => v !== undefined && v !== null && v !== "").join("|")) === bagKey);
   // When a size is selected, swap the main image to that variant's image (if any).
   const variantImage = selected?.image || null;
   const effectiveGallery = variantImage
@@ -136,21 +142,57 @@ export default function ProductDetail({ product }) {
           )}
           {sizeError && <p className="mt-2 text-sm text-red-600">{sizeError}</p>}
 
-          <div className="mt-6 flex items-center gap-3">
-            <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="border border-neutral-300 px-3 py-1">−</button>
-            <span className="w-8 text-center">{qty}</span>
-            <button onClick={() => setQty((q) => q + 1)} className="border border-neutral-300 px-3 py-1">+</button>
-          </div>
+          {bagLine ? (
+            <>
+              <div className="mt-6 flex items-center gap-3">
+                <button
+                  onClick={() => cart?.updateQty(bagLine.key || bagLine.id, Math.max(1, (bagLine.qty || 1) - 1))}
+                  disabled={(bagLine.qty || 1) <= 1}
+                  className="border border-neutral-300 px-3 py-1 disabled:opacity-40"
+                  aria-label="Decrease quantity"
+                >
+                  −
+                </button>
+                <span className="w-8 text-center font-semibold">{bagLine.qty || 1}</span>
+                <button
+                  onClick={() => cart?.updateQty(bagLine.key || bagLine.id, (bagLine.qty || 1) + 1)}
+                  className="border border-neutral-300 px-3 py-1"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+                <span className="text-xs uppercase tracking-widest text-green-700">In your bag</span>
+              </div>
 
-          <div className="mt-6 flex gap-3">
-            <button onClick={addToBag} className={`flex-1 py-3 text-sm font-semibold text-white transition ${added ? "bg-green-700" : "bg-neutral-950 hover:bg-neutral-800"}`}>
-              {added ? "Added to Cart" : "Add to Cart"}
-            </button>
-            <WishlistHeart
-              product={{ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] }}
-              className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
-            />
-          </div>
+              <div className="mt-6 flex gap-3">
+                <button onClick={() => router.push("/cart")} className="flex-1 bg-green-700 py-3 text-sm font-semibold text-white transition hover:bg-green-800">
+                  Already Added — View Bag
+                </button>
+                <WishlistHeart
+                  product={{ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] }}
+                  className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mt-6 flex items-center gap-3">
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="border border-neutral-300 px-3 py-1">−</button>
+                <span className="w-8 text-center">{qty}</span>
+                <button onClick={() => setQty((q) => q + 1)} className="border border-neutral-300 px-3 py-1">+</button>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button onClick={addToBag} className={`flex-1 py-3 text-sm font-semibold text-white transition ${added ? "bg-green-700" : "bg-neutral-950 hover:bg-neutral-800"}`}>
+                  {added ? "Added to Cart" : "Add to Cart"}
+                </button>
+                <WishlistHeart
+                  product={{ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] }}
+                  className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
+                />
+              </div>
+            </>
+          )}
           <button onClick={() => router.back()} className="link-sweep mt-4 text-sm font-semibold">
             ← Continue Shopping
           </button>
