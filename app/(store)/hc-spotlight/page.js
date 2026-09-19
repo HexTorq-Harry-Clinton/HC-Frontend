@@ -49,12 +49,12 @@ export default async function HCSpotlightPage() {
         </div>
 
         <p className="eyebrow mt-14 text-neutral-500">More Spotlights</p>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <SpotCard badge="Spotlight" title="The Wedding Edit" sub="Ceremonial Tailoring · 2025" />
-          <SpotCard badge="Spotlight" title="Smart Casual Redefined" sub="Everyday Luxury · 2025" />
-          <SpotCard badge="New" title="Nano Collection Preview" sub="Designer Series · 2025" />
+        <div className="mt-4 columns-1 gap-4 sm:columns-2 lg:columns-3">
+          <SpotCard badge="Spotlight" title="The Wedding Edit" sub="Ceremonial Tailoring · 2025" ratio={0} />
+          <SpotCard badge="Spotlight" title="Smart Casual Redefined" sub="Everyday Luxury · 2025" ratio={1} />
+          <SpotCard badge="New" title="Nano Collection Preview" sub="Designer Series · 2025" ratio={2} />
           {live.map((e, i) => (
-            <SpotCard key={`live-${i}`} badge="Spotlight" title={e.title} sub={e.sub} img={e.img} />
+            <SpotCard key={`live-${i}`} badge="Spotlight" title={e.title} sub={e.sub} img={e.img} ratio={i % 3} />
           ))}
         </div>
 
@@ -93,14 +93,18 @@ export default async function HCSpotlightPage() {
   );
 }
 
-function SpotCard({ badge, title, sub, img }) {
+// Masonry card: natural image height, varied placeholder heights so the
+// wall feels lively instead of a rigid grid.
+const RATIOS = ["aspect-[3/4]", "aspect-square", "aspect-[4/5]"];
+
+function SpotCard({ badge, title, sub, img, ratio = 0 }) {
   return (
-    <div className="border border-neutral-200">
+    <div className="mb-4 break-inside-avoid border border-neutral-200 bg-white">
       {img ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={img} alt={title} loading="lazy" style={{ height: "220px", width: "100%", objectFit: "cover" }} />
+        <img src={img} alt={title} loading="lazy" className="h-auto w-full object-cover" />
       ) : (
-        <div className="flex h-56 items-center justify-center bg-neutral-100">
+        <div className={`flex ${RATIOS[ratio % RATIOS.length]} items-center justify-center bg-neutral-100`}>
           <span className="font-display text-xl text-neutral-300">HC</span>
         </div>
       )}

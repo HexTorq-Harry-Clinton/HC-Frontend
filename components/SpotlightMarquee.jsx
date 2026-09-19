@@ -126,7 +126,7 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
                 key={`${dup}-${c.id}`}
                 href="/hc-spotlight"
                 tabIndex={dup > 0 ? -1 : 0}
-                className="group w-64 shrink-0 overflow-hidden rounded-xl bg-neutral-950 md:w-80"
+                className="group w-[22rem] shrink-0 overflow-hidden rounded-xl bg-neutral-950 md:w-[26rem]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -134,7 +134,7 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
                   alt={c.caption || "HC Spotlight"}
                   loading="lazy"
                   decoding="async"
-                  className="h-44 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 md:h-56"
+                  className="h-64 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 md:h-80"
                 />
                 {c.caption && (
                   <p className="truncate px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
