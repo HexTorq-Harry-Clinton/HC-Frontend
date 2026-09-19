@@ -111,7 +111,7 @@ export default function Hamburger({ categories }) {
         </div>
       </div>
       <style jsx>{`
-        .hamburger { width: 28px; height: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+        .hamburger { width: 32px; height: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
         .hamburger span {
           display: block; width: 18px; height: 2px; background: #111;
           transform-origin: left center; transition: all 0.3s ease;
