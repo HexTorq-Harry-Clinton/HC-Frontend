@@ -44,6 +44,10 @@ export default function ProfileDropdown({ onClose }) {
     whiteSpace: "nowrap",
   };
 
+  // The <style jsx> literal sits as a DIRECT child in each return below —
+  // the compiler only scopes it to siblings in the same JSX tree, which is
+  // why the old child-component island never matched and the box went
+  // invisible. Solid card: white, border, radius, shadow.
   if (!user) {
     return (
       <div className="profile-dropdown" style={floatStyle}>
@@ -53,7 +57,15 @@ export default function ProfileDropdown({ onClose }) {
         <div className="dropdown-item" onClick={() => go("/register")}>
           <i className="bi bi-person-plus"></i> Register
         </div>
-        <DropdownStyle />
+        <style jsx>{`
+          .profile-dropdown { position: absolute; right: 0; top: calc(100% + 10px); min-width: 230px; background: #fff; border: 1px solid #e7e2d6; border-radius: 12px; box-shadow: 0 18px 44px rgba(0,0,0,0.16); z-index: 95; padding: 6px; }
+          .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 0.88rem; cursor: pointer; border-radius: 8px; color: #111; background: #fff; }
+          .dropdown-item:hover { background: #f6f4ee; }
+          .dropdown-item.logout { color: #b3261e; }
+          .dropdown-header { padding: 10px 12px; color: #111; }
+          .dropdown-role { font-size: 0.75rem; color: #777; margin-top: 2px; }
+          .dropdown-divider { height: 1px; background: #eee; margin: 4px 0; }
+        `}</style>
       </div>
     );
   }
@@ -89,21 +101,15 @@ export default function ProfileDropdown({ onClose }) {
       <div className="dropdown-item logout" onClick={logout}>
         <i className="bi bi-box-arrow-right"></i> Logout
       </div>
-      <DropdownStyle />
+      <style jsx>{`
+        .profile-dropdown { position: absolute; right: 0; top: calc(100% + 10px); min-width: 230px; background: #fff; border: 1px solid #e7e2d6; border-radius: 12px; box-shadow: 0 18px 44px rgba(0,0,0,0.16); z-index: 95; padding: 6px; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 0.88rem; cursor: pointer; border-radius: 8px; color: #111; background: #fff; }
+        .dropdown-item:hover { background: #f6f4ee; }
+        .dropdown-item.logout { color: #b3261e; }
+        .dropdown-header { padding: 10px 12px; color: #111; }
+        .dropdown-role { font-size: 0.75rem; color: #777; margin-top: 2px; }
+        .dropdown-divider { height: 1px; background: #eee; margin: 4px 0; }
+      `}</style>
     </div>
-  );
-}
-
-function DropdownStyle() {
-  return (
-    <style jsx>{`
-      .profile-dropdown { position: absolute; right: 0; top: calc(100% + 10px); min-width: 220px; background: #fff; border: 1px solid #e5e5e5; box-shadow: 0 12px 32px rgba(0,0,0,0.12); z-index: 95; padding: 6px; }
-      .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 0.88rem; cursor: pointer; }
-      .dropdown-item:hover { background: #f6f4ee; }
-      .dropdown-item.logout { color: #b3261e; }
-      .dropdown-header { padding: 10px 12px; }
-      .dropdown-role { font-size: 0.75rem; color: #777; margin-top: 2px; }
-      .dropdown-divider { height: 1px; background: #eee; margin: 4px 0; }
-    `}</style>
   );
 }
