@@ -234,16 +234,16 @@ export default function Footer() {
           <hr className="my-6 border-neutral-800" />
         </div>
 
-        <div className="mx-auto flex w-full max-w-7xl min-h-0 flex-1 flex-col items-center justify-center px-4 pb-2">
+        <div className="mx-auto flex w-full max-w-7xl min-h-0 flex-1 flex-col items-center justify-center px-4">
           <Image
             src="/brand/logo-white.png"
             alt="Harry Clinton"
             width={1200}
             height={520}
-            className="h-auto max-h-[32vh] w-auto max-w-full object-contain"
+            className="h-full max-h-full w-full min-h-0 flex-1 object-contain"
             loading="lazy"
           />
-          <p className="mt-4 text-center text-xs uppercase tracking-[0.3em] text-neutral-500">
+          <p className="mt-2 shrink-0 text-center text-xs uppercase tracking-[0.3em] text-neutral-500">
             {copyrightLine}
           </p>
         </div>
