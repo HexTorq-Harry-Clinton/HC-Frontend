@@ -7,6 +7,7 @@ import {
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
+import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -61,6 +62,8 @@ export default function AdminMenuVideosPage() {
   const [modal, setModal] = useState(null);
   const [stagedVideo, setStagedVideo] = useState(null);
   const [stagedPoster, setStagedPoster] = useState(null);
+  // Open popup owns the scroll — page behind is frozen.
+  useLockBody(!!modal);
   // false | array of ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
   const [orderIds, setOrderIds] = useState([]);

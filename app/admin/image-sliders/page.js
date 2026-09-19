@@ -7,6 +7,7 @@ import {
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
+import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -66,6 +67,8 @@ export default function AdminImageSlidersPage() {
   // null | { url, isVideo, title } — fullscreen file viewer.
   const [lightbox, setLightbox] = useState(null);
   const dragId = useRef(null);
+  // Open popup owns the scroll — page behind is frozen.
+  useLockBody(!!modal || !!lightbox);
 
   useEffect(() => {
     let live = true;

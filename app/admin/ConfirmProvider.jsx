@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import useLockBody from "./useLockBody";
 
 const ConfirmContext = createContext(null);
 export const useConfirm = () => useContext(ConfirmContext);
@@ -9,6 +10,8 @@ export const useConfirm = () => useContext(ConfirmContext);
 export function ConfirmProvider({ children }) {
   const [dialog, setDialog] = useState(null);
   const resolverRef = useRef(null);
+  // Open confirm owns the scroll — page behind is frozen.
+  useLockBody(!!dialog);
 
   const confirm = useCallback((opts = {}) => {
     return new Promise((resolve) => {

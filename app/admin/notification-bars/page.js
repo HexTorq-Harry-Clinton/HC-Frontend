@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch, unwrap, revalidateSite, friendlyError } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
+import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -34,6 +35,8 @@ export default function AdminNotificationBarsPage() {
   const [busy, setBusy] = useState(false);
   // null | { notification_text, duration_seconds, orderpriority, isactive }.
   const [modal, setModal] = useState(null);
+  // Open popup owns the scroll — page behind is frozen.
+  useLockBody(!!modal);
   // false | array of ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
   const [orderIds, setOrderIds] = useState([]);
