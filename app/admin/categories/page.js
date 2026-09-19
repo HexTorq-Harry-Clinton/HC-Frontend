@@ -65,6 +65,22 @@ export default function AdminCategoriesPage() {
       setMsg("Pick a category tab first.");
       return;
     }
+    // Guard: subcategory slugs must be unique within the table — a duplicate
+    // would shadow another row in the storefront slug resolver.
+    const slugVal = String(form.menu_subcategory_slug || "").trim().toLowerCase();
+    if (slugVal) {
+      const clash = (subs || []).find(
+        (s) =>
+          String(s.menu_subcategory_slug || "").trim().toLowerCase() === slugVal &&
+          String(s.menu_subcategory_id) !== String(editing) &&
+          s.isdeleted !== 1 &&
+          s.isdeleted !== true
+      );
+      if (clash) {
+        setMsg(`That slug (“${form.menu_subcategory_slug}”) already exists on “${clash.menu_subcategory_name}” — pick a unique one.`);
+        return;
+      }
+    }
     try {
       if (editing) {
         await apiFetch("/Menu-Sub-Category", {

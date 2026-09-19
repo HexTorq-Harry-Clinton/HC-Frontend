@@ -202,6 +202,27 @@ export default function AdminModulePage({ module: slug, lock }) {
     setMsg("");
     const body = { ...form };
     if (lock) body[lock.field] = lock.value;
+    // Guard: slug columns must be unique within THIS table — a duplicate
+    // slug would shadow another row in the storefront resolver. Checked
+    // against loaded rows before anything hits the server (self excluded).
+    for (const c of mod.columns) {
+      if (!c.key.toLowerCase().includes("slug")) continue;
+      const val = String(body[c.key] || "").trim().toLowerCase();
+      if (!val) continue;
+      const clash = (rows || []).find(
+        (r) =>
+          String(r[c.key] || "").trim().toLowerCase() === val &&
+          String(r[mod.id]) !== String(editing) &&
+          r.isdeleted !== 1 &&
+          r.isdeleted !== true
+      );
+      if (clash) {
+        const m = `That ${c.label} (“${body[c.key]}”) already exists in ${mod.title} — pick a unique one.`;
+        setMsg(m);
+        toast?.error(m);
+        return;
+      }
+    }
     // Guard: FK dropdowns must hold a value from the loaded options.
     // This makes an FK-conflict insert impossible from this UI.
     for (const c of mod.columns) {
