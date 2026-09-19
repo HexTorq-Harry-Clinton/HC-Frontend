@@ -65,7 +65,20 @@ export default function Hamburger({ categories }) {
 
   return (
     <>
-      <div className={`hamburger ${isActive ? "active" : ""}`} onClick={() => setIsActive((v) => !v)} aria-label="Menu">
+      <div
+        className={`hamburger ${isActive ? "active" : ""}`}
+        onClick={() => setIsActive((v) => !v)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsActive((v) => !v);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Menu"
+        aria-expanded={isActive}
+      >
         <span></span>
         <span></span>
         <span></span>

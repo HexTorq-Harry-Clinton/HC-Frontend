@@ -176,10 +176,10 @@ export default function ProductDetail({ product }) {
             </>
           ) : (
             <>
-              <div className="mt-6 flex items-center gap-3">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="border border-neutral-300 px-3 py-1">−</button>
-                <span className="w-8 text-center">{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)} className="border border-neutral-300 px-3 py-1">+</button>
+              <div className="mt-6 flex items-center gap-3" role="group" aria-label="Quantity">
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity" className="border border-neutral-300 px-3 py-1">−</button>
+                <span className="w-8 text-center" aria-live="polite">{qty}</span>
+                <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity" className="border border-neutral-300 px-3 py-1">+</button>
               </div>
 
               <div className="mt-6 flex gap-3">

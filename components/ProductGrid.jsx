@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { apiGet, unwrap, resolveUploadUrl } from "@/lib/api";
 import { inr } from "@/lib/api";
+import WishlistHeart from "./WishlistHeart";
 
 // Product grid: same structure/texts as the previous UI —
-// "Shop {keyword}" / "Shop All Products" heading, name-filtered cards.
-export default async function ProductGrid({ keyword = "" }) {
+// "Shop {keyword}" / "Shop All Products" heading, filtered cards with hearts.
+// keywords[] (category vocabulary) filters properly; legacy single keyword
+// still works. Hearts need no data — WishlistHeart reads the bag context.
+export default async function ProductGrid({ keyword = "", keywords = [] }) {
   let products = [];
   let error = "";
   try {
@@ -15,6 +18,9 @@ export default async function ProductGrid({ keyword = "" }) {
     const apiProducts = unwrap(productsRes);
     const apiMedia = unwrap(mediaRes);
     const keywordLower = keyword.toLowerCase();
+    const keys = [...keywords, keyword]
+      .map((k) => String(k || "").toLowerCase())
+      .filter(Boolean);
     products = apiProducts
       .map((p) => {
         const media = apiMedia.find((m) => m.product_id === p.product_id && (m.isprimary === 1 || m.isprimary === true));
@@ -25,9 +31,13 @@ export default async function ProductGrid({ keyword = "" }) {
           price: p.base_price || 0,
           currency: p.currency_code || "INR",
           image: resolveUploadUrl(media?.media_url) || null,
+          _hay: `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""} ${p.description || ""} ${p.category || ""}`.toLowerCase(),
         };
       })
-      .filter((p) => (!keywordLower || (p.name || "").toLowerCase().includes(keywordLower)));
+      .filter((p) => {
+        if (keys.length > 0) return keys.some((k) => p._hay.includes(k));
+        return !keywordLower || (p.name || "").toLowerCase().includes(keywordLower);
+      });
   } catch (err) {
     error = err.message || "Failed to load products";
   }
@@ -45,7 +55,13 @@ export default async function ProductGrid({ keyword = "" }) {
       <h3 className="mb-4 text-center">{keyword ? `Shop ${keyword}` : "Shop All Products"}</h3>
       <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         {products.map((product) => (
-          <div className="col" key={product.id}>
+          <div className="col group relative" key={product.id}>
+            {/* Server grid can't read liked-state: always visible (liked
+                hearts fill red via WishlistHeart itself). */}
+            <WishlistHeart
+              product={{ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image }}
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow transition hover:bg-gold"
+            />
             <Link href={`/product/${product.slug || product.id}`} className="text-decoration-none text-dark">
               <div className="card h-100 border-0 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

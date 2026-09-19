@@ -34,15 +34,26 @@ export default function SplashScreen() {
       if (e.key === "Escape") dismiss();
     };
     window.addEventListener("keydown", onKey);
-    // Freeze the homepage behind the video: no scrollbar, no scroll.
+    // Freeze the homepage behind the video: no scrollbar, no scroll — native
+    // AND Lenis (which drives wheel scrolling past overflow locks).
     const prevBody = document.body.style.overflow;
     const prevHtml = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
+    try {
+      window.lenis?.stop();
+    } catch {
+      /* no smooth scroller */
+    }
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevBody;
       document.documentElement.style.overflow = prevHtml;
+      try {
+        window.lenis?.start();
+      } catch {
+        /* no smooth scroller */
+      }
     };
   }, [show, dismiss]);
 

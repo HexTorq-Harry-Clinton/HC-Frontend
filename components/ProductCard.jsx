@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { inr } from "@/lib/api";
 import { useCart } from "./CartProvider";
@@ -19,6 +20,13 @@ export default function ProductCard({ product, index = 0 }) {
   const cart = useCart();
   const href = `/product/${product.slug || product.id}`;
   const wished = cart?.wishlist.some((i) => i.id === product.id);
+  const [added, setAdded] = useState(false);
+
+  const quickAdd = () => {
+    cart?.addToCart({ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
 
   return (
     <motion.div
@@ -37,15 +45,17 @@ export default function ProductCard({ product, index = 0 }) {
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
         </Link>
         <div className="absolute inset-x-0 bottom-0 translate-y-full transition-transform duration-300 ease-out group-hover:translate-y-0">
           <button
-            onClick={() => cart?.addToCart({ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image })}
-            className="w-full bg-neutral-950 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-gold hover:text-neutral-950"
+            onClick={quickAdd}
+            className={`w-full py-3 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+              added ? "bg-green-700 text-white" : "bg-neutral-950 text-white hover:bg-gold hover:text-neutral-950"
+            }`}
           >
-            Add to Bag
+            {added ? "Added ✓" : "Add to Bag"}
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { apiGet, unwrap, resolveUploadUrl } from "@/lib/api";
-import { CATEGORY_MAINS } from "@/lib/catalog";
+import { CATEGORY_MAINS, CATEGORIES } from "@/lib/catalog";
 import { PLACEHOLDER_IMAGE } from "./ProductCard";
 import ProductGrid from "./ProductGrid";
 
@@ -111,7 +111,10 @@ export default async function CategoryMain({ category }) {
         )}
       </div>
 
-      <ProductGrid keyword="" />
+      <ProductGrid
+        keyword=""
+        keywords={[...((CATEGORIES[category]?.keywords || [])), category, main.heroTitle]}
+      />
     </>
   );
 }

@@ -38,8 +38,16 @@ export default function LoginPage() {
   };
 
   const sendOtp = async () => {
-    if (!emailOrMobile.trim()) {
+    const v = (emailOrMobile || "").trim();
+    if (!v) {
       setOtpMessage("Enter email or mobile.");
+      return;
+    }
+    // No false success: garbage like "not-an-email" never reaches the API.
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const isMobile = /^[+\d][\d\s-]{7,}$/.test(v);
+    if (!isEmail && !isMobile) {
+      setOtpMessage("Enter a valid email or mobile number.");
       return;
     }
     setSendingOtp(true);
@@ -81,6 +89,10 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email.trim() || !password) {
       setError("Please enter email and password.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Please enter a valid email address.");
       return;
     }
     setError("");

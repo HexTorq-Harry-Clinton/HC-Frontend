@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { apiFetch, unwrap, currentUserId } from "@/lib/api";
 
 const emptyAddress = {
@@ -18,6 +19,7 @@ const emptyAddress = {
 // Addresses: same structure/texts/flows as the previous UI —
 // add/edit form + cards with Edit/Delete, default badge, confirms.
 export default function AddressesPage() {
+  const router = useRouter();
   const [addresses, setAddresses] = useState([]);
   const [form, setForm] = useState(emptyAddress);
   const [editingId, setEditingId] = useState(null);
@@ -41,8 +43,8 @@ export default function AddressesPage() {
   useEffect(() => {
     const uid = currentUserId();
     if (uid) load(uid);
-    else setLoading(false);
-  }, []);
+    else router.replace("/login");
+  }, [router]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const currentUid = () => currentUserId();

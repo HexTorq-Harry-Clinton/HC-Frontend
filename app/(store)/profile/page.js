@@ -29,7 +29,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const uid = currentUserId();
     if (!uid) {
-      setLoading(false);
+      router.replace("/login");
       return;
     }
     setUserId(uid);
@@ -39,7 +39,9 @@ export default function ProfilePage() {
       .then((list) => {
         if (!live) return;
         const arr = Array.isArray(list) ? list : [];
-        const p = arr.find((x) => x.user_id === uid) || arr[0] || null;
+        // NEVER fall back to another row: a missing profile means a fresh
+        // form for this user, not someone else's data.
+        const p = arr.find((x) => x.user_id === uid) || null;
         if (p) {
           setProfileId(p.profile_id || null);
           setForm({

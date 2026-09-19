@@ -19,7 +19,7 @@ const DEFAULT_SUPPORT = [
   { label: "Help Center", link: "/help-center" },
   { label: "FAQs", link: "/FAQs" },
   { label: "Shipping, Returns & Cancellation", link: "/Policies" },
-  { label: "Track Order", link: "/FAQs" },
+  { label: "Track Order", link: "/orders" },
 ];
 
 function parseLinks(json, fallback) {
@@ -125,6 +125,16 @@ export default function Footer() {
     setForm({ name: "", email: "", phone: "", subject: "", message: "" });
   };
 
+  // Esc closes the contact modal (matches the appointment modal).
+  useEffect(() => {
+    if (!showModal) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [showModal]);
+
   const handleNewsletterSubscribe = async () => {
     try {
       await subscribeNewsletter(newsletterEmail);
@@ -217,7 +227,7 @@ export default function Footer() {
               <p className="mt-3 text-sm">
                 {newsletterDesc}
               </p>
-              <div className="mt-3 flex">
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:gap-0">
                 <input
                   type="email"
                   placeholder="Your email"

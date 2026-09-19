@@ -26,6 +26,22 @@ export default function RegisterPage() {
       setError("Please accept Privacy Policy & Terms");
       return;
     }
+    if (fullName.trim().length < 2) {
+      setError("Please enter your full name.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!/^[+\d][\d\s-]{7,}$/.test(mobile.trim())) {
+      setError("Please enter a valid mobile number.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
     setError("");
     setBusy(true);
     try {

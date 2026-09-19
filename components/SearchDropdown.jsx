@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { apiCached, resolveUploadUrl } from "@/lib/api";
 
 const DEBOUNCE_MS = 300;
@@ -18,6 +18,7 @@ const EMPTY = { categories: [], subcategories: [], products: [], services: [] };
 // Search overlay: same structure/texts/flow as the previous UI.
 export default function SearchDropdown({ onClose }) {
   const router = useRouter();
+  const pathname = usePathname();
   const inputRef = useRef(null);
   const wrapRef = useRef(null);
   const timerRef = useRef(null);
@@ -32,6 +33,14 @@ export default function SearchDropdown({ onClose }) {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Navigating away (link click inside results) closes the overlay — it must
+  // never persist on top of the new page.
+  const firstPath = useRef(pathname);
+  useEffect(() => {
+    if (pathname !== firstPath.current) onClose?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   useEffect(() => {
     const handleOutside = (e) => {

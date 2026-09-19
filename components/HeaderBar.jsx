@@ -99,7 +99,19 @@ export default function HeaderBar({ categories }) {
             {cPulse > 0 && <span key={cPulse} className="c-ring" aria-hidden />}
           </div>
 
-          <div className="search hicon" onClick={() => setSearchOpen(true)} aria-label="Open search">
+          <div
+            className="search hicon"
+            onClick={() => setSearchOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setSearchOpen(true);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Open search"
+          >
             <SearchGlyph />
           </div>
         </div>
@@ -141,7 +153,16 @@ export default function HeaderBar({ categories }) {
             <span
               style={{ cursor: "pointer", display: "flex" }}
               onClick={() => setOpen((prev) => !prev)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpen((prev) => !prev);
+                }
+              }}
+              role="button"
+              tabIndex={0}
               aria-label="Account"
+              aria-expanded={open}
             >
               <UserGlyph />
             </span>
