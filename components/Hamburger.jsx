@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 
 // Top-reveal mega-menu (previous-UI style, no sidebar): CATEGORIES (live)
 // + COLLECTIONS + SERVICES + Vision tile drop down from under the header.
-// Hamburger lines draw in on mount, morph to X while open; links stagger in.
+// Hamburger lines draw in on mount, morph to H while open — H beside the
+// C appointment button spells the HC brand; links stagger in.
 const COLLECTIONS = [
   { label: "Tuxedo", to: "/tuxedo" },
   { label: "Extreme Poppins", to: "/extreme-poppins" },
@@ -114,16 +115,20 @@ export default function Hamburger({ categories }) {
         .hamburger { width: 32px; height: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
         .hamburger span {
           display: block; width: 18px; height: 2px; background: #111;
-          transform-origin: left center; transition: all 0.3s ease;
+          transform-origin: center; transition: transform 0.35s ease, width 0.35s ease, background 0.35s ease, opacity 0.25s ease;
           animation: lineIn 0.5s ease backwards;
         }
         .hamburger span:nth-child(2) { animation-delay: 0.08s; }
         .hamburger span:nth-child(3) { animation-delay: 0.16s; }
         @keyframes lineIn { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
-        .hamburger:hover span:nth-child(2) { width: 12px; }
-        .hamburger.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-        .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+        .hamburger:not(.active):hover span:nth-child(2) { width: 12px; }
+        /* open state morphs the 3 lines into an H: outer lines stand up as
+           the two stems, the middle line becomes the crossbar — H + the C
+           appointment button beside it spells HC. */
+        .hamburger.active span { background: #a8823f; }
+        .hamburger.active span:nth-child(1) { transform: translate(-6px, 6px) rotate(90deg); }
+        .hamburger.active span:nth-child(2) { width: 14px; }
+        .hamburger.active span:nth-child(3) { transform: translate(6px, -6px) rotate(90deg); }
         .topmenu {
           position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 70;
           max-height: 0; opacity: 0; transform: translateY(-14px); overflow: hidden;
