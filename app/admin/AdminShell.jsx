@@ -183,7 +183,7 @@ function AdminShellInner({ children }) {
 
       <div className="flex flex-1">
         <aside
-          className={`fixed bottom-0 left-0 top-[60px] z-50 w-[252px] overflow-y-auto border-r border-white/5 bg-[#16151a] px-3 pb-10 pt-[18px] text-[#d8d6dd] transition-transform duration-200 lg:sticky lg:translate-x-0 ${
+          className={`fixed bottom-0 left-0 top-[60px] z-50 w-[252px] shrink-0 overflow-y-auto border-r border-white/5 bg-[#16151a] px-3 pb-10 pt-[18px] text-[#d8d6dd] transition-transform duration-200 lg:sticky lg:top-[60px] lg:h-[calc(100vh-60px)] lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
