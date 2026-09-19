@@ -12,6 +12,51 @@ import CIconModal from "./CIconModal";
 
 // Header: exact structure of the previous UI —
 // LEFT (hamburger, C-icon appointment, search) | CENTER (logo) | RIGHT (wishlist, bag, profile).
+// All four glyphs are one inline SVG line set (24 grid, 1.8 stroke, round
+// caps) — never mixed font foundries, so every icon shares one optical
+// center and one weight inside identical boxes.
+function BarIcon({ label, children }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      role="img"
+      aria-label={label}
+    >
+      {children}
+    </svg>
+  );
+}
+const SearchGlyph = () => (
+  <BarIcon label="Search">
+    <circle cx="11" cy="11" r="7" />
+    <line x1="21" y1="21" x2="16.2" y2="16.2" />
+  </BarIcon>
+);
+const HeartGlyph = () => (
+  <BarIcon label="Wishlist">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </BarIcon>
+);
+const BagGlyph = () => (
+  <BarIcon label="Bag">
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </BarIcon>
+);
+const UserGlyph = () => (
+  <BarIcon label="Account">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </BarIcon>
+);
 export default function HeaderBar({ categories }) {
   const cart = useCart();
   const [open, setOpen] = useState(false);
@@ -55,10 +100,7 @@ export default function HeaderBar({ categories }) {
           </div>
 
           <div className="search hicon" onClick={() => setSearchOpen(true)} aria-label="Open search">
-            <i
-              className="bi bi-search"
-              style={{ cursor: "pointer" }}
-            />
+            <SearchGlyph />
           </div>
         </div>
 
@@ -77,7 +119,7 @@ export default function HeaderBar({ categories }) {
 
         <div className="flex items-center gap-3">
           <Link href="/wishlist" className="hicon relative text-neutral-900" aria-label="Wishlist">
-            <i className="bi bi-heart"></i>
+            <HeartGlyph />
             {wishlistCount > 0 && (
               <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
                 {wishlistCount}
@@ -85,7 +127,7 @@ export default function HeaderBar({ categories }) {
             )}
           </Link>
           <button type="button" onClick={() => setBagOpen(true)} className="hicon relative text-neutral-900" aria-label="Open bag">
-            <i className="bi bi-bag"></i>
+            <BagGlyph />
             {cartCount > 0 && (
               <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
                 {cartCount}
@@ -94,12 +136,13 @@ export default function HeaderBar({ categories }) {
           </button>
 
           <div ref={profileRef} className="hicon" style={{ position: "relative" }}>
-            <i
-              className="bi bi-person-circle"
-              style={{ cursor: "pointer" }}
+            <span
+              style={{ cursor: "pointer", display: "flex" }}
               onClick={() => setOpen((prev) => !prev)}
               aria-label="Account"
-            ></i>
+            >
+              <UserGlyph />
+            </span>
             {open && <ProfileDropdown onClose={() => setOpen(false)} />}
           </div>
         </div>
@@ -115,9 +158,10 @@ export default function HeaderBar({ categories }) {
         .hicon {
           width: 32px; height: 32px; flex: none;
           display: flex; align-items: center; justify-content: center;
-          font-size: 18px; cursor: pointer;
+          cursor: pointer;
         }
-        .hicon > i { display: block; line-height: 1; }
+        /* fixed glyph size — the svg box never depends on a font's metrics */
+        .hicon > svg { display: block; width: 20px; height: 20px; flex: none; }
         .topbar-enter { animation: topbarDrop 0.55s cubic-bezier(0.16, 0.8, 0.24, 1) both; }
         @keyframes topbarDrop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
         .c-home { position: relative; }
