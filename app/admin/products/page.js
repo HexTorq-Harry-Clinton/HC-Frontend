@@ -7,6 +7,7 @@ import AdminToast from "@/components/AdminToast";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
 import UploadRing from "../UploadRing";
+import useLockBody from "../useLockBody";
 import useUploader from "../useUploader";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -40,6 +41,14 @@ export default function AdminProductsPage() {
   // false = list, object = open workspace. (Never null: the workspace
   // requires a saved product — create via the form first, then Open.)
   const [workspace, setWorkspace] = useState(false);
+  // Create/update ALWAYS live in the popup — never inline.
+  const [showForm, setShowForm] = useState(false);
+  useLockBody(showForm);
+  const closeForm = () => {
+    setShowForm(false);
+    setEditing(null);
+    setForm(empty);
+  };
 
   // Mount + refresh fetch: state updates happen only in the async continuation.
   useEffect(() => {
@@ -78,6 +87,7 @@ export default function AdminProductsPage() {
         setToast({ type: "ok", text: "Product updated." });
         setForm(empty);
         setEditing(null);
+        setShowForm(false);
         reload();
       } else {
         const res = await apiFetch("/Products", {
@@ -99,6 +109,7 @@ export default function AdminProductsPage() {
         setToast({ type: "ok", text: "Product added — opening workspace." });
         setForm(empty);
         setEditing(null);
+        setShowForm(false);
         if (toOpen) {
           setWorkspace(toOpen);
         }
@@ -119,7 +130,7 @@ export default function AdminProductsPage() {
       base_price: p.base_price || "", currency_code: p.currency_code || "INR",
       isactive: p.isactive !== false,
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setShowForm(true);
   };
 
   const remove = async (p) => {
@@ -197,36 +208,50 @@ export default function AdminProductsPage() {
         </div>
       ) : (
         <>
-          <form onSubmit={submit} className="mt-4 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
-            <input value={form.product_name} onChange={set("product_name")} required placeholder="Product name" className={input} />
-            <input value={form.product_slug} onChange={set("product_slug")} required placeholder="slug-like-this" className={input} />
-            <input value={form.short_description} onChange={set("short_description")} placeholder="Short description" className={input} />
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500">₹</span>
-              <input value={form.base_price} onChange={set("base_price")} inputMode="decimal" required placeholder="Price (INR)" className={`${input} pl-7`} />
-            </div>
-            <textarea value={form.description} onChange={set("description")} placeholder="Full description" rows={2} className={`${input} md:col-span-2`} />
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
-            </label>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          {showForm && (
+            <div
+              className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+              onClick={closeForm}
+            >
+              <form
+                onSubmit={submit}
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
               >
-                {editing ? "Update Product" : "Add Product"}
-              </button>
-              {editing && (
-                <button
-                  type="button"
-                  onClick={() => { setEditing(null); setForm(empty); }}
-                  className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
-                >
-                  Cancel
-                </button>
-              )}
+                <h3 className="font-display text-lg font-bold text-neutral-900">
+                  {editing ? "Edit Product" : "New Product"}
+                </h3>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <input value={form.product_name} onChange={set("product_name")} required placeholder="Product name" className={input} />
+                  <input value={form.product_slug} onChange={set("product_slug")} required placeholder="slug-like-this" className={input} />
+                  <input value={form.short_description} onChange={set("short_description")} placeholder="Short description" className={input} />
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500">₹</span>
+                    <input value={form.base_price} onChange={set("base_price")} inputMode="decimal" required placeholder="Price (INR)" className={`${input} pl-7`} />
+                  </div>
+                  <textarea value={form.description} onChange={set("description")} placeholder="Full description" rows={2} className={`${input} md:col-span-2`} />
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
+                  </label>
+                </div>
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closeForm}
+                    className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                  >
+                    {editing ? "Update Product" : "Add Product"}
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
+          )}
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <input
@@ -254,6 +279,15 @@ export default function AdminProductsPage() {
           <p className="mb-2 mt-4 text-xs text-neutral-500">
             {visible.length} of {products.length} record{products.length === 1 ? "" : "s"} {search || statusFilter !== "all" ? "· filtered" : ""}
           </p>
+          <div className="mb-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => { setForm(empty); setEditing(null); setShowForm(true); }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+            >
+              <i className="bi bi-plus-lg" /> New Product
+            </button>
+          </div>
           <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
@@ -312,6 +346,17 @@ function ProductWorkspace({ product, onBack }) {
 
   const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
   const [editingVariant, setEditingVariant] = useState(null);
+  // Workspace create/update ALWAYS live in popups — never inline.
+  const [showVariantForm, setShowVariantForm] = useState(false);
+  const [showMediaForm, setShowMediaForm] = useState(false);
+  const [showAttrForm, setShowAttrForm] = useState(false);
+  const [showSeoForm, setShowSeoForm] = useState(false);
+  useLockBody(showVariantForm || showMediaForm || showAttrForm || showSeoForm);
+  const closeVariantForm = () => {
+    setShowVariantForm(false);
+    setEditingVariant(null);
+    setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+  };
   const [vMediaByVariant, setVMediaByVariant] = useState({}); // {variant_id: [media, ...]}
   const [mAlt, setMAlt] = useState("");
   const [mPrimary, setMPrimary] = useState(false);
@@ -412,6 +457,7 @@ function ProductWorkspace({ product, onBack }) {
       }
       setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
       setEditingVariant(null);
+      setShowVariantForm(false);
       reload();
     } catch (err) {
       setMsg(friendlyError(err, "Could not save variant."));
@@ -425,7 +471,7 @@ function ProductWorkspace({ product, onBack }) {
       size_id: v.size_id || "", cloth_type_id: v.cloth_type_id || "",
       price: v.price ?? "", stock_qty: v.stock_qty ?? "",
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setShowVariantForm(true);
   };
 
   const deleteVariant = async (v) => {
@@ -489,6 +535,7 @@ function ProductWorkspace({ product, onBack }) {
       setMPrimary(false);
       clearMediaPreview();
       setMsg("Image uploaded & attached.");
+      setShowMediaForm(false);
       reload();
     } catch (err) {
       setMsg(friendlyError(err, "Upload failed."));
@@ -590,6 +637,7 @@ function ProductWorkspace({ product, onBack }) {
       setAAttr("");
       setAValue("");
       setMsg("Attribute added.");
+      setShowAttrForm(false);
       reload();
     } catch (err) {
       setMsg(friendlyError(err, "Could not add attribute."));
@@ -627,6 +675,7 @@ function ProductWorkspace({ product, onBack }) {
         });
       }
       setMsg("SEO saved.");
+      setShowSeoForm(false);
       reload();
     } catch (err) {
       setMsg(friendlyError(err, "Could not save SEO."));
@@ -750,48 +799,69 @@ function ProductWorkspace({ product, onBack }) {
           </table>
         </div>
       )}
-      <form onSubmit={saveVariant} className="mt-3 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-3">
-        <h3 className="font-semibold md:col-span-3">{editingVariant ? "Edit Variant" : "Add Variant"}</h3>
-        <input value={vForm.sku} onChange={(e) => setVForm((f) => ({ ...f, sku: e.target.value }))} required placeholder="SKU" className={input} />
-        <input value={vForm.variant_name} onChange={(e) => setVForm((f) => ({ ...f, variant_name: e.target.value }))} placeholder="Variant Name" className={input} />
-        <select value={vForm.size_id} onChange={(e) => setVForm((f) => ({ ...f, size_id: e.target.value }))} className={input}>
-          <option value="">Size — none —</option>
-          {sizes.map((s) => (
-            <option key={s.size_id} value={s.size_id}>{s.size_name}</option>
-          ))}
-        </select>
-        <select value={vForm.cloth_type_id} onChange={(e) => setVForm((f) => ({ ...f, cloth_type_id: e.target.value }))} className={input}>
-          <option value="">Cloth Type — none —</option>
-          {clothTypes.map((c) => (
-            <option key={c.cloth_type_id} value={c.cloth_type_id}>{c.cloth_type_name}</option>
-          ))}
-        </select>
-        <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500">₹</span>
-          <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price" className={`${input} pl-7`} />
-        </div>
-        <input value={vForm.stock_qty} onChange={(e) => setVForm((f) => ({ ...f, stock_qty: e.target.value }))} inputMode="numeric" placeholder="Stock" className={input} />
-        <div className="flex gap-2 md:col-span-3">
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          onClick={() => {
+            setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+            setEditingVariant(null);
+            setShowVariantForm(true);
+          }}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+        >
+          <i className="bi bi-plus-lg" /> Add Variant
+        </button>
+      </div>
+      {showVariantForm && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={closeVariantForm}
+        >
+          <form
+            onSubmit={saveVariant}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
           >
-            {editingVariant ? "Update Variant" : "Add Variant"}
-          </button>
-          {editingVariant && (
-            <button
-              type="button"
-              onClick={() => {
-                setEditingVariant(null);
-                setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
-              }}
-              className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
-            >
-              Cancel
-            </button>
-          )}
+            <h3 className="font-display text-lg font-bold text-neutral-900">{editingVariant ? "Edit Variant" : "Add Variant"}</h3>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <input value={vForm.sku} onChange={(e) => setVForm((f) => ({ ...f, sku: e.target.value }))} required placeholder="SKU" className={input} />
+              <input value={vForm.variant_name} onChange={(e) => setVForm((f) => ({ ...f, variant_name: e.target.value }))} placeholder="Variant Name" className={input} />
+              <select value={vForm.size_id} onChange={(e) => setVForm((f) => ({ ...f, size_id: e.target.value }))} className={input}>
+                <option value="">Size — none —</option>
+                {sizes.map((s) => (
+                  <option key={s.size_id} value={s.size_id}>{s.size_name}</option>
+                ))}
+              </select>
+              <select value={vForm.cloth_type_id} onChange={(e) => setVForm((f) => ({ ...f, cloth_type_id: e.target.value }))} className={input}>
+                <option value="">Cloth Type — none —</option>
+                {clothTypes.map((c) => (
+                  <option key={c.cloth_type_id} value={c.cloth_type_id}>{c.cloth_type_name}</option>
+                ))}
+              </select>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500">₹</span>
+                <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price" className={`${input} pl-7`} />
+              </div>
+              <input value={vForm.stock_qty} onChange={(e) => setVForm((f) => ({ ...f, stock_qty: e.target.value }))} inputMode="numeric" placeholder="Stock" className={input} />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeVariantForm}
+                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+              >
+                {editingVariant ? "Update Variant" : "Add Variant"}
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      )}
 
       <h2 className="mt-8 flex items-center gap-2 text-lg font-bold text-neutral-900">
         <i className="bi bi-images text-gold-deep" /> Images / Media
@@ -820,7 +890,26 @@ function ProductWorkspace({ product, onBack }) {
           ))}
         </div>
       )}
-      <div className="mt-3 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-3">
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowMediaForm(true)}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+        >
+          <i className="bi bi-plus-lg" /> Add Media
+        </button>
+      </div>
+      {showMediaForm && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={() => { clearMediaPreview(); setShowMediaForm(false); }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+          >
+            <h3 className="font-display text-lg font-bold text-neutral-900">Add Media</h3>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
         <input value={mAlt} onChange={(e) => setMAlt(e.target.value)} placeholder="Alt Text" className={input} />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Set as primary
@@ -872,28 +961,70 @@ function ProductWorkspace({ product, onBack }) {
         ) : (
           <p className="text-xs text-neutral-500 md:col-span-3">JPG, PNG, WEBP, GIF images or MP4, WEBM, MOV videos. Pick a file to preview before upload.</p>
         )}
-      </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { clearMediaPreview(); setShowMediaForm(false); }}
+                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <h2 className="mt-8 flex items-center gap-2 text-lg font-bold text-neutral-900">
         <i className="bi bi-tags text-gold-deep" /> Attributes
       </h2>
-      <form onSubmit={addAttr} className="mt-2 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-3">
-        <select value={aAttr} onChange={(e) => setAAttr(e.target.value)} className={input}>
-          <option value="">-- select attribute --</option>
-          {attributes.map((a) => (
-            <option key={a.attribute_id} value={a.attribute_id}>{a.attribute_name}</option>
-          ))}
-        </select>
-        <input value={aValue} onChange={(e) => setAValue(e.target.value)} placeholder="Value" className={input} />
-        <div>
-          <button
-            type="submit"
-            className="inline-flex w-full items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+      <div className="mt-2 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowAttrForm(true)}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+        >
+          <i className="bi bi-plus-lg" /> Add Attribute
+        </button>
+      </div>
+      {showAttrForm && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={() => setShowAttrForm(false)}
+        >
+          <form
+            onSubmit={addAttr}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
           >
-            Add
-          </button>
+            <h3 className="font-display text-lg font-bold text-neutral-900">Add Attribute</h3>
+            <div className="mt-4 grid gap-3">
+              <select value={aAttr} onChange={(e) => setAAttr(e.target.value)} className={input}>
+                <option value="">-- select attribute --</option>
+                {attributes.map((a) => (
+                  <option key={a.attribute_id} value={a.attribute_id}>{a.attribute_name}</option>
+                ))}
+              </select>
+              <input value={aValue} onChange={(e) => setAValue(e.target.value)} placeholder="Value" className={input} />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAttrForm(false)}
+                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+              >
+                Add
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      )}
       {attrValues.length === 0 ? (
         <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No attribute values yet.</p>
       ) : (
@@ -922,20 +1053,50 @@ function ProductWorkspace({ product, onBack }) {
       <h2 className="mt-8 flex items-center gap-2 text-lg font-bold text-neutral-900">
         <i className="bi bi-search text-gold-deep" /> SEO
       </h2>
-      <form onSubmit={saveSeo} className="mt-2 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
-        <input value={seoForm.seo_title} onChange={(e) => setSeoForm((f) => ({ ...f, seo_title: e.target.value }))} placeholder="SEO Title" className={input} />
-        <input value={seoForm.seo_keywords} onChange={(e) => setSeoForm((f) => ({ ...f, seo_keywords: e.target.value }))} placeholder="Keywords" className={input} />
-        <textarea value={seoForm.seo_description} onChange={(e) => setSeoForm((f) => ({ ...f, seo_description: e.target.value }))} placeholder="SEO Description" rows={2} className={`${input} md:col-span-2`} />
-        <input value={seoForm.og_image_url} onChange={(e) => setSeoForm((f) => ({ ...f, og_image_url: e.target.value }))} placeholder="OG Image URL" className={`${input} md:col-span-2`} />
-        <div className="md:col-span-2">
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+      <div className="mt-2 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowSeoForm(true)}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-5 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+        >
+          <i className="bi bi-pencil" /> Edit SEO
+        </button>
+      </div>
+      {showSeoForm && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={() => setShowSeoForm(false)}
+        >
+          <form
+            onSubmit={saveSeo}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
           >
-            Save SEO
-          </button>
+            <h3 className="font-display text-lg font-bold text-neutral-900">Edit SEO</h3>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <input value={seoForm.seo_title} onChange={(e) => setSeoForm((f) => ({ ...f, seo_title: e.target.value }))} placeholder="SEO Title" className={input} />
+              <input value={seoForm.seo_keywords} onChange={(e) => setSeoForm((f) => ({ ...f, seo_keywords: e.target.value }))} placeholder="Keywords" className={input} />
+              <textarea value={seoForm.seo_description} onChange={(e) => setSeoForm((f) => ({ ...f, seo_description: e.target.value }))} placeholder="SEO Description" rows={2} className={`${input} md:col-span-2`} />
+              <input value={seoForm.og_image_url} onChange={(e) => setSeoForm((f) => ({ ...f, og_image_url: e.target.value }))} placeholder="OG Image URL" className={`${input} md:col-span-2`} />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSeoForm(false)}
+                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+              >
+                Save SEO
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      )}
     </div>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch, unwrap, revalidateSite, detectMediaType } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite, detectMediaType, friendlyError } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "./FilePick";
 import HtmlEditor from "./HtmlEditor";
 import UploadRing from "./UploadRing";
+import useLockBody from "./useLockBody";
 import useUploader from "./useUploader";
 import { useToast } from "./ToastProvider";
 import { useConfirm } from "./ConfirmProvider";
@@ -61,6 +62,21 @@ export default function AdminModulePage({ module: slug, lock }) {
   const [busy, setBusy] = useState(null); // null | "uploading" | "saving"
   // Uploads with live ring progress (%, MB, speed, ETA).
   const { upProg, upload } = useUploader();
+  // Create/update ALWAYS live in the popup — never inline. closeForm resets.
+  const [showForm, setShowForm] = useState(false);
+  useLockBody(showForm);
+  const closeForm = () => {
+    setShowForm(false);
+    setEditing(null);
+    setForm({});
+    setStaged({});
+  };
+  const openCreate = () => {
+    setForm({});
+    setStaged({});
+    setEditing(null);
+    setShowForm(true);
+  };
   const [refOptions, setRefOptions] = useState({});
   const [workspace, setWorkspace] = useState(null);
   const [workspaceTab, setWorkspaceTab] = useState(0);
@@ -276,16 +292,13 @@ export default function AdminModulePage({ module: slug, lock }) {
       setForm({});
       setStaged({});
       setEditing(null);
+      setShowForm(false);
       reload();
       revalidateSite();
     } catch (err) {
-      const raw = err.message || "Save failed";
-      const fk = raw.match(/table "dbo\.(\w+)"/);
-      const friendly = /FOREIGN KEY/i.test(raw)
-        ? `That related record does not exist${fk ? ` (missing in ${fk[1]})` : ""}. Please pick it from the dropdown instead of typing an ID.`
-        : raw;
-      setMsg(friendly);
-      toast?.error(friendly);
+      const m = friendlyError(err, "Save failed");
+      setMsg(m);
+      toast?.error(m);
     } finally {
       setBusy(null);
     }
@@ -300,7 +313,7 @@ export default function AdminModulePage({ module: slug, lock }) {
     setForm(f);
     setStaged({});
     setEditing(r[mod.id]);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setShowForm(true);
   };
 
   const remove = async (r) => {
@@ -425,13 +438,20 @@ export default function AdminModulePage({ module: slug, lock }) {
           <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-neutral-900">{mod.title}</h1>
           <p className="mt-1 text-xs text-neutral-500">{rows.length} record(s)</p>
         </div>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={`Search ${mod.title}...`}
-          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
-          style={{ minWidth: 200 }}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={`Search ${mod.title}...`}
+            className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+            style={{ minWidth: 200 }}
+          />
+          {!mod.readOnly && (
+            <button type="button" onClick={openCreate} className={btnPrimary}>
+              <i className="bi bi-plus-lg" /> New
+            </button>
+          )}
+        </div>
       </div>
       {msg && (
         <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
@@ -439,46 +459,54 @@ export default function AdminModulePage({ module: slug, lock }) {
         </p>
       )}
 
-      {!mod.readOnly && (
-        <form onSubmit={submit} className={`mt-4 grid gap-3 md:grid-cols-2 ${panelCls}`}>
-          {lock && (
-            <p className="rounded-md bg-neutral-100 p-2 text-xs font-semibold md:col-span-2">
-              Adding to: {lock.label}
-            </p>
-          )}
-          {mod.columns.filter((c) => !lock || c.key !== lock.field).map((c) => (
-            <label
-              key={c.key}
-              className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${c.type === "textarea" || c.type === "rich" ? "md:col-span-2" : ""}`}
-            >
-              {c.label}
-              {renderField(c)}
-            </label>
-          ))}
-          <div className="flex gap-2 md:col-span-2">
-            <button
-              type="submit"
-              disabled={busy !== null}
-              className={btnPrimary}
-            >
-              {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : editing ? "Update" : "Add"}
-            </button>
-            {editing && (
-              <button
-                type="button"
-                onClick={() => { setEditing(null); setForm({}); setStaged({}); }}
-                className={btnOutline}
-              >
+      {!mod.readOnly && showForm && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={closeForm}
+        >
+          <form
+            onSubmit={submit}
+            onClick={(e) => e.stopPropagation()}
+            className={`max-h-[90vh] w-full max-w-2xl overflow-y-auto ${panelCls}`}
+          >
+            <h3 className="font-display text-lg font-bold text-neutral-900">
+              {editing ? `Edit ${mod.title.replace(/s$/, "")}` : `New ${mod.title.replace(/s$/, "")}`}
+            </h3>
+            {lock && (
+              <p className="mt-2 rounded-md bg-neutral-100 p-2 text-xs font-semibold">
+                Adding to: {lock.label}
+              </p>
+            )}
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {mod.columns.filter((c) => !lock || c.key !== lock.field).map((c) => (
+                <label
+                  key={c.key}
+                  className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${c.type === "textarea" || c.type === "rich" ? "md:col-span-2" : ""}`}
+                >
+                  {c.label}
+                  {renderField(c)}
+                </label>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" onClick={closeForm} className={btnOutline}>
                 Cancel
               </button>
-            )}
-          </div>
-          {upProg && (
-            <div className="md:col-span-2">
-              <UploadRing prog={upProg} />
+              <button
+                type="submit"
+                disabled={busy !== null}
+                className={btnPrimary}
+              >
+                {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : editing ? "Update" : "Add"}
+              </button>
             </div>
-          )}
-        </form>
+            {upProg && (
+              <div className="mt-3">
+                <UploadRing prog={upProg} />
+              </div>
+            )}
+          </form>
+        </div>
       )}
 
       <p className="mb-2 mt-1 text-xs text-neutral-500">

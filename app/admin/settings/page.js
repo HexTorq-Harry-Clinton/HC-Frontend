@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, unwrap, resolveUploadUrl, revalidateSite } from "@/lib/api";
 import FilePick from "../FilePick";
 import UploadRing from "../UploadRing";
+import useLockBody from "../useLockBody";
 import useUploader from "../useUploader";
 
 // Site settings singleton: same fields as the previous UI —
@@ -36,6 +37,9 @@ export default function AdminSettingsPage() {
   const [busy, setBusy] = useState(null); // null | "uploading" | "saving"
   // Uploads with live ring progress (%, MB, speed, ETA).
   const { upProg, upload } = useUploader();
+  // Settings edit ALWAYS lives in the popup — never inline.
+  const [showForm, setShowForm] = useState(false);
+  useLockBody(showForm);
 
   useEffect(() => {
     let live = true;
@@ -108,6 +112,7 @@ export default function AdminSettingsPage() {
       }
       setMsg("Settings saved.");
       setStaged({});
+      setShowForm(false);
       revalidateSite();
     } catch (err) {
       setMsg(err.message || "Save failed");
@@ -127,7 +132,41 @@ export default function AdminSettingsPage() {
           {msg}
         </p>
       )}
-      <form onSubmit={submit} className="mt-4 grid max-w-3xl gap-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
+      <div className="mt-4 max-w-3xl rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <dl className="grid gap-3 text-sm md:grid-cols-2">
+          {FIELDS.filter((f) => f.type !== "checkbox").map((f) => (
+            <div key={f.key} className={f.type === "textarea" ? "md:col-span-2" : ""}>
+              <dt className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">{f.label}</dt>
+              <dd className="mt-0.5 truncate font-medium text-neutral-900">
+                {f.type === "upload"
+                  ? staged[f.key]?.name || form[f.key] || "—"
+                  : f.type === "checkbox"
+                    ? ""
+                    : String(form[f.key] || "—").slice(0, 80)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <button
+          type="button"
+          onClick={() => setShowForm(true)}
+          className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+        >
+          <i className="bi bi-pencil" /> Edit Settings
+        </button>
+      </div>
+      {showForm && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={() => setShowForm(false)}
+        >
+          <form
+            onSubmit={submit}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+          >
+            <h3 className="font-display text-lg font-bold text-neutral-900">Edit Settings</h3>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
         {FIELDS.map((f) => (
           <label key={f.key} className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${f.type === "textarea" ? "md:col-span-2" : ""}`}>
             {f.label}
@@ -167,21 +206,31 @@ export default function AdminSettingsPage() {
             )}
           </label>
         ))}
-        <div className="md:col-span-2">
-          <button
-            type="submit"
-            disabled={busy !== null}
-            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : "Save Settings"}
-          </button>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={busy !== null}
+                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : "Save Settings"}
+              </button>
+            </div>
+            {upProg && (
+              <div className="mt-3">
+                <UploadRing prog={upProg} />
+              </div>
+            )}
+          </form>
         </div>
-        {upProg && (
-          <div className="md:col-span-2">
-            <UploadRing prog={upProg} />
-          </div>
-        )}
-      </form>
+      )}
     </div>
   );
 }

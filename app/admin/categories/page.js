@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 import ActiveToggle from "@/components/ActiveToggle";
+import useLockBody from "../useLockBody";
 import { useConfirm } from "../ConfirmProvider";
 
 const empty = { menu_subcategory_name: "", menu_subcategory_slug: "", redirect_link: "", display_order: "", isactive: true };
@@ -21,6 +22,19 @@ export default function AdminCategoriesPage() {
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState("");
+  // Create/update ALWAYS live in the popup — never inline.
+  const [showForm, setShowForm] = useState(false);
+  useLockBody(showForm);
+  const closeForm = () => {
+    setShowForm(false);
+    setEditing(null);
+    setForm(empty);
+  };
+  const openCreate = () => {
+    setForm(empty);
+    setEditing(null);
+    setShowForm(true);
+  };
 
   const load = async () => {
     try {
@@ -110,6 +124,7 @@ export default function AdminCategoriesPage() {
       }
       setForm(empty);
       setEditing(null);
+      setShowForm(false);
       load();
       revalidateSite();
     } catch (err) {
@@ -126,7 +141,7 @@ export default function AdminCategoriesPage() {
       display_order: s.display_order || "",
       isactive: s.isactive !== false && s.isactive !== 0,
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setShowForm(true);
   };
 
   const remove = async (s) => {
@@ -198,39 +213,67 @@ export default function AdminCategoriesPage() {
         </p>
       )}
 
-      <form onSubmit={submit} className="mt-4 grid gap-3 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-2">
-        <input value={form.menu_subcategory_name} onChange={set("menu_subcategory_name")} required placeholder="Subcategory name" className={input} />
-        <input value={form.menu_subcategory_slug} onChange={set("menu_subcategory_slug")} placeholder="slug-like-this" className={input} />
-        <input value={form.redirect_link} onChange={set("redirect_link")} placeholder="Redirect link (e.g. /wedding)" className={input} />
-        <input value={form.display_order} onChange={set("display_order")} inputMode="numeric" placeholder="Order" className={input} />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
-        </label>
-        <div className="flex gap-2">
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+      {showForm && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-neutral-950/60 p-4"
+          onClick={closeForm}
+        >
+          <form
+            onSubmit={submit}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
           >
-            {editing ? "Update" : "Add"}
-          </button>
-          {editing && (
-            <button
-              type="button"
-              onClick={() => { setEditing(null); setForm(empty); }}
-              className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
-            >
-              Cancel
-            </button>
-          )}
+            <h3 className="font-display text-lg font-bold text-neutral-900">
+              {editing ? "Edit subcategory" : "New subcategory"}
+            </h3>
+            {current && (
+              <p className="mt-1 rounded-md bg-neutral-100 p-2 text-xs font-semibold">
+                Adding to: {current.menu_category_name} ({current.menu_category_slug})
+              </p>
+            )}
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <input value={form.menu_subcategory_name} onChange={set("menu_subcategory_name")} required placeholder="Subcategory name" className={input} />
+              <input value={form.menu_subcategory_slug} onChange={set("menu_subcategory_slug")} placeholder="slug-like-this" className={input} />
+              <input value={form.redirect_link} onChange={set("redirect_link")} placeholder="Redirect link (e.g. /wedding)" className={input} />
+              <input value={form.display_order} onChange={set("display_order")} inputMode="numeric" placeholder="Order" className={input} />
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
+              </label>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeForm}
+                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+              >
+                {editing ? "Update" : "Add"}
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      )}
 
       <h2 className="mt-6 font-semibold text-neutral-900">
         Subcategories {current ? `of ${current.menu_category_name}` : ""} ({visible.length})
       </h2>
-      <p className="mb-2 mt-1 text-xs text-neutral-500">
-        {visible.length} record{visible.length === 1 ? "" : "s"}
-      </p>
+      <div className="mb-2 mt-1 flex items-center justify-between gap-2">
+        <p className="text-xs text-neutral-500">
+          {visible.length} record{visible.length === 1 ? "" : "s"}
+        </p>
+        <button
+          type="button"
+          onClick={openCreate}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+        >
+          <i className="bi bi-plus-lg" /> New subcategory
+        </button>
+      </div>
       <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
