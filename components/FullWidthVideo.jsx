@@ -6,10 +6,11 @@ import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
 // Homepage video section (tbl_menu_videos) — full-viewport, video-only.
 // Sits below the running bar. Renders EVERY active row in display_order:
 // autoplay / loop / mute_default honored per row, poster before load,
-// play-pause + mute controls per screen.
+// play-pause + mute controls per screen, prev/next chevrons between screens
+// (hero-style, only when 2+ videos).
 const on = (v) => v === 1 || v === true;
 
-function VideoScreen({ row }) {
+function VideoScreen({ row, index, total, screenRef, onNav }) {
   const ref = useRef(null);
   const [muted, setMuted] = useState(!row.muteOff);
   const [playing, setPlaying] = useState(!!row.autoplay);
@@ -34,7 +35,7 @@ function VideoScreen({ row }) {
 
   if (failed) return null;
   return (
-    <div className="relative h-[100svh] w-full overflow-hidden bg-neutral-950">
+    <div ref={screenRef} className="group/vscreen relative h-[100svh] w-full overflow-hidden bg-neutral-950">
       <video
         ref={ref}
         src={row.src}
@@ -65,6 +66,26 @@ function VideoScreen({ row }) {
           <i className={`bi ${muted ? "bi-volume-mute-fill" : "bi-volume-up-fill"} leading-none`} />
         </button>
       </div>
+      {total > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Previous video"
+            onClick={(e) => { e.stopPropagation(); onNav(-1); }}
+            className="absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover/vscreen:opacity-100"
+          >
+            <i className="bi bi-chevron-left text-lg leading-none" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next video"
+            onClick={(e) => { e.stopPropagation(); onNav(1); }}
+            className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover/vscreen:opacity-100"
+          >
+            <i className="bi bi-chevron-right text-lg leading-none" />
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -85,6 +106,7 @@ const isUnrelatedVideo = (url) => {
 export default function FullWidthVideo() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const screensRef = useRef([]);
 
   useEffect(() => {
     let live = true;
@@ -138,10 +160,23 @@ export default function FullWidthVideo() {
 
   if (loading) return null;
   if (rows.length === 0) return null;
+  const goScreen = (from, dir) => {
+    const el = screensRef.current[(from + dir + rows.length) % rows.length];
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   return (
     <>
-      {rows.map((r) => (
-        <VideoScreen key={r.id} row={r} />
+      {rows.map((r, i) => (
+        <VideoScreen
+          key={r.id}
+          row={r}
+          index={i}
+          total={rows.length}
+          screenRef={(el) => {
+            screensRef.current[i] = el;
+          }}
+          onNav={(dir) => goScreen(i, dir)}
+        />
       ))}
     </>
   );
