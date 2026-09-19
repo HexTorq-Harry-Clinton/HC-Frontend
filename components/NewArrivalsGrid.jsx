@@ -41,14 +41,20 @@ export default function NewArrivalsGrid({ products }) {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
-          {products.map((p) => (
+          {products.map((p) => {
+            const wished = cart?.wishlist.some((i) => i.id === p.id);
+            return (
             <div key={p.id} className="group relative bg-white shadow-sm">
               <span className="absolute left-3 top-3 z-10 bg-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-950">
                 New
               </span>
               <WishlistHeart
                 product={p}
-                className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow transition hover:bg-gold"
+                className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow transition-all duration-300 ${
+                  wished
+                    ? "bg-gold text-neutral-950"
+                    : "bg-white/90 text-neutral-800 hover:bg-gold lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100"
+                }`}
               />
               <Link href={`/product/${p.slug || p.id}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -76,7 +82,8 @@ export default function NewArrivalsGrid({ products }) {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </>
