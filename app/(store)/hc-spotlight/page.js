@@ -30,9 +30,9 @@ export default async function HCSpotlightPage() {
       </section>
 
       <div className="overflow-hidden border-b border-neutral-200 bg-white">
-        <div className="animate-marquee py-3">
+        <div className="animate-marquee flex w-max whitespace-nowrap py-3">
           {Array(4).fill(MARQUEE).flat().map((word, idx) => (
-            <span key={idx} className="mx-4 font-bold uppercase">{word}</span>
+            <span key={idx} className="mx-4 shrink-0 font-bold uppercase">{word}</span>
           ))}
         </div>
       </div>
