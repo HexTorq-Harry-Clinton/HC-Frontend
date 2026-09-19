@@ -56,7 +56,7 @@ export default function HomeFaqs() {
           });
 
           setFaqs(
-            uniqueFaqs.slice(0, 5).map((item) => ({
+            uniqueFaqs.map((item) => ({
               question: item.question || item.title || "",
               answer: item.answer || item.description || "",
             }))
