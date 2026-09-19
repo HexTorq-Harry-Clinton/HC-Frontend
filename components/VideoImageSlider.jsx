@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
 
 const FALLBACK_SLIDES = [
   {
@@ -49,8 +49,7 @@ export default function VideoImageSlider() {
 
   useEffect(() => {
     let live = true;
-    apiFetch("/Image-Sliders")
-      .then(unwrap)
+    apiCached("/Image-Sliders")
       .then((data) => {
         if (!live) return;
         const list = (Array.isArray(data) ? data : [])
@@ -68,6 +67,8 @@ export default function VideoImageSlider() {
           .filter((s) => s.src && !s.src.includes("cdn.example.com") && !s.src.includes("example.com"));
         // If backend has no valid slides (all filtered or empty), fall back to local brand asset so hero is never black.
         setSlides(list.length > 0 ? list : FALLBACK_SLIDES);
+        // Warm the browser image cache so back-nav never re-downloads.
+        precacheMedia(list.map((s) => s.src));
       })
       .catch(() => {
         if (live) setSlides(FALLBACK_SLIDES);

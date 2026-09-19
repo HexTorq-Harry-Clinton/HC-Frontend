@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, resolveUploadUrl } from "@/lib/api";
 import Reveal from "@/components/Reveal";
 
 // Horizontal auto-scroll showcase: same behavior as the previous UI —
@@ -41,8 +41,8 @@ export default function ShowcaseCarousel({
     const fetchData = async () => {
       try {
         const [entriesRes, mediaRes] = await Promise.all([
-          apiFetch(entriesEndpoint).then(unwrap).catch(() => []),
-          apiFetch(mediaEndpoint).then(unwrap).catch(() => []),
+          apiCached(entriesEndpoint).catch(() => []),
+          apiCached(mediaEndpoint).catch(() => []),
         ]);
         if (!live) return;
         const entries = Array.isArray(entriesRes) ? entriesRes : [];

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
 import ProductCard from "@/components/ProductCard";
 import SectionHeading from "@/components/SectionHeading";
 import Reveal from "@/components/Reveal";
@@ -25,9 +25,9 @@ export default function FeaturedProducts() {
     async function loadProducts() {
       try {
         const [productsData, mediaData, settingsData] = await Promise.all([
-          apiFetch("/Products").then(unwrap),
-          apiFetch("/Products-Media").then(unwrap),
-          apiFetch("/Settings").then(unwrap).catch(() => []),
+          apiCached("/Products"),
+          apiCached("/Products-Media"),
+          apiCached("/Settings").catch(() => []),
         ]);
 
         const row = (Array.isArray(settingsData) ? settingsData : [])[0] || {};
@@ -62,6 +62,8 @@ export default function FeaturedProducts() {
         });
 
         setProducts(mappedProducts);
+        // Warm the browser image cache so back-nav never re-downloads.
+        precacheMedia(mappedProducts.map((p) => p.image));
       } catch (error) {
         console.error("Failed to load featured products:", error);
       } finally {

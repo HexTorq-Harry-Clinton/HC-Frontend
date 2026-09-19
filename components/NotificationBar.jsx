@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiCached } from "@/lib/api";
 import TrainTicker, { TRAIN_DEFAULT_MS } from "./TrainTicker";
 
 // TOP black strip (notification bar) — single table, no parent.
@@ -20,8 +20,7 @@ export default function NotificationBar() {
 
   useEffect(() => {
     let live = true;
-    apiFetch("/Notification-Bar")
-      .then(unwrap)
+    apiCached("/Notification-Bar")
       .then((rows) => {
         const items = (Array.isArray(rows) ? rows : [])
           .filter((r) => (r.isactive === 1 || r.isactive === true) && r.isdeleted !== 1 && r.isdeleted !== true && r.notification_text)

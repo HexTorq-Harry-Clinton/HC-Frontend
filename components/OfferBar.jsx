@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiCached } from "@/lib/api";
 import MarqueeTape from "./MarqueeTape";
 
 // Running bar — the white strip BELOW the hero slider.
@@ -27,8 +27,8 @@ export default function OfferBar() {
     (async () => {
       try {
         const [barsRaw, itemsRaw] = await Promise.all([
-          apiFetch("/Running-Bar").then(unwrap).catch(() => []),
-          apiFetch("/Running-Bar-Items").then(unwrap).catch(() => []),
+          apiCached("/Running-Bar").catch(() => []),
+          apiCached("/Running-Bar-Items").catch(() => []),
         ]);
         const bars = (Array.isArray(barsRaw) ? barsRaw : []).filter(
           (b) => isOn(b.isactive) && !isOff(b.isdeleted)

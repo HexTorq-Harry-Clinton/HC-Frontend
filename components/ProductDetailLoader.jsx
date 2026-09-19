@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, resolveUploadUrl } from "@/lib/api";
 import ProductDetail from "./ProductDetail";
 import { PLACEHOLDER_IMAGE } from "./ProductCard";
 
@@ -45,13 +45,13 @@ export default function ProductDetailLoader({ id }) {
     (async () => {
       try {
         const [products, media, variants, sizes, clothTypes, reviews, ratingSummary] = await Promise.all([
-          apiFetch("/Products", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
-          apiFetch("/Products-Media", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
-          apiFetch("/Products-Variants", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
-          apiFetch("/Products-Sizes").then(unwrap).catch(() => []),
-          apiFetch("/Products-Cloth-Types").then(unwrap).catch(() => []),
-          apiFetch("/Reviews").then(unwrap).catch(() => []),
-          apiFetch("/Product-Rating-Summary").then(unwrap).catch(() => []),
+          apiCached("/Products", { params: { pageSize: 200 } }).catch(() => []),
+          apiCached("/Products-Media", { params: { pageSize: 200 } }).catch(() => []),
+          apiCached("/Products-Variants", { params: { pageSize: 200 } }).catch(() => []),
+          apiCached("/Products-Sizes").catch(() => []),
+          apiCached("/Products-Cloth-Types").catch(() => []),
+          apiCached("/Reviews").catch(() => []),
+          apiCached("/Product-Rating-Summary").catch(() => []),
         ]);
         if (!live) return;
 

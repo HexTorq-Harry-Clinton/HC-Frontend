@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiCached } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 const DEFAULT_FAQS = [
@@ -40,8 +40,8 @@ export default function HomeFaqs() {
     const fetchData = async () => {
       try {
         const [faqsRes, settingsRes] = await Promise.all([
-          apiFetch("/FAQs").then(unwrap).catch(() => []),
-          apiFetch("/Settings").then(unwrap).catch(() => []),
+          apiCached("/FAQs").catch(() => []),
+          apiCached("/Settings").catch(() => []),
         ]);
         if (!live) return;
         const list = Array.isArray(faqsRes) ? faqsRes : [];

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Reveal from '@/components/Reveal';
 import SectionHeading from '@/components/SectionHeading';
-import { apiFetch, unwrap, resolveUploadUrl } from '@/lib/api';
+import { apiCached, precacheMedia, resolveUploadUrl } from '@/lib/api';
 import { COLLECTIONS } from '@/lib/catalog';
 
 const collections = [
@@ -61,8 +61,8 @@ export default function CollectionsEditorial() {
     (async () => {
       try {
         const [productsRaw, mediaRaw] = await Promise.all([
-          apiFetch("/Products", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
-          apiFetch("/Products-Media", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+          apiCached("/Products", { params: { pageSize: 200 } }).catch(() => []),
+          apiCached("/Products-Media", { params: { pageSize: 200 } }).catch(() => []),
         ]);
         const products = (Array.isArray(productsRaw) ? productsRaw : []).filter(
           (p) => p.isdeleted !== 1 && p.isdeleted !== true
@@ -94,6 +94,8 @@ export default function CollectionsEditorial() {
           }
         }
         if (live) setImages(pick);
+        // Warm the browser image cache so back-nav never re-downloads.
+        precacheMedia(Object.values(pick));
       } catch {
         /* gradients stay — section never breaks */
       }

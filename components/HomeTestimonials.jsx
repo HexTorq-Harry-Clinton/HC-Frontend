@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiCached } from "@/lib/api";
 import Reveal from "@/components/Reveal";
 import SectionHeading from "@/components/SectionHeading";
 
@@ -36,8 +36,8 @@ export default function HomeTestimonials() {
     async function fetchReviews() {
       try {
         const [data, settingsData] = await Promise.all([
-          apiFetch("/Reviews").then(unwrap),
-          apiFetch("/Settings").then(unwrap).catch(() => []),
+          apiCached("/Reviews"),
+          apiCached("/Settings").catch(() => []),
         ]);
         const row = (Array.isArray(settingsData) ? settingsData : [])[0] || {};
         setCopy({

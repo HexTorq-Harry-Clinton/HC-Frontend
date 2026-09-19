@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, subscribeNewsletter } from "@/lib/api";
+import { apiCached, subscribeNewsletter } from "@/lib/api";
 
 // Footer: admin-driven bottom content (tbl_settings footer_*/brand_description
 // + newsletter_*) with the previous UI as fallback. Contact email/phone stay
@@ -48,8 +48,8 @@ export default function Footer() {
   useEffect(() => {
     let live = true;
     Promise.all([
-      apiFetch("/Support-Contacts").then(unwrap).catch(() => []),
-      apiFetch("/Settings").then(unwrap).catch(() => []),
+      apiCached("/Support-Contacts").catch(() => []),
+      apiCached("/Settings").catch(() => []),
     ]).then(([contacts, settings]) => {
       if (!live) return;
       setSupportContacts(Array.isArray(contacts) ? contacts : []);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiCached } from "@/lib/api";
 import ShowcaseCarousel from "./ShowcaseCarousel";
 import SpotlightMarquee from "./SpotlightMarquee";
 
@@ -12,8 +12,7 @@ function useHomeTitle(column, legacyKey, fallback) {
 
   useEffect(() => {
     let live = true;
-    apiFetch("/Settings")
-      .then(unwrap)
+    apiCached("/Settings")
       .then((settings) => {
         if (!live) return;
         const list = Array.isArray(settings) ? settings : [];

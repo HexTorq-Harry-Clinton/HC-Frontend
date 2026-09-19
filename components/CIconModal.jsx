@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, currentUserId } from "@/lib/api";
+import { apiCached, currentUserId } from "@/lib/api";
 
 const initialFormData = {
   name: "",
@@ -43,8 +43,8 @@ export default function CIconModal({ isOpen, onClose }) {
     const fetchSlots = async () => {
       try {
         const [dateRes, timeRes] = await Promise.all([
-          apiFetch("/Appointment-Date-Slots").then(unwrap),
-          apiFetch("/Appointment-Time-Slots").then(unwrap),
+          apiCached("/Appointment-Date-Slots", { ttl: 60000 }),
+          apiCached("/Appointment-Time-Slots", { ttl: 60000 }),
         ]);
         if (!live) return;
         const dates = Array.isArray(dateRes) ? dateRes : [];

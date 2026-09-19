@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, resolveUploadUrl } from "@/lib/api";
 
 // Homepage video section (tbl_menu_videos) — full-viewport, video-only.
 // Sits below the running bar. Renders EVERY active row in display_order:
@@ -110,8 +110,7 @@ export default function FullWidthVideo() {
 
   useEffect(() => {
     let live = true;
-    apiFetch("/Menu-Video")
-      .then(unwrap)
+    apiCached("/Menu-Video")
       .then((data) => {
         const list = (Array.isArray(data) ? data : [])
           .filter((v) => on(v.isactive ?? v.is_active) && !v.isdeleted && v.video_url)

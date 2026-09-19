@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, resolveUploadUrl } from "@/lib/api";
 
 const DEBOUNCE_MS = 300;
 
@@ -50,10 +50,10 @@ export default function SearchDropdown({ onClose }) {
       return dataRef.current;
     }
     const [cats, subs, prods, media] = await Promise.all([
-      apiFetch("/Menu-Category").then(unwrap).catch(() => []),
-      apiFetch("/Menu-Sub-Category").then(unwrap).catch(() => []),
-      apiFetch("/Products", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
-      apiFetch("/Products-Media", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+      apiCached("/Menu-Category").catch(() => []),
+      apiCached("/Menu-Sub-Category").catch(() => []),
+      apiCached("/Products", { params: { pageSize: 200 } }).catch(() => []),
+      apiCached("/Products-Media", { params: { pageSize: 200 } }).catch(() => []),
     ]);
     dataRef.current = { cats, subs, prods, media };
     fetchedAtRef.current = Date.now();

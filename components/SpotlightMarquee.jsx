@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
 
 // HC Spotlight homepage rows: TWO slow marquees — row 1 drifts left→right,
 // row 2 drifts right→left — and live page-scroll velocity bends both tapes
@@ -24,8 +24,8 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
     (async () => {
       try {
         const [entriesRaw, mediaRaw] = await Promise.all([
-          apiFetch("/Spotlight-Entries").then(unwrap).catch(() => []),
-          apiFetch("/Spotlight-Media").then(unwrap).catch(() => []),
+          apiCached("/Spotlight-Entries").catch(() => []),
+          apiCached("/Spotlight-Media").catch(() => []),
         ]);
         const entries = (Array.isArray(entriesRaw) ? entriesRaw : []).filter(
           (e) => (e.isactive === 1 || e.isactive === true) && e.isdeleted !== 1 && e.isdeleted !== true
@@ -54,6 +54,8 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
           setRows([[], []]);
           return;
         }
+        // Warm the browser image cache so back-nav never re-downloads.
+        precacheMedia(cards.map((c) => c.src));
         // Alternate into two rows so both tapes stay balanced.
         const a = [];
         const b = [];

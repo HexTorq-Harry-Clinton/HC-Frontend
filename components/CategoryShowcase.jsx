@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Reveal from "@/components/Reveal";
 import SectionHeading from "@/components/SectionHeading";
-import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
+import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
 import { CATEGORIES } from "@/lib/catalog";
 
 const FALLBACK_TILES = [
@@ -79,10 +79,14 @@ export default function CategoryShowcase() {
   const [cards, setCards] = useState(() => toCards(FALLBACK_TILES.map((t) => ({ ...t, link: t.href, image_url: "" }))));
   const [images, setImages] = useState({});
 
+  // Admin tile photos join the browser cache too.
+  useEffect(() => {
+    precacheMedia(cards.map((c) => (c.adminImage ? resolveUploadUrl(c.adminImage) : "")).filter(Boolean));
+  }, [cards]);
+
   useEffect(() => {
     let live = true;
-    apiFetch("/Settings")
-      .then(unwrap)
+    apiCached("/Settings")
       .then((list) => {
         if (!live) return;
         const row = (Array.isArray(list) ? list : [])[0] || {};
@@ -111,8 +115,8 @@ export default function CategoryShowcase() {
     (async () => {
       try {
         const [productsRaw, mediaRaw] = await Promise.all([
-          apiFetch("/Products", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
-          apiFetch("/Products-Media", { params: { pageSize: 200 } }).then(unwrap).catch(() => []),
+          apiCached("/Products", { params: { pageSize: 200 } }).catch(() => []),
+          apiCached("/Products-Media", { params: { pageSize: 200 } }).catch(() => []),
         ]);
         const products = (Array.isArray(productsRaw) ? productsRaw : []).filter(
           (p) => p.isdeleted !== 1 && p.isdeleted !== true
@@ -141,6 +145,8 @@ export default function CategoryShowcase() {
           }
         }
         if (live) setImages(pick);
+        // Warm the browser image cache so back-nav never re-downloads.
+        precacheMedia(Object.values(pick));
       } catch {
         /* gradients stay — section never breaks */
       }

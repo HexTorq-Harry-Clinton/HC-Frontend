@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useCallback, useEffect, useMemo, useState } from "react";
-import { apiFetch, unwrap } from "@/lib/api";
+import { apiCached } from "@/lib/api";
 
 const CartContext = createContext(null);
 export const useCart = () => useContext(CartContext);
@@ -77,7 +77,7 @@ export function CartProvider({ children }) {
   }, []);
 
   const applyCoupon = useCallback(async (code) => {
-    const coupons = unwrap(await apiFetch("/Coupons"));
+    const coupons = await apiCached("/Coupons");
     const match = coupons.find(
       (c) => c.coupon_code?.toLowerCase() === code.trim().toLowerCase()
     );
