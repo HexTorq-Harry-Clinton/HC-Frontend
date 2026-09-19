@@ -112,6 +112,9 @@ html {
   color: #fff;
 }
 
+/* train ticker text (motion driven by Web Animations API in TrainTicker) */
+.rb-anim { display: inline-block; will-change: transform; }
+
 /* announcement ticker */
 @keyframes marquee {
   from { transform: translateX(0); }

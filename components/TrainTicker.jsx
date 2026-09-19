@@ -4,12 +4,10 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 // Shared train-carousel engine for the ticker strips.
-// One slide at a time, driven by ONE keyframe track per slide (no JS phase
-// machine, so there is nothing to stall; no animation pair, so there is no
-// fill-mode cascade burying the entry): the full ride — fast entry, center
-// hold, slow-start exit — is baked into a single `rb-ride` animation whose
-// percentage stops are computed from the slide's own DB seconds. JS only
-// advances the index when the full ride completes.
+// One slide at a time. Motion runs on the Web Animations API (element.
+// animate) with per-slide computed offsets — no CSS keyframe parsing, no
+// fill-mode cascade, identical on dev and production. JS advances the index
+// when the full ride (enter + DB hold + exit) completes.
 // Props:
 // - slides: [{ text, ms }] (text may be plain or HTML, sanitized on render)
 // - dark: black strip (notification bar) vs white strip (running bar)
@@ -17,6 +15,8 @@ import { sanitizeHtml } from "@/lib/sanitize";
 // - flankLeft / flankRight: static nodes pinned at the strip edges
 const ENTER_MS = 850;
 const EXIT_MS = 850;
+const ENTER_EASE = "cubic-bezier(0.16, 0.8, 0.24, 1)";
+const EXIT_EASE = "cubic-bezier(0.55, 0.06, 0.75, 0.4)";
 
 export const TRAIN_DEFAULT_MS = 4000;
 
@@ -27,23 +27,46 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
   );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fromLeft, setFromLeft] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const viewportRef = useRef(null);
   const textRef = useRef(null);
   const timerRef = useRef(null);
   const pendingRef = useRef(null);
+  const animRef = useRef(null);
 
-  // Travel distance: viewport half + text half, so text starts/ends fully
-  // outside the strip edges. Measured pre-paint per slide.
+  const holdMs = list[currentIndex]?.ms || TRAIN_DEFAULT_MS;
+  const rideMs = holdMs + ENTER_MS + EXIT_MS;
+
+  // The ride: fast entry from the correct side, eased center stop, exact DB
+  // hold, slow-start exit left. Fresh animation object per slide.
   useLayoutEffect(() => {
     const vp = viewportRef.current;
     const el = textRef.current;
-    if (!vp || !el) return;
+    if (!vp || !el || list.length === 0) return undefined;
+    if (typeof el.animate !== "function") return undefined;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
     const travel = vp.clientWidth / 2 + el.offsetWidth / 2 + 24;
-    vp.style.setProperty("--rb-travel", `${travel}px`);
+    const dir = fromLeft ? -1 : 1;
+    const total = (list[currentIndex]?.ms || TRAIN_DEFAULT_MS) + ENTER_MS + EXIT_MS;
+    const anim = el.animate(
+      [
+        { opacity: "0", transform: `translateX(${dir * travel}px)`, easing: ENTER_EASE, offset: 0 },
+        { opacity: "1", transform: "translateX(0px)", offset: ENTER_MS / total },
+        { opacity: "1", transform: "translateX(0px)", easing: EXIT_EASE, offset: (ENTER_MS + (list[currentIndex]?.ms || TRAIN_DEFAULT_MS)) / total },
+        { opacity: "0", transform: `translateX(${-travel}px)`, offset: 1 },
+      ],
+      { duration: total, fill: "both" }
+    );
+    animRef.current = anim;
+    return () => {
+      animRef.current = null;
+      try {
+        anim.cancel();
+      } catch {
+        /* already finished */
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, list]);
-
-  const rideMs = (list[currentIndex]?.ms || TRAIN_DEFAULT_MS) + ENTER_MS + EXIT_MS;
 
   // Single timer per slide: when the full ride ends, roll the next item in.
   useEffect(() => {
@@ -62,10 +85,14 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, list]);
 
-  // Hover pause: freeze CSS mid-flight + suspend the ride timer, resume with
-  // remaining time so configured seconds stay exact.
+  // Hover pause: freeze the ride mid-flight + suspend the index timer,
+  // resume both with remaining time so configured seconds stay exact.
   const handleEnter = () => {
-    setIsPaused(true);
+    try {
+      animRef.current?.pause();
+    } catch {
+      /* no active ride */
+    }
     const p = pendingRef.current;
     if (p) {
       clearTimeout(timerRef.current);
@@ -74,7 +101,11 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
   };
 
   const handleLeave = () => {
-    setIsPaused(false);
+    try {
+      animRef.current?.play();
+    } catch {
+      /* no active ride */
+    }
     const p = pendingRef.current;
     if (p && p.remaining != null) {
       const remaining = p.remaining;
@@ -105,15 +136,6 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
   // itemsdata may be plain text or HTML — HTML is sanitized before render.
   const raw = list[currentIndex]?.text || "";
   const html = /<[a-z][\s\S]*>/i.test(raw) ? sanitizeHtml(raw) : null;
-  const holdMs = list[currentIndex]?.ms || TRAIN_DEFAULT_MS;
-  // Whole-ride stops: enter 0→ENTER_MS, hold until ENTER+hold, exit to total.
-  const totalMs = holdMs + ENTER_MS + EXIT_MS;
-  const enterPct = (ENTER_MS / totalMs) * 100;
-  const exitPct = ((ENTER_MS + holdMs) / totalMs) * 100;
-  const textStyle = {
-    "--rb-dir": fromLeft ? -1 : 1,
-    animationDuration: `${totalMs}ms`,
-  };
   const skin = dark
     ? "bg-neutral-950 text-white"
     : "border-y border-neutral-200 bg-white text-neutral-900";
@@ -124,7 +146,6 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
       key={currentIndex}
       ref={textRef}
       className="rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest"
-      style={textStyle}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   ) : (
@@ -132,7 +153,6 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
       key={currentIndex}
       ref={textRef}
       className="rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest"
-      style={textStyle}
     >
       {raw}
     </span>
@@ -140,9 +160,7 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
 
   return (
     <div
-      className={`flex items-center justify-between overflow-hidden px-3 py-1.5 ${skin}${
-        isPaused ? " rb-paused" : ""
-      }`}
+      className={`flex items-center justify-between overflow-hidden px-3 py-1.5 ${skin}`}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
     >
@@ -161,27 +179,6 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
         </button>
       )}
       {flankRight}
-      <style jsx>{`
-        .rb-anim { display: inline-block; will-change: transform; animation-name: rb-ride; animation-timing-function: linear; animation-fill-mode: both; }
-        .rb-paused .rb-anim { animation-play-state: paused; }
-        @keyframes rb-ride {
-          0% {
-            opacity: 0;
-            transform: translateX(calc(var(--rb-dir, 1) * var(--rb-travel, 60vw)));
-            animation-timing-function: cubic-bezier(0.16, 0.8, 0.24, 1);
-          }
-          ${enterPct}% { opacity: 1; transform: translateX(0); }
-          ${exitPct}% {
-            opacity: 1;
-            transform: translateX(0);
-            animation-timing-function: cubic-bezier(0.55, 0.06, 0.75, 0.4);
-          }
-          100% { opacity: 0; transform: translateX(calc(var(--rb-travel, 60vw) * -1)); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .rb-anim { animation: none; }
-        }
-      `}</style>
     </div>
   );
 }
