@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch, unwrap, revalidateSite, friendlyError } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import HtmlEditor from "../HtmlEditor";
+import Pagination, { paginate } from "../Pagination";
 import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
@@ -76,6 +77,18 @@ export default function AdminRunningBarsPage() {
     () => items.filter((it) => it.isdeleted !== 1 && it.isdeleted !== true),
     [items]
   );
+  // Search + pagination for both lists (top-right search, 5/10/15/25/50).
+  const [gSearch, setGSearch] = useState("");
+  const [gPage, setGPage] = useState(1);
+  const [gPageSize, setGPageSize] = useState(10);
+  const [iSearch, setISearch] = useState("");
+  const [iPage, setIPage] = useState(1);
+  const [iPageSize, setIPageSize] = useState(10);
+  const gNeedle = gSearch.trim().toLowerCase();
+  const filteredBars = gNeedle
+    ? liveBars.filter((b) => `${b.running_bar_name || ""}`.toLowerCase().includes(gNeedle))
+    : liveBars;
+  const shownBars = paginate(filteredBars, gPage, gPageSize);
 
   // Per-group stats from ACTIVE items only (what the ticker actually shows).
   const stats = useMemo(() => {
@@ -332,6 +345,11 @@ export default function AdminRunningBarsPage() {
   const orderedItems = orderMode
     ? orderIds.map((id) => openItems.find((it) => String(it.running_bar_item_id) === String(id))).filter(Boolean)
     : openItems;
+  const iNeedle = iSearch.trim().toLowerCase();
+  const filteredItems = iNeedle
+    ? orderedItems.filter((it) => stripTags(it.itemsdata).toLowerCase().includes(iNeedle))
+    : orderedItems;
+  const shownItems = orderMode ? filteredItems : paginate(filteredItems, iPage, iPageSize);
 
   return (
     <div>
@@ -350,7 +368,14 @@ export default function AdminRunningBarsPage() {
 
       {!openBar ? (
         <>
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <input
+              value={gSearch}
+              onChange={(e) => { setGSearch(e.target.value); setGPage(1); }}
+              placeholder="Search groups..."
+              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+              style={{ minWidth: 200 }}
+            />
             <button type="button" onClick={() => setBarModal({ id: null, name: "", isactive: true })} className={btnPrimary}>
               <i className="bi bi-plus-lg" /> New group
             </button>
@@ -366,14 +391,14 @@ export default function AdminRunningBarsPage() {
                 </tr>
               </thead>
               <tbody>
-                {liveBars.length === 0 ? (
+                {shownBars.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="p-5 text-center text-neutral-500">
                       No groups yet — create the first one.
                     </td>
                   </tr>
                 ) : (
-                  liveBars.map((b) => {
+                  shownBars.map((b) => {
                     const st = stats[String(b.running_bar_id)] || { count: 0, seconds: 0 };
                     const on = b.isactive === 1 || b.isactive === true;
                     return (
@@ -410,18 +435,28 @@ export default function AdminRunningBarsPage() {
               </tbody>
             </table>
           </div>
+          <Pagination page={gPage} setPage={setGPage} total={filteredBars.length} pageSize={gPageSize} setPageSize={setGPageSize} />
           <p className="mt-2 text-xs text-neutral-500">Click a group to manage its items.</p>
         </>
       ) : (
         <>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => { setOpenBarId(null); setOrderMode(false); reload(); }}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-600 transition-colors hover:text-gold-deep"
-            >
-              <i className="bi bi-arrow-left" /> Back to groups
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => { setOpenBarId(null); setOrderMode(false); reload(); }}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-600 transition-colors hover:text-gold-deep"
+              >
+                <i className="bi bi-arrow-left" /> Back to groups
+              </button>
+              <input
+                value={iSearch}
+                onChange={(e) => { setISearch(e.target.value); setIPage(1); }}
+                placeholder="Search items..."
+                className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                style={{ minWidth: 200 }}
+              />
+            </div>
             <div className="flex gap-2">
               {!orderMode ? (
                 <>
@@ -470,14 +505,14 @@ export default function AdminRunningBarsPage() {
                 </tr>
               </thead>
               <tbody>
-                {orderedItems.length === 0 ? (
+                {shownItems.length === 0 ? (
                   <tr>
                 <td colSpan={orderMode ? 6 : 5} className="p-5 text-center text-neutral-500">
                   No items yet — add the first one.
                 </td>
                   </tr>
                 ) : (
-                  orderedItems.map((it, i) => {
+                  shownItems.map((it, i) => {
                     const preview = stripTags(it.itemsdata);
                     return (
                       <tr
@@ -537,6 +572,9 @@ export default function AdminRunningBarsPage() {
               </tbody>
             </table>
           </div>
+          {!orderMode && (
+            <Pagination page={iPage} setPage={setIPage} total={filteredItems.length} pageSize={iPageSize} setPageSize={setIPageSize} />
+          )}
         </>
       )}
 

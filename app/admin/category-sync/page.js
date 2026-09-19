@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
+import Pagination, { paginate } from "../Pagination";
 import { CATEGORIES } from "@/lib/catalog";
 
 // Category Sync: compares backend Menu-Category/Sub-Category rows against the
@@ -56,6 +57,23 @@ export default function CategorySyncPage() {
   const [log, setLog] = useState([]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  // Search + pagination for both drift tables (top-right search, 5/10/15/25/50).
+  const [cSearch, setCSearch] = useState("");
+  const [cPage, setCPage] = useState(1);
+  const [cPageSize, setCPageSize] = useState(10);
+  const [sSearch, setSSearch] = useState("");
+  const [sPage, setSPage] = useState(1);
+  const [sPageSize, setSPageSize] = useState(10);
+  const cNeedle = cSearch.trim().toLowerCase();
+  const filteredCats = cNeedle
+    ? cats.filter((c) => `${c.menu_category_name || ""} ${c.menu_category_slug || ""}`.toLowerCase().includes(cNeedle))
+    : cats;
+  const shownCats = paginate(filteredCats, cPage, cPageSize);
+  const sNeedle = sSearch.trim().toLowerCase();
+  const filteredSubs = sNeedle
+    ? subs.filter((s) => `${s.menu_subcategory_name || ""} ${s.menu_subcategory_slug || ""} ${s.redirect_link || ""}`.toLowerCase().includes(sNeedle))
+    : subs;
+  const shownSubs = paginate(filteredSubs, sPage, sPageSize);
 
   const reload = async () => {
     const [c, s] = await Promise.all([
@@ -171,6 +189,14 @@ export default function CategorySyncPage() {
       )}
 
       <h2 className="mt-6 font-semibold text-neutral-900">Categories ({cats.length})</h2>
+      <div className="mt-2 flex justify-end">
+        <input
+          value={cSearch}
+          onChange={(e) => { setCSearch(e.target.value); setCPage(1); }}
+          placeholder="Search categories..."
+          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+        />
+      </div>
       <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
@@ -179,7 +205,7 @@ export default function CategorySyncPage() {
             </tr>
           </thead>
           <tbody>
-            {cats.map((c) => {
+            {shownCats.map((c) => {
               const slug = c.menu_category_slug;
               const ok = storefrontSlugs.includes(slug);
               return (
@@ -199,8 +225,17 @@ export default function CategorySyncPage() {
           </tbody>
         </table>
       </div>
+      <Pagination page={cPage} setPage={setCPage} total={filteredCats.length} pageSize={cPageSize} setPageSize={setCPageSize} />
 
       <h2 className="mt-6 font-semibold text-neutral-900">Sub-Categories ({subs.length})</h2>
+      <div className="mt-2 flex justify-end">
+        <input
+          value={sSearch}
+          onChange={(e) => { setSSearch(e.target.value); setSPage(1); }}
+          placeholder="Search sub-categories..."
+          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+        />
+      </div>
       <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
@@ -209,7 +244,7 @@ export default function CategorySyncPage() {
             </tr>
           </thead>
           <tbody>
-            {subs.map((s) => (
+            {shownSubs.map((s) => (
               <tr key={s.menu_subcategory_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
                 <td className="px-4 py-3">{s.menu_subcategory_name}</td>
                 <td className="px-4 py-3 text-neutral-500">{s.menu_subcategory_slug}</td>
@@ -225,6 +260,7 @@ export default function CategorySyncPage() {
           </tbody>
         </table>
       </div>
+      <Pagination page={sPage} setPage={setSPage} total={filteredSubs.length} pageSize={sPageSize} setPageSize={setSPageSize} />
     </div>
   );
 }

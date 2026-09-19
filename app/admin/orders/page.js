@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { apiFetch, unwrap, inr, revalidateSite } from "@/lib/api";
+import Pagination, { paginate } from "../Pagination";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -26,6 +27,9 @@ export default function AdminOrdersPage() {
   const [statusDraft, setStatusDraft] = useState({});
   const [shipForm, setShipForm] = useState({});
   const [returnStatus, setReturnStatus] = useState({});
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const load = async () => {
     try {
@@ -164,11 +168,31 @@ export default function AdminOrdersPage() {
         <p className="eyebrow text-gold-deep">Harry Clinton</p>
         <h3 className="font-display text-3xl font-bold tracking-tight text-neutral-900">Order Management</h3>
       </div>
-      {orders.length === 0 ? (
-        <p className="mt-4 rounded-xl border border-neutral-200 bg-white p-5 text-sm text-neutral-500 shadow-sm">No orders found.</p>
-      ) : (
-        <div className="mt-4 space-y-2">
-          {orders.map((o) => {
+      <div className="mt-4 flex justify-end">
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search order, customer, status..."
+          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+        />
+      </div>
+      {(() => {
+        const needle = search.trim().toLowerCase();
+        const filtered = needle
+          ? orders.filter((o) =>
+              `${o.order_id || ""} ${userName(o.user_id)} ${latestStatus(o)}`.toLowerCase().includes(needle)
+            )
+          : orders;
+        const shown = paginate(filtered, page, pageSize);
+        if (shown.length === 0) {
+          return (
+            <p className="mt-4 rounded-xl border border-neutral-200 bg-white p-5 text-sm text-neutral-500 shadow-sm">No orders found.</p>
+          );
+        }
+        return (
+          <>
+            <div className="mt-4 space-y-2">
+              {shown.map((o) => {
             const isExpanded = !!expanded[o.order_id];
             const tab = activeTab[o.order_id] || "status";
             const status = latestStatus(o);
@@ -420,8 +444,11 @@ export default function AdminOrdersPage() {
               </div>
             );
           })}
-        </div>
-      )}
+            </div>
+            <Pagination page={page} setPage={setPage} total={filtered.length} pageSize={pageSize} setPageSize={setPageSize} />
+          </>
+        );
+      })()}
     </div>
   );
 }

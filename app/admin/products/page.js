@@ -6,6 +6,7 @@ import AdminModulePage from "../AdminModule";
 import AdminToast from "@/components/AdminToast";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
+import Pagination, { paginate } from "../Pagination";
 import UploadRing from "../UploadRing";
 import useLockBody from "../useLockBody";
 import useUploader from "../useUploader";
@@ -172,6 +173,9 @@ export default function AdminProductsPage() {
     const hay = `${p.product_name || ""} ${p.product_slug || ""} ${p.short_description || ""} ${p.description || ""} ${p.base_price || ""}`.toLowerCase();
     return hay.includes(needle);
   });
+  const [prodPage, setProdPage] = useState(1);
+  const [prodPageSize, setProdPageSize] = useState(10);
+  const shownProducts = paginate(visible, prodPage, prodPageSize);
 
   return (
     <div>
@@ -256,13 +260,13 @@ export default function AdminProductsPage() {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setProdPage(1); }}
               placeholder="Search products..."
               className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => { setStatusFilter(e.target.value); setProdPage(1); }}
               className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             >
               <option value="all">All</option>
@@ -301,7 +305,7 @@ export default function AdminProductsPage() {
                     <td colSpan={5} className="p-5 text-center text-neutral-500">No records found.</td>
                   </tr>
                 ) : (
-                visible.map((p) => (
+                shownProducts.map((p) => (
                   <tr key={p.product_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
                     <td className="px-4 py-3">
                       <p className="font-medium">{p.product_name}</p>
@@ -322,6 +326,7 @@ export default function AdminProductsPage() {
               </tbody>
             </table>
           </div>
+          <Pagination page={prodPage} setPage={setProdPage} total={visible.length} pageSize={prodPageSize} setPageSize={setProdPageSize} />
         </>
       )}
     </div>
@@ -352,6 +357,26 @@ function ProductWorkspace({ product, onBack }) {
   const [showAttrForm, setShowAttrForm] = useState(false);
   const [showSeoForm, setShowSeoForm] = useState(false);
   useLockBody(showVariantForm || showMediaForm || showAttrForm || showSeoForm);
+  // Search + pagination for workspace tables (top-right search, 5/10/15/25/50).
+  const [vSearch, setVSearch] = useState("");
+  const [vPage, setVPage] = useState(1);
+  const [vPageSize, setVPageSize] = useState(10);
+  const [aSearch, setASearch] = useState("");
+  const [aPage, setAPage] = useState(1);
+  const [aPageSize, setAPageSize] = useState(10);
+  const vNeedle = vSearch.trim().toLowerCase();
+  const filteredVariants = vNeedle
+    ? variants.filter((v) => `${v.sku || ""} ${v.variant_name || ""}`.toLowerCase().includes(vNeedle))
+    : variants;
+  const shownVariants = paginate(filteredVariants, vPage, vPageSize);
+  const aNeedle = aSearch.trim().toLowerCase();
+  const filteredAttrs = aNeedle
+    ? attrValues.filter((av) => {
+        const an = attributes.find((a) => a.attribute_id === av.attribute_id)?.attribute_name || "";
+        return `${an} ${av.attribute_value || ""}`.toLowerCase().includes(aNeedle);
+      })
+    : attrValues;
+  const shownAttrs = paginate(filteredAttrs, aPage, aPageSize);
   const closeVariantForm = () => {
     setShowVariantForm(false);
     setEditingVariant(null);
@@ -702,6 +727,14 @@ function ProductWorkspace({ product, onBack }) {
       <h2 className="mt-6 flex items-center gap-2 text-lg font-bold text-neutral-900">
         <i className="bi bi-layers text-gold-deep" /> Variants
       </h2>
+      <div className="mt-2 flex justify-end">
+        <input
+          value={vSearch}
+          onChange={(e) => { setVSearch(e.target.value); setVPage(1); }}
+          placeholder="Search variants..."
+          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+        />
+      </div>
       {variants.length === 0 ? (
         <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No variants yet.</p>
       ) : (
@@ -715,7 +748,7 @@ function ProductWorkspace({ product, onBack }) {
               </tr>
             </thead>
             <tbody>
-              {variants.map((v) => {
+              {shownVariants.map((v) => {
                 const vMedia = vMediaByVariant[v.product_variant_id] || [];
                 return (
                   <tr key={v.product_variant_id} className="border-b align-top transition-colors last:border-0 hover:bg-[#faf8f4]">
@@ -798,6 +831,9 @@ function ProductWorkspace({ product, onBack }) {
             </tbody>
           </table>
         </div>
+      )}
+      {variants.length > 0 && (
+        <Pagination page={vPage} setPage={setVPage} total={filteredVariants.length} pageSize={vPageSize} setPageSize={setVPageSize} />
       )}
       <div className="mt-3 flex justify-end">
         <button
@@ -1028,7 +1064,16 @@ function ProductWorkspace({ product, onBack }) {
       {attrValues.length === 0 ? (
         <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No attribute values yet.</p>
       ) : (
-        <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <>
+          <div className="mt-2 flex justify-end">
+            <input
+              value={aSearch}
+              onChange={(e) => { setASearch(e.target.value); setAPage(1); }}
+              placeholder="Search attributes..."
+              className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+            />
+          </div>
+          <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -1036,7 +1081,7 @@ function ProductWorkspace({ product, onBack }) {
               </tr>
             </thead>
             <tbody>
-              {attrValues.map((av) => (
+              {shownAttrs.map((av) => (
                 <tr key={av.product_attribute_value_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
                   <td className="px-4 py-3">{attrName(av.attribute_id)}</td>
                   <td className="px-4 py-3">{av.attribute_value}</td>
@@ -1048,6 +1093,8 @@ function ProductWorkspace({ product, onBack }) {
             </tbody>
           </table>
         </div>
+        <Pagination page={aPage} setPage={setAPage} total={filteredAttrs.length} pageSize={aPageSize} setPageSize={setAPageSize} />
+        </>
       )}
 
       <h2 className="mt-8 flex items-center gap-2 text-lg font-bold text-neutral-900">

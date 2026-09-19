@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch, unwrap, revalidateSite, friendlyError } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import HtmlEditor from "../HtmlEditor";
+import Pagination, { paginate } from "../Pagination";
 import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
@@ -219,6 +220,10 @@ export default function AdminFaqsPage() {
   const ordered = orderMode
     ? orderIds.map((id) => live.find((r) => String(r.faq_id) === String(id))).filter(Boolean)
     : live;
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  // Pagination (reorder mode shows everything for dragging).
+  const shown = orderMode ? ordered : paginate(ordered, page, pageSize);
 
   return (
     <div>
@@ -236,7 +241,7 @@ export default function AdminFaqsPage() {
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
         <input
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search FAQs..."
           className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
           style={{ minWidth: 200 }}
@@ -279,14 +284,14 @@ export default function AdminFaqsPage() {
             </tr>
           </thead>
           <tbody>
-            {ordered.length === 0 ? (
+            {shown.length === 0 ? (
               <tr>
                 <td colSpan={orderMode ? 5 : 4} className="p-5 text-center text-neutral-500">
                   No FAQs yet — add the first one.
                 </td>
               </tr>
             ) : (
-              ordered.map((r, i) => (
+              shown.map((r, i) => (
                 <tr
                   key={r.faq_id}
                   draggable={orderMode}
@@ -334,6 +339,9 @@ export default function AdminFaqsPage() {
           </tbody>
         </table>
       </div>
+      {!orderMode && (
+        <Pagination page={page} setPage={setPage} total={ordered.length} pageSize={pageSize} setPageSize={setPageSize} />
+      )}
 
       {/* ---- create/edit popup ---- */}
       {modal && (

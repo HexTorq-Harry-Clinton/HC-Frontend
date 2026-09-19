@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
+import Pagination, { paginate } from "../Pagination";
 import { useConfirm } from "../ConfirmProvider";
 
 // Users manager: same as the previous UI —
@@ -52,6 +53,9 @@ export default function AdminUsersPage() {
       (u.email || "").toLowerCase().includes(needle) ||
       (u.phone_number || "").toLowerCase().includes(needle)
   );
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const shown = paginate(visible, page, pageSize);
 
   const toggleActive = async (u, next) => {
     await apiFetch("/Users", {
@@ -111,12 +115,14 @@ export default function AdminUsersPage() {
           {msg}
         </p>
       )}
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search name, email, phone..."
-        className="mt-4 w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
-      />
+      <div className="mt-4 flex justify-end">
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search name, email, phone..."
+          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+        />
+      </div>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
@@ -126,12 +132,12 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {visible.length === 0 ? (
+            {shown.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-5 text-center text-neutral-500">No records found.</td>
               </tr>
             ) : (
-            visible.map((u) => {
+            shown.map((u) => {
               const open = expanded === u.user_id;
               const mine = rolesOf(u.user_id);
               const available = roles.filter((r) => !mine.some((m) => m.role_id === r.role_id));
@@ -217,6 +223,7 @@ export default function AdminUsersPage() {
           </tbody>
         </table>
       </div>
+      <Pagination page={page} setPage={setPage} total={visible.length} pageSize={pageSize} setPageSize={setPageSize} />
     </div>
   );
 }

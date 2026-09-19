@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 import ActiveToggle from "@/components/ActiveToggle";
+import Pagination, { paginate } from "../Pagination";
 import useLockBody from "../useLockBody";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -63,11 +64,19 @@ export default function AdminCategoriesPage() {
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const sortedCats = [...cats].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+  const sortedCats = [...cats].sort((a, b) => (a.display_order || 0) - (Number(b.display_order) || 0));
   const current = sortedCats.find((c) => c.menu_category_id === activeCat);
   const visible = subs
     .filter((s) => s.menu_category_id === activeCat)
     .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+  const [subSearch, setSubSearch] = useState("");
+  const [subPage, setSubPage] = useState(1);
+  const [subPageSize, setSubPageSize] = useState(10);
+  const subNeedle = subSearch.trim().toLowerCase();
+  const filteredSubs = subNeedle
+    ? visible.filter((s) => `${s.menu_subcategory_name || ""} ${s.menu_subcategory_slug || ""}`.toLowerCase().includes(subNeedle))
+    : visible;
+  const shownSubs = paginate(filteredSubs, subPage, subPageSize);
 
   const set = (k) => (e) =>
     setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
@@ -196,7 +205,7 @@ export default function AdminCategoriesPage() {
             <button
               type="button"
               key={c.menu_category_id}
-              onClick={() => { setActiveCat(c.menu_category_id); setEditing(null); setForm(empty); }}
+              onClick={() => { setActiveCat(c.menu_category_id); setEditing(null); setForm(empty); setSubPage(1); }}
               className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
                 activeCat === c.menu_category_id
                   ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
@@ -262,17 +271,26 @@ export default function AdminCategoriesPage() {
       <h2 className="mt-6 font-semibold text-neutral-900">
         Subcategories {current ? `of ${current.menu_category_name}` : ""} ({visible.length})
       </h2>
-      <div className="mb-2 mt-1 flex items-center justify-between gap-2">
+      <div className="mb-2 mt-1 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-neutral-500">
           {visible.length} record{visible.length === 1 ? "" : "s"}
         </p>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
-        >
-          <i className="bi bi-plus-lg" /> New subcategory
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={subSearch}
+            onChange={(e) => { setSubSearch(e.target.value); setSubPage(1); }}
+            placeholder="Search subcategories..."
+            className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+            style={{ minWidth: 200 }}
+          />
+          <button
+            type="button"
+            onClick={openCreate}
+            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          >
+            <i className="bi bi-plus-lg" /> New subcategory
+          </button>
+        </div>
       </div>
       <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
@@ -283,12 +301,12 @@ export default function AdminCategoriesPage() {
             </tr>
           </thead>
           <tbody>
-            {visible.length === 0 ? (
+            {shownSubs.length === 0 ? (
               <tr>
                 <td colSpan={5} className="p-5 text-center text-sm text-neutral-500">No records found.</td>
               </tr>
             ) : (
-              visible.map((s) => (
+              shownSubs.map((s) => (
                 <tr key={s.menu_subcategory_id} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
                   <td className="px-4 py-3 font-medium">{s.menu_subcategory_name}</td>
                   <td className="px-4 py-3 text-neutral-500">{s.menu_subcategory_slug}</td>
@@ -306,6 +324,7 @@ export default function AdminCategoriesPage() {
           </tbody>
         </table>
       </div>
+      <Pagination page={subPage} setPage={setSubPage} total={filteredSubs.length} pageSize={subPageSize} setPageSize={setSubPageSize} />
       <p className="mt-3 text-xs text-neutral-500">
         Flat list across all categories: <Link href="/admin/sub-categories" className="font-medium text-gold-deep underline underline-offset-2 transition-colors hover:text-neutral-950">Sub-Categories</Link>
       </p>

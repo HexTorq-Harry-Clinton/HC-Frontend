@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { apiFetch, unwrap, revalidateSite } from "@/lib/api";
+import Pagination, { paginate } from "../Pagination";
 import { useConfirm } from "../ConfirmProvider";
 
 // Appointments manager: same as the previous UI —
@@ -18,6 +19,9 @@ export default function AdminAppointmentsManager() {
   const [expanded, setExpanded] = useState(null);
   const [edits, setEdits] = useState({});
   const [msg, setMsg] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const load = async () => {
     try {
@@ -62,6 +66,13 @@ export default function AdminAppointmentsManager() {
     if (v === "completed") return "bg-neutral-950 text-white";
     return "bg-yellow-200 text-yellow-900";
   };
+  const needle = search.trim().toLowerCase();
+  const filtered = needle
+    ? rows.filter((r) =>
+        `${userName(r.user_id)} ${r.name || ""} ${r.appointment_status || ""} ${r.city || ""}`.toLowerCase().includes(needle)
+      )
+    : rows;
+  const shown = paginate(filtered, page, pageSize);
 
   const saveStatus = async (r) => {
     const next = edits[r.appointment_id] || r.appointment_status;
@@ -108,6 +119,14 @@ export default function AdminAppointmentsManager() {
           {msg}
         </p>
       )}
+      <div className="mt-4 flex justify-end">
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search customer, status..."
+          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+        />
+      </div>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
@@ -117,12 +136,12 @@ export default function AdminAppointmentsManager() {
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {shown.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-5 text-center text-neutral-500">No records found.</td>
               </tr>
             ) : (
-            rows.map((r) => {
+            shown.map((r) => {
               const open = expanded === r.appointment_id;
               return (
                 <Fragment key={r.appointment_id}>
@@ -175,6 +194,7 @@ export default function AdminAppointmentsManager() {
           </tbody>
         </table>
       </div>
+      <Pagination page={page} setPage={setPage} total={filtered.length} pageSize={pageSize} setPageSize={setPageSize} />
     </div>
   );
 }
