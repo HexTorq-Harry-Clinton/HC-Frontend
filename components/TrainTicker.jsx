@@ -4,12 +4,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 // Shared train-carousel engine for the ticker strips.
-// One slide at a time, driven by ONE CSS animation pair per mount (no JS
-// phase machine, so there is nothing to stall):
-//   rbIn*  (0.85s, fast right/left entry, eased center stop)
-//   rbOutLeft (0.85s, slow start, fast left exit) delayed by enter+hold
-// The exit's backwards fill IS the center hold. JS only advances the index
-// when the full ride (enter + DB hold + exit) completes.
+// One slide at a time, driven by ONE keyframe track per slide (no JS phase
+// machine, so there is nothing to stall; no animation pair, so there is no
+// fill-mode cascade burying the entry): the full ride — fast entry, center
+// hold, slow-start exit — is baked into a single `rb-ride` animation whose
+// percentage stops are computed from the slide's own DB seconds. JS only
+// advances the index when the full ride completes.
 // Props:
 // - slides: [{ text, ms }] (text may be plain or HTML, sanitized on render)
 // - dark: black strip (notification bar) vs white strip (running bar)
@@ -106,6 +106,14 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
   const raw = list[currentIndex]?.text || "";
   const html = /<[a-z][\s\S]*>/i.test(raw) ? sanitizeHtml(raw) : null;
   const holdMs = list[currentIndex]?.ms || TRAIN_DEFAULT_MS;
+  // Whole-ride stops: enter 0→ENTER_MS, hold until ENTER+hold, exit to total.
+  const totalMs = holdMs + ENTER_MS + EXIT_MS;
+  const enterPct = (ENTER_MS / totalMs) * 100;
+  const exitPct = ((ENTER_MS + holdMs) / totalMs) * 100;
+  const textStyle = {
+    "--rb-dir": fromLeft ? -1 : 1,
+    animationDuration: `${totalMs}ms`,
+  };
   const skin = dark
     ? "bg-neutral-950 text-white"
     : "border-y border-neutral-200 bg-white text-neutral-900";
@@ -115,16 +123,16 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
     <span
       key={currentIndex}
       ref={textRef}
-      className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${fromLeft ? "rb-in-left" : "rb-in-right"}`}
-      style={{ "--rb-hold": `${holdMs}ms` }}
+      className="rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest"
+      style={textStyle}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   ) : (
     <span
       key={currentIndex}
       ref={textRef}
-      className={`rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest ${fromLeft ? "rb-in-left" : "rb-in-right"}`}
-      style={{ "--rb-hold": `${holdMs}ms` }}
+      className="rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest"
+      style={textStyle}
     >
       {raw}
     </span>
@@ -154,35 +162,24 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
       )}
       {flankRight}
       <style jsx>{`
-        .rb-anim { display: inline-block; will-change: transform; }
-        .rb-in-right {
-          animation:
-            rb-in-right 0.85s cubic-bezier(0.16, 0.8, 0.24, 1) both,
-            rb-out-left 0.85s cubic-bezier(0.55, 0.06, 0.75, 0.4) calc(0.85s + var(--rb-hold, 4000ms)) both;
-        }
-        .rb-in-left {
-          animation:
-            rb-in-left 0.85s cubic-bezier(0.16, 0.8, 0.24, 1) both,
-            rb-out-left 0.85s cubic-bezier(0.55, 0.06, 0.75, 0.4) calc(0.85s + var(--rb-hold, 4000ms)) both;
-        }
+        .rb-anim { display: inline-block; will-change: transform; animation-name: rb-ride; animation-timing-function: linear; animation-fill-mode: both; }
         .rb-paused .rb-anim { animation-play-state: paused; }
-        @keyframes rb-in-right {
-          from { opacity: 0; transform: translateX(var(--rb-travel, 60vw)); }
-          55% { opacity: 1; }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes rb-in-left {
-          from { opacity: 0; transform: translateX(calc(var(--rb-travel, 60vw) * -1)); }
-          55% { opacity: 1; }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes rb-out-left {
-          from { opacity: 1; transform: translateX(0); }
-          45% { opacity: 1; }
-          to { opacity: 0; transform: translateX(calc(var(--rb-travel, 60vw) * -1)); }
+        @keyframes rb-ride {
+          0% {
+            opacity: 0;
+            transform: translateX(calc(var(--rb-dir, 1) * var(--rb-travel, 60vw)));
+            animation-timing-function: cubic-bezier(0.16, 0.8, 0.24, 1);
+          }
+          ${enterPct}% { opacity: 1; transform: translateX(0); }
+          ${exitPct}% {
+            opacity: 1;
+            transform: translateX(0);
+            animation-timing-function: cubic-bezier(0.55, 0.06, 0.75, 0.4);
+          }
+          100% { opacity: 0; transform: translateX(calc(var(--rb-travel, 60vw) * -1)); }
         }
         @media (prefers-reduced-motion: reduce) {
-          .rb-in-right, .rb-in-left { animation: none; }
+          .rb-anim { animation: none; }
         }
       `}</style>
     </div>
