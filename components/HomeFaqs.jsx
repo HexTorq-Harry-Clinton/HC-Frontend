@@ -28,10 +28,11 @@ const DEFAULT_FAQS = [
 ];
 
 // Home FAQs: exact questions/answers/flow of the previous UI —
-// first item open, single-open accordion, settings title override.
+// first item open, single-open accordion, admin title + subtitle override.
 export default function HomeFaqs() {
   const [faqs, setFaqs] = useState(DEFAULT_FAQS);
   const [title, setTitle] = useState("FAQs");
+  const [subtitle, setSubtitle] = useState("");
   const [openId, setOpenId] = useState(1);
 
   useEffect(() => {
@@ -62,10 +63,16 @@ export default function HomeFaqs() {
           );
         }
         const settings = Array.isArray(settingsRes) ? settingsRes : [];
-        const match = settings.find(
-          (s) => s.setting_key?.toLowerCase() === "home_faqs_title" || s.key?.toLowerCase() === "home_faqs_title"
-        );
-        if (match?.setting_value || match?.value) setTitle(match.setting_value || match.value);
+        // Admin columns first (tbl_settings home_faqs_*), legacy key rows, then default.
+        const row = settings[0] || {};
+        if (row.home_faqs_title) setTitle(row.home_faqs_title);
+        else {
+          const match = settings.find(
+            (s) => s.setting_key?.toLowerCase() === "home_faqs_title" || s.key?.toLowerCase() === "home_faqs_title"
+          );
+          if (match?.setting_value || match?.value) setTitle(match.setting_value || match.value);
+        }
+        if (row.home_faqs_subtitle) setSubtitle(row.home_faqs_subtitle);
       } catch {
         /* keep defaults */
       }
@@ -79,6 +86,9 @@ export default function HomeFaqs() {
   return (
     <section className="mx-auto max-w-3xl px-4 py-14">
       <h2 className="text-center font-display text-4xl font-bold">{title}</h2>
+      {subtitle ? (
+        <p className="mt-2 text-center text-sm text-neutral-500">{subtitle}</p>
+      ) : null}
       <div className="mt-8 space-y-3">
         {faqs.map((faq, i) => {
           const id = i + 1;

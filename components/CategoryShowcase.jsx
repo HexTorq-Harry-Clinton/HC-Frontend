@@ -8,7 +8,7 @@ import SectionHeading from "@/components/SectionHeading";
 import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
 import { CATEGORIES } from "@/lib/catalog";
 
-const categories = [
+const FALLBACK_TILES = [
   {
     key: "suits",
     name: "Suits",
@@ -53,10 +53,58 @@ const categories = [
 
 const CATEGORY_KEYS = ["suits", "shirts", "trousers", "indowestern", "babysuits"];
 
+// Admin tile → card: first tile takes the big feature slot, the rest small.
+// Admin image wins; else keyword-matched live DB photo; else gradient.
+function toCards(tiles) {
+  return tiles.map((t, i) => {
+    const fb = FALLBACK_TILES[i % FALLBACK_TILES.length];
+    const key = (t.link || fb.href || "").replace(/\//g, "") || fb.key;
+    return {
+      key,
+      name: t.name || fb.name,
+      href: t.link || fb.href,
+      tagline: t.tagline || fb.tagline,
+      adminImage: t.image_url || "",
+      bgClass: fb.bgClass,
+      spanClass: i === 0 ? FALLBACK_TILES[0].spanClass : fb.spanClass,
+    };
+  });
+}
+
 export default function CategoryShowcase() {
-  // TEMPORARY imagery: random live DB assets per category until the content
-  // team uploads final card photos. Keyword-matched, de-duplicated.
+  // Tiles + copy come from admin (tbl_settings home_collection_*); keyword-
+  // matched live DB photos fill any tile without its own image.
+  const [eyebrow, setEyebrow] = useState("THE COLLECTION");
+  const [title, setTitle] = useState("Explore Our World");
+  const [cards, setCards] = useState(() => toCards(FALLBACK_TILES.map((t) => ({ ...t, link: t.href, image_url: "" }))));
   const [images, setImages] = useState({});
+
+  useEffect(() => {
+    let live = true;
+    apiFetch("/Settings")
+      .then(unwrap)
+      .then((list) => {
+        if (!live) return;
+        const row = (Array.isArray(list) ? list : [])[0] || {};
+        if (row.home_collection_eyebrow) setEyebrow(row.home_collection_eyebrow);
+        if (row.home_collection_title) setTitle(row.home_collection_title);
+        try {
+          const arr = JSON.parse(row.home_collection_json || "[]");
+          if (Array.isArray(arr) && arr.length > 0) {
+            const liveTiles = arr
+              .filter((t) => t.active !== false && t.active !== 0)
+              .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+            if (liveTiles.length > 0) setCards(toCards(liveTiles));
+          }
+        } catch {
+          /* hardcoded tiles stay */
+        }
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -105,28 +153,30 @@ export default function CategoryShowcase() {
     <section className="py-24 bg-[#f7f4ec] text-[#101010]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <Reveal>
-          <SectionHeading 
-            eyebrow="THE COLLECTION"
-            title="Explore Our World"
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={title}
           />
         </Reveal>
-        
+
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {categories.map((category, index) => (
-            <Reveal 
-              key={category.name} 
-              delay={index * 0.1} 
+          {cards.map((category, index) => {
+            const src = category.adminImage ? resolveUploadUrl(category.adminImage) : images[category.key];
+            return (
+            <Reveal
+              key={category.name}
+              delay={index * 0.1}
               className={category.spanClass}
             >
-              <Link 
+              <Link
                 href={category.href}
                 className="group relative block w-full h-full overflow-hidden bg-[#101010]"
               >
-                {/* Background Layer with Scale Effect (live DB photo, gradient fallback) */}
-                {images[category.key] ? (
+                {/* Background Layer with Scale Effect (admin photo, else live DB photo, gradient fallback) */}
+                {src ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={images[category.key]}
+                    src={src}
                     alt={category.name}
                     loading="lazy"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
@@ -167,7 +217,8 @@ export default function CategoryShowcase() {
                 </div>
               </Link>
             </Reveal>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

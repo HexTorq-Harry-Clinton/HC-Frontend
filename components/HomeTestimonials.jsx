@@ -29,12 +29,22 @@ export default function HomeTestimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Admin copy (tbl_settings home_reviews_*); reviews CRUD drives the quotes.
+  const [copy, setCopy] = useState({ eyebrow: "WHAT OUR CLIENTS SAY", title: "Voices of Distinction", sub: "" });
 
   useEffect(() => {
     async function fetchReviews() {
       try {
-        const response = await apiFetch("/Reviews");
-        const data = unwrap(response);
+        const [data, settingsData] = await Promise.all([
+          apiFetch("/Reviews").then(unwrap),
+          apiFetch("/Settings").then(unwrap).catch(() => []),
+        ]);
+        const row = (Array.isArray(settingsData) ? settingsData : [])[0] || {};
+        setCopy({
+          eyebrow: row.home_reviews_eyebrow || "WHAT OUR CLIENTS SAY",
+          title: row.home_reviews_title || "Voices of Distinction",
+          sub: row.home_reviews_subtitle || "",
+        });
         let fetchedReviews = [];
         if (Array.isArray(data)) {
           fetchedReviews = data.filter(
@@ -81,9 +91,10 @@ export default function HomeTestimonials() {
     <section className="py-20 bg-[#f7f4ec]">
       <div className="max-w-4xl mx-auto px-4">
         <Reveal>
-          <SectionHeading 
-            eyebrow="WHAT OUR CLIENTS SAY"
-            title="Voices of Distinction"
+          <SectionHeading
+            eyebrow={copy.eyebrow}
+            title={copy.title}
+            sub={copy.sub}
           />
         </Reveal>
 

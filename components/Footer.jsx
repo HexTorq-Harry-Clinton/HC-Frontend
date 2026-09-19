@@ -5,7 +5,35 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap, subscribeNewsletter } from "@/lib/api";
 
-// Footer: exact structure/order/texts of the previous UI (Tailwind styling).
+// Footer: admin-driven bottom content (tbl_settings footer_*/brand_description
+// + newsletter_*) with the previous UI as fallback. Contact email/phone stay
+// on Support Contacts; newsletter subscribe flow untouched.
+const DEFAULT_QUICK = [
+  { label: "About Us", link: "/aboutUs" },
+  { label: "Privacy Policy", link: "/privacy-policy" },
+  { label: "Terms & Conditions", link: "/terms-and-conditions" },
+];
+
+const DEFAULT_SUPPORT = [
+  { label: "Help Center", link: "/help-center" },
+  { label: "FAQs", link: "/FAQs" },
+  { label: "Shipping, Returns & Cancellation", link: "/Policies" },
+  { label: "Track Order", link: "/FAQs" },
+];
+
+function parseLinks(json, fallback) {
+  try {
+    const arr = JSON.parse(json || "[]");
+    const clean = (Array.isArray(arr) ? arr : [])
+      .map((l) => ({ label: String(l.label || "").trim(), link: String(l.link || "").trim() }))
+      .filter((l) => l.label && l.link);
+    if (clean.length > 0) return clean;
+  } catch {
+    /* fall through */
+  }
+  return fallback;
+}
+
 export default function Footer() {
   const [showModal, setShowModal] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -15,15 +43,18 @@ export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState({ message: "", isError: false });
   const [supportContacts, setSupportContacts] = useState([]);
+  const [cfg, setCfg] = useState({});
 
   useEffect(() => {
     let live = true;
-    apiFetch("/Support-Contacts")
-      .then(unwrap)
-      .then((data) => {
-        if (live) setSupportContacts(Array.isArray(data) ? data : []);
-      })
-      .catch(() => {});
+    Promise.all([
+      apiFetch("/Support-Contacts").then(unwrap).catch(() => []),
+      apiFetch("/Settings").then(unwrap).catch(() => []),
+    ]).then(([contacts, settings]) => {
+      if (!live) return;
+      setSupportContacts(Array.isArray(contacts) ? contacts : []);
+      setCfg((Array.isArray(settings) ? settings : [])[0] || {});
+    });
     return () => {
       live = false;
     };
@@ -34,6 +65,17 @@ export default function Footer() {
     "connect@harryclinton.com";
   const primaryPhone =
     supportContacts.find((c) => c.contact_type === "phone" || c.contact_type === "Phone")?.contact_value || "";
+
+  const blurb = cfg.brand_description || "Empowering innovation with quality and trust. Join us in our journey towards excellence.";
+  const facebookUrl = cfg.footer_facebook_url || "https://www.facebook.com/harry.clinton.829484";
+  const instagramUrl = cfg.footer_instagram_url || "https://www.instagram.com/harryclinton_official/";
+  const youtubeUrl = cfg.footer_youtube_url || "https://www.youtube.com/@HarryClintonHC";
+  const quickLinks = parseLinks(cfg.footer_quick_links_json, DEFAULT_QUICK);
+  const supportLinks = parseLinks(cfg.footer_support_links_json, DEFAULT_SUPPORT);
+  const hasContact = quickLinks.some((l) => l.label.toLowerCase().includes("contact"));
+  const newsletterTitle = cfg.newsletter_title || "Stay Updated";
+  const newsletterDesc = cfg.newsletter_description || "Subscribe to our newsletter for the latest updates and promotions.";
+  const copyrightLine = cfg.footer_copyright_text || `© ${new Date().getFullYear()} Harry Clinton`;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,7 +144,7 @@ export default function Footer() {
                 <Image src="/brand/logo-white.png" alt="HC" width={120} height={40} />
               </h4>
               <p className="mt-3 text-sm">
-                Empowering innovation with quality and trust. Join us in our journey towards excellence.
+                {blurb}
               </p>
               {primaryEmail && (
                 <p className="mb-1 mt-2 text-sm">
@@ -122,13 +164,13 @@ export default function Footer() {
               )}
               <p className="mb-1 mt-3 text-sm">Follow us on:</p>
               <div className="flex gap-4">
-                <a href="https://www.facebook.com/harry.clinton.829484" className="text-white" target="_blank" rel="noreferrer" aria-label="Facebook">
+                <a href={facebookUrl} className="text-white" target="_blank" rel="noreferrer" aria-label="Facebook">
                   <i className="bi bi-facebook fs-5"></i>
                 </a>
-                <a href="https://www.instagram.com/harryclinton_official/" className="text-white" target="_blank" rel="noreferrer" aria-label="Instagram">
+                <a href={instagramUrl} className="text-white" target="_blank" rel="noreferrer" aria-label="Instagram">
                   <i className="bi bi-instagram fs-5"></i>
                 </a>
-                <a href="https://www.youtube.com/@HarryClintonHC" className="text-white" target="_blank" rel="noreferrer" aria-label="YouTube">
+                <a href={youtubeUrl} className="text-white" target="_blank" rel="noreferrer" aria-label="YouTube">
                   <i className="bi bi-youtube fs-5"></i>
                 </a>
               </div>
@@ -137,45 +179,36 @@ export default function Footer() {
             <div className="md:col-span-2">
               <h6 className="text-sm font-bold uppercase">Quick Links</h6>
               <ul className="mt-3 space-y-2 text-sm">
-                <li>
-                  <Link href="/aboutUs" className="text-white no-underline">About Us</Link>
-                </li>
-                <li>
-                  <button className="m-0 bg-transparent p-0 text-white" onClick={() => setShowModal(true)}>
-                    Contact Us
-                  </button>
-                </li>
-                <li>
-                  <Link href="/privacy-policy" className="text-white no-underline">Privacy Policy</Link>
-                </li>
-                <li>
-                  <Link href="/terms-and-conditions" className="text-white no-underline">Terms & Conditions</Link>
-                </li>
+                {quickLinks.map((l) => (
+                  <li key={`${l.label}-${l.link}`}>
+                    <Link href={l.link} className="text-white no-underline">{l.label}</Link>
+                  </li>
+                ))}
+                {!hasContact && (
+                  <li>
+                    <button className="m-0 bg-transparent p-0 text-white" onClick={() => setShowModal(true)}>
+                      Contact Us
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
 
             <div className="md:col-span-2">
               <h6 className="text-sm font-bold uppercase">Support</h6>
               <ul className="mt-3 space-y-2 text-sm">
-                <li>
-                  <Link href="/help-center" className="text-white no-underline">Help Center</Link>
-                </li>
-                <li>
-                  <Link href="/FAQs" className="text-white no-underline">FAQs</Link>
-                </li>
-                <li>
-                  <Link href="/Policies" className="text-white no-underline">Shipping, Returns &amp; Cancellation</Link>
-                </li>
-                <li>
-                  <Link href="/FAQs" className="text-white no-underline">Track Order</Link>
-                </li>
+                {supportLinks.map((l) => (
+                  <li key={`${l.label}-${l.link}`}>
+                    <Link href={l.link} className="text-white no-underline">{l.label}</Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
             <div className="md:col-span-4">
-              <h6 className="text-sm font-bold uppercase">Stay Updated</h6>
+              <h6 className="text-sm font-bold uppercase">{newsletterTitle}</h6>
               <p className="mt-3 text-sm">
-                Subscribe to our newsletter for the latest updates and promotions.
+                {newsletterDesc}
               </p>
               <div className="mt-3 flex">
                 <input
@@ -211,7 +244,7 @@ export default function Footer() {
             loading="lazy"
           />
           <p className="mt-4 text-center text-xs uppercase tracking-[0.3em] text-neutral-500">
-            © {new Date().getFullYear()} Harry Clinton
+            {copyrightLine}
           </p>
         </div>
       </footer>

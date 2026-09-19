@@ -8,6 +8,11 @@ import { ConfirmProvider, useConfirm } from "./ConfirmProvider";
 
 const GROUPS = [
   { key: "dashboard", label: "Dashboard", paths: ["/admin"], labels: ["Dashboard"] },
+  {
+    key: "home",
+    label: "Home Screen Content",
+    labels: ["Notification Bar", "Hero Slider", "Running Bar", "Home Video Slider", "HC Spotlight", "Style By HC", "The Collection", "New Arrivals", "Customer Reviews", "FAQs", "Footer"],
+  },
   { key: "users", label: "User Management", labels: ["Users", "Roles", "Customer Profiles"] },
   {
     key: "catalog",
@@ -39,6 +44,7 @@ const GROUPS = [
 
 const GROUP_ICON = {
   dashboard: "bi bi-grid-1x2-fill",
+  home: "bi bi-house-fill",
   users: "bi bi-people-fill",
   catalog: "bi bi-bag-heart-fill",
   marketing: "bi bi-megaphone-fill",
@@ -50,6 +56,18 @@ const GROUP_ICON = {
 
 const NAV = [
   { href: "/admin", label: "Dashboard", group: "dashboard" },
+  // Home Screen Content — homepage top-to-bottom order.
+  { href: "/admin/notification-bars", label: "Notification Bar", group: "home" },
+  { href: "/admin/image-sliders", label: "Hero Slider", group: "home" },
+  { href: "/admin/running-bars", label: "Running Bar", group: "home" },
+  { href: "/admin/menu-video", label: "Home Video Slider", group: "home" },
+  { href: "/admin/spotlight", label: "HC Spotlight", group: "home" },
+  { href: "/admin/style-collections", label: "Style By HC", group: "home" },
+  { href: "/admin/home-collection", label: "The Collection", group: "home" },
+  { href: "/admin/home-new-arrivals", label: "New Arrivals", group: "home" },
+  { href: "/admin/reviews", label: "Customer Reviews", group: "home" },
+  { href: "/admin/faqs", label: "FAQs", group: "home" },
+  { href: "/admin/home-footer", label: "Footer", group: "home" },
   { href: "/admin/users", label: "Users", group: "users" },
   { href: "/admin/roles", label: "Roles", group: "users" },
   { href: "/admin/profiles", label: "Customer Profiles", group: "users" },

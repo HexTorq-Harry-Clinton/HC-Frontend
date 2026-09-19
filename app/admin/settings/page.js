@@ -17,6 +17,14 @@ const FIELDS = [
   { key: "brand_logo_url", label: "Brand Logo", type: "upload" },
   { key: "footer_logo_url", label: "Footer Logo", type: "upload" },
   { key: "ismaintenance_mode", label: "Maintenance Mode", type: "checkbox" },
+  // Homepage section titles (same row — edited here, live on the homepage).
+  { key: "home_spotlight_title", label: "Spotlight Title", type: "text" },
+  { key: "home_style_by_hc_title", label: "Style By HC Title", type: "text" },
+  { key: "home_reviews_eyebrow", label: "Reviews Eyebrow", type: "text" },
+  { key: "home_reviews_title", label: "Reviews Title", type: "text" },
+  { key: "home_reviews_subtitle", label: "Reviews Subtitle", type: "textarea" },
+  { key: "home_faqs_title", label: "FAQs Title", type: "text" },
+  { key: "home_faqs_subtitle", label: "FAQs Subtitle", type: "textarea" },
 ];
 
 export default function AdminSettingsPage() {
