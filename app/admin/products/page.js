@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, inr, resolveUploadUrl, revalidateSite, friendlyError, uploadFile, detectMediaType } from "@/lib/api";
+import { apiFetch, unwrap, inr, resolveUploadUrl, revalidateSite, friendlyError, detectMediaType } from "@/lib/api";
 import AdminModulePage from "../AdminModule";
 import AdminToast from "@/components/AdminToast";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
+import UploadRing from "../UploadRing";
+import useUploader from "../useUploader";
 import { useConfirm } from "../ConfirmProvider";
 
 const empty = { product_name: "", product_slug: "", short_description: "", description: "", base_price: "", currency_code: "INR", isactive: true };
@@ -319,6 +321,8 @@ function ProductWorkspace({ product, onBack }) {
   const [vPreview, setVPreview] = useState(null);
   const [aAttr, setAAttr] = useState("");
   const [aValue, setAValue] = useState("");
+  // Uploads with live ring progress (%, MB, speed, ETA).
+  const { upProg, upload } = useUploader();
 
   // Revoke any object URLs we created when leaving the workspace.
   useEffect(() => {
@@ -469,7 +473,7 @@ function ProductWorkspace({ product, onBack }) {
     setUploading(true);
     setMsg("");
     try {
-      const url = await uploadFile(file);
+      const url = await upload(file);
       await apiFetch("/Products-Media", {
         method: "POST",
         body: {
@@ -534,7 +538,7 @@ function ProductWorkspace({ product, onBack }) {
     setVUploadingId(variantId);
     setMsg("");
     try {
-      const url = await uploadFile(file);
+      const url = await upload(file);
       await apiFetch("/Products-Media", {
         method: "POST",
         body: {
@@ -830,6 +834,11 @@ function ProductWorkspace({ product, onBack }) {
             hint="Product media — click or drop"
           />
         </div>
+        {upProg && (
+          <div className="md:col-span-3">
+            <UploadRing prog={upProg} />
+          </div>
+        )}
         {mPreview ? (
           <div className="md:col-span-3 flex flex-wrap items-start gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
             {mPreview.type === "image" ? (

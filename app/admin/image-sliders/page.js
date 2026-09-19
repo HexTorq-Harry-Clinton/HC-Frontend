@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   apiFetch, unwrap, revalidateSite, friendlyError,
-  uploadFile, resolveUploadUrl, detectMediaType,
+  resolveUploadUrl, detectMediaType,
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
+import UploadRing from "../UploadRing";
 import useLockBody from "../useLockBody";
+import useUploader from "../useUploader";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -69,6 +71,8 @@ export default function AdminImageSlidersPage() {
   const dragId = useRef(null);
   // Open popup owns the scroll — page behind is frozen.
   useLockBody(!!modal || !!lightbox);
+  // Uploads with live ring progress (%, MB, speed, ETA).
+  const { upProg, upload } = useUploader();
 
   useEffect(() => {
     let live = true;
@@ -176,7 +180,7 @@ export default function AdminImageSlidersPage() {
       let mediaType = modal.media_type || "";
       if (staged) {
         setMsg("Uploading file...");
-        imageUrl = await uploadFile(staged);
+        imageUrl = await upload(staged);
         mediaType = detectMediaType(staged);
       }
       if (!mediaType) mediaType = isVideoUrl(imageUrl) ? "video" : "image";
@@ -537,6 +541,11 @@ export default function AdminImageSlidersPage() {
               Active
               <ActiveToggle active={modal.isactive} onToggle={async (next) => setModal({ ...modal, isactive: next })} />
             </label>
+            {upProg && (
+              <div className="mt-4">
+                <UploadRing prog={upProg} />
+              </div>
+            )}
             <div className="mt-5 flex justify-end gap-2">
               <button type="button" onClick={() => setModal(null)} className={btnOutline}>
                 Cancel

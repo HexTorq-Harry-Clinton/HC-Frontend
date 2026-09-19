@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   apiFetch, unwrap, revalidateSite, friendlyError,
-  uploadFile, resolveUploadUrl, detectMediaType,
+  resolveUploadUrl, detectMediaType,
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
+import UploadRing from "../UploadRing";
 import useLockBody from "../useLockBody";
+import useUploader from "../useUploader";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -64,6 +66,8 @@ export default function AdminMenuVideosPage() {
   const [stagedPoster, setStagedPoster] = useState(null);
   // Open popup owns the scroll — page behind is frozen.
   useLockBody(!!modal);
+  // Uploads with live ring progress (%, MB, speed, ETA).
+  const { upProg, upload } = useUploader();
   // false | array of ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
   const [orderIds, setOrderIds] = useState([]);
@@ -161,11 +165,11 @@ export default function AdminMenuVideosPage() {
       let posterUrl = modal.poster_image_url;
       if (stagedVideo) {
         setMsg("Uploading video...");
-        videoUrl = await uploadFile(stagedVideo);
+        videoUrl = await upload(stagedVideo);
       }
       if (stagedPoster) {
         setMsg("Uploading poster...");
-        posterUrl = await uploadFile(stagedPoster);
+        posterUrl = await upload(stagedPoster);
       }
       if (!videoUrl) {
         setMsg("Please pick a video file.");
@@ -503,6 +507,11 @@ export default function AdminMenuVideosPage() {
               Section on
               <ActiveToggle active={modal.isactive} onToggle={async (next) => setModal({ ...modal, isactive: next })} />
             </label>
+            {upProg && (
+              <div className="mt-4">
+                <UploadRing prog={upProg} />
+              </div>
+            )}
             <div className="mt-5 flex justify-end gap-2">
               <button type="button" onClick={() => setModal(null)} className={btnOutline}>
                 Cancel

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch, unwrap, revalidateSite, uploadFile, detectMediaType } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite, detectMediaType } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "./FilePick";
+import UploadRing from "./UploadRing";
+import useUploader from "./useUploader";
 import { useToast } from "./ToastProvider";
 import { useConfirm } from "./ConfirmProvider";
 
@@ -56,6 +58,8 @@ export default function AdminModulePage({ module: slug, lock }) {
   // Submit (single-submit flow). Nothing hits the server until Submit.
   const [staged, setStaged] = useState({});
   const [busy, setBusy] = useState(null); // null | "uploading" | "saving"
+  // Uploads with live ring progress (%, MB, speed, ETA).
+  const { upProg, upload } = useUploader();
   const [refOptions, setRefOptions] = useState({});
   const [workspace, setWorkspace] = useState(null);
   const [workspaceTab, setWorkspaceTab] = useState(0);
@@ -226,7 +230,7 @@ export default function AdminModulePage({ module: slug, lock }) {
       setMsg(`Uploading ${uploadCols.length} file(s)...`);
       try {
         for (const c of uploadCols) {
-          body[c.key] = await uploadFile(staged[c.key]);
+          body[c.key] = await upload(staged[c.key]);
         }
       } catch (err) {
         const friendly = err.message || "Upload failed.";
@@ -435,6 +439,11 @@ export default function AdminModulePage({ module: slug, lock }) {
               </button>
             )}
           </div>
+          {upProg && (
+            <div className="md:col-span-2">
+              <UploadRing prog={upProg} />
+            </div>
+          )}
         </form>
       )}
 

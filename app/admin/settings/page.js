@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, unwrap, resolveUploadUrl, revalidateSite, uploadFile } from "@/lib/api";
+import { apiFetch, unwrap, resolveUploadUrl, revalidateSite } from "@/lib/api";
 import FilePick from "../FilePick";
+import UploadRing from "../UploadRing";
+import useUploader from "../useUploader";
 
 // Site settings singleton: same fields as the previous UI —
 // names, descriptions, 3 logo uploads, maintenance toggle.
@@ -24,6 +26,8 @@ export default function AdminSettingsPage() {
   // Staged logos: { fieldKey: File } — picked, uploaded on Save (single-submit).
   const [staged, setStaged] = useState({});
   const [busy, setBusy] = useState(null); // null | "uploading" | "saving"
+  // Uploads with live ring progress (%, MB, speed, ETA).
+  const { upProg, upload } = useUploader();
 
   useEffect(() => {
     let live = true;
@@ -77,7 +81,7 @@ export default function AdminSettingsPage() {
       setMsg(`Uploading ${keys.length} logo(s)...`);
       try {
         for (const key of keys) {
-          body[key] = await uploadFile(staged[key], { path: "SITE_BRANDING" });
+          body[key] = await upload(staged[key], { path: "SITE_BRANDING" });
         }
       } catch (err) {
         setMsg(err.message || "Logo upload failed.");
@@ -164,6 +168,11 @@ export default function AdminSettingsPage() {
             {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : "Save Settings"}
           </button>
         </div>
+        {upProg && (
+          <div className="md:col-span-2">
+            <UploadRing prog={upProg} />
+          </div>
+        )}
       </form>
     </div>
   );
