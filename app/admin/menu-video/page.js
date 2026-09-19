@@ -65,12 +65,14 @@ export default function AdminMenuVideosPage() {
   const [stagedVideo, setStagedVideo] = useState(null);
   const [stagedPoster, setStagedPoster] = useState(null);
   // Open popup owns the scroll — page behind is frozen.
-  useLockBody(!!modal);
+  useLockBody(!!modal || !!lightbox);
   // Uploads with live ring progress (%, MB, speed, ETA).
   const { upProg, upload } = useUploader();
   // false | array of ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
   const [orderIds, setOrderIds] = useState([]);
+  // null | { url, title } — fullscreen video viewer.
+  const [lightbox, setLightbox] = useState(null);
   const dragId = useRef(null);
 
   useEffect(() => {
@@ -87,6 +89,16 @@ export default function AdminMenuVideosPage() {
       live = false;
     };
   }, [refresh]);
+
+  // Esc closes the fullscreen viewer.
+  useEffect(() => {
+    if (!lightbox) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [lightbox]);
 
   const reload = () => {
     setRefresh((n) => n + 1);
@@ -371,19 +383,26 @@ export default function AdminMenuVideosPage() {
                   )}
                   <td className={`${tdCls} font-bold text-neutral-500`}>{i + 1}</td>
                   <td className={tdCls}>
-                    {r.poster_image_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={resolveUploadUrl(r.poster_image_url)}
-                        alt=""
-                        className="h-12 w-24 rounded-md border border-neutral-200 object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="flex h-12 w-24 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold">
-                        <i className="bi bi-film" /> Video
-                      </span>
-                    )}
+                    <button
+                      type="button"
+                      title="Play fullscreen"
+                      onClick={() => setLightbox({ url: resolveUploadUrl(r.video_url), poster: resolveUploadUrl(r.poster_image_url), title: r.video_type || "Home video" })}
+                      className="block overflow-hidden rounded-md border border-neutral-200 transition hover:border-gold"
+                    >
+                      {r.poster_image_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={resolveUploadUrl(r.poster_image_url)}
+                          alt=""
+                          className="h-12 w-24 object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="flex h-12 w-24 items-center justify-center gap-1 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold">
+                          <i className="bi bi-film" /> Video
+                        </span>
+                      )}
+                    </button>
                   </td>
                   <td className={tdCls}>
                     <span className="font-semibold">{r.video_type || "brand"}</span>
@@ -419,6 +438,34 @@ export default function AdminMenuVideosPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ---- fullscreen video viewer ---- */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-neutral-950/90 p-6"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightbox(null)}
+            aria-label="Close viewer"
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-gold hover:text-neutral-950"
+          >
+            <i className="bi bi-x-lg" />
+          </button>
+          <figure className="max-h-full w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
+            <video
+              src={lightbox.url}
+              poster={lightbox.poster || undefined}
+              controls
+              autoPlay
+              playsInline
+              className="max-h-[80vh] w-full rounded-lg bg-black"
+            />
+            <figcaption className="mt-3 text-center text-sm text-white/70">{lightbox.title}</figcaption>
+          </figure>
+        </div>
+      )}
 
       {/* ---- create/edit popup ---- */}
       {modal && (
