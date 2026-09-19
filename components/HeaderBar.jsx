@@ -83,7 +83,7 @@ export default function HeaderBar({ categories }) {
     <>
       {searchOpen && <SearchDropdown onClose={() => setSearchOpen(false)} />}
 
-      <header className="topbar-enter sticky top-0 z-[80] flex h-10 items-center justify-between bg-white px-4">
+      <header className="topbar-enter relative sticky top-0 z-[80] flex h-10 items-center justify-between bg-white px-4">
         <div className="flex items-center gap-3">
           <Hamburger categories={categories} />
 
@@ -104,8 +104,10 @@ export default function HeaderBar({ categories }) {
           </div>
         </div>
 
-        <div className="logo mx-auto flex justify-center text-center">
-          <Link href="/" aria-label="Harry Clinton home" className="block">
+        {/* True center: absolutely pinned to the bar midpoint, so left/right
+            groups can never push the logo off-center. */}
+        <div className="logo pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 justify-center text-center">
+          <Link href="/" aria-label="Harry Clinton home" className="pointer-events-auto block">
             <Image
               src="/brand/logo-black.png"
               alt="Harry Clinton"
