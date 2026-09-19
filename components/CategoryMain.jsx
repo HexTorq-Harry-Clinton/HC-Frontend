@@ -55,13 +55,32 @@ export default async function CategoryMain({ category }) {
     if (filtered.length > 0) subcategories = filtered;
   }
 
+  const CATEGORY_VIDEOS = {
+    suits: "/brand/suitcatvideo.mp4",
+    babysuits: "/brand/baby-1st-birthday.mp4",
+    trousers: "/brand/business-category.mp4",
+    indowestern: "/brand/wedding-label.mp4",
+    shirts: "/brand/luxury-wedding-home.mp4",
+  };
+  const heroVideo = CATEGORY_VIDEOS[category.toLowerCase()] || null;
+
   return (
     <>
-      <section className="relative bg-neutral-950">
-        <div className="flex min-h-[480px] flex-col items-start justify-center px-6 text-white md:px-16">
+      <section className="relative overflow-hidden bg-neutral-950">
+        {heroVideo && (
+          <video
+            src={heroVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover opacity-45"
+          />
+        )}
+        <div className="relative z-10 flex min-h-[480px] flex-col items-start justify-center px-6 text-white md:px-16">
           <h1 className="font-display text-5xl font-bold md:text-6xl">{heroTitle}</h1>
-          <h5 className="mt-2 text-lg font-normal">{heroSubtitle}</h5>
-          <a href="#category-grid" className="btn-primary mt-4 !rounded-full !bg-white !text-neutral-950 hover:!bg-gold">
+          <h5 className="mt-2 text-lg font-normal text-neutral-200">{heroSubtitle}</h5>
+          <a href="#category-grid" className="btn-primary mt-6 !rounded-full !bg-white !text-neutral-950 hover:!bg-gold">
             Shop Now
           </a>
         </div>

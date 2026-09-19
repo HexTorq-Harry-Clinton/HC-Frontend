@@ -20,7 +20,13 @@ const FALLBACKS = {
 };
 
 const isBad = (u) =>
-  !u || u.includes("cdn.example.com") || u.includes("example.com") || u.includes("dev.dine360.ca");
+  !u ||
+  u.includes("cdn.example.com") ||
+  u.includes("example.com") ||
+  u.includes("dev.dine360.ca") ||
+  u.includes("w3schools") ||
+  u.includes("mov_bbb") ||
+  u.includes("bunny");
 
 async function api(path, opts = {}) {
   const url = API + path;

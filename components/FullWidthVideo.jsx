@@ -69,6 +69,19 @@ function VideoScreen({ row }) {
   );
 }
 
+const isUnrelatedVideo = (url) => {
+  if (!url) return true;
+  const s = String(url).toLowerCase();
+  return (
+    s.includes("example.com") ||
+    s.includes("w3schools") ||
+    s.includes("mov_bbb") ||
+    s.includes("bunny") ||
+    s.includes("sample") ||
+    s.includes("test")
+  );
+};
+
 export default function FullWidthVideo() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +93,7 @@ export default function FullWidthVideo() {
       .then((data) => {
         const list = (Array.isArray(data) ? data : [])
           .filter((v) => on(v.isactive ?? v.is_active) && !v.isdeleted && v.video_url)
-          .filter((v) => !String(v.video_url).includes("example.com"))
+          .filter((v) => !isUnrelatedVideo(v.video_url))
           .sort((a, b) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0))
           .map((v) => ({
             id: v.menu_video_id,
@@ -90,10 +103,10 @@ export default function FullWidthVideo() {
             loop: v.loop_video === 0 || v.loop_video === false ? false : true,
             muteOff: v.mute_default === 0 || v.mute_default === false,
           }))
-          .filter((v) => v.src);
+          .filter((v) => v.src && !isUnrelatedVideo(v.src));
         if (live && list.length > 0) setRows(list);
         else if (live) {
-          // Fallback to local video if API fails or empty
+          // Fallback to client luxury menswear video
           setRows([{
             id: 'local-luxury',
             src: '/brand/luxury-wedding-home.mp4',
@@ -105,7 +118,7 @@ export default function FullWidthVideo() {
         }
       })
       .catch(() => {
-        // Fallback to local video
+        // Fallback to client luxury menswear video
         if (live) setRows([{
           id: 'local-luxury',
           src: '/brand/luxury-wedding-home.mp4',

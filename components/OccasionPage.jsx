@@ -16,13 +16,28 @@ export default async function OccasionPage({ page }) {
     apiGet("/Menu-Video").then(unwrap).catch(() => []),
   ]);
 
+  const isUnrelated = (u) => {
+    if (!u) return true;
+    const s = String(u).toLowerCase();
+    return s.includes("example.com") || s.includes("w3schools") || s.includes("mov_bbb") || s.includes("bunny") || s.includes("sample");
+  };
+
   const sliderImgs = sliders
     .filter((s) => s.isactive !== false)
     .map((s) => resolveUploadUrl(s.image_url || s.media_url || s.src))
     .filter(Boolean)
     .slice(0, 3);
-  const video = videos.find((v) => v.isactive !== false) || videos[0];
-  const videoUrl = resolveUploadUrl(video?.video_url);
+  const activeVideo = videos.find((v) => v.isactive !== false && !isUnrelated(v.video_url));
+  const apiVideoUrl = activeVideo?.video_url ? resolveUploadUrl(activeVideo.video_url) : null;
+  const isBusiness = String(page.category || "").toLowerCase().includes("business") || String(page.slug || "").toLowerCase().includes("business");
+
+  // Client bespoke video suite per section
+  const heroVideoUrl = (apiVideoUrl && !isUnrelated(apiVideoUrl))
+    ? apiVideoUrl
+    : (isBusiness ? "/brand/business-category.mp4" : "/brand/wedding-page.mp4");
+  const trioVideoUrl = "/brand/wedding-center.mp4";
+  const wideVideoUrl = "/brand/wedding-label.mp4";
+
   const gridMedia = data.products.map((p) => p.image).filter(Boolean);
   const trioLeft = gridMedia[0] || sliderImgs[0];
   const trioRight = gridMedia[1] || sliderImgs[1];
@@ -35,8 +50,8 @@ export default async function OccasionPage({ page }) {
       <Breadcrumb />
       {/* ===== HERO VIDEO ===== */}
       <section className="relative w-full bg-neutral-950">
-        {videoUrl ? (
-          <video src={videoUrl} className="h-[600px] w-full object-cover" autoPlay loop muted playsInline />
+        {heroVideoUrl ? (
+          <video src={heroVideoUrl} className="h-[600px] w-full object-cover" autoPlay loop muted playsInline />
         ) : (
           <div className="h-[420px] w-full bg-[radial-gradient(ellipse_at_top,#3a3a3a,#0a0a0a_70%)]" />
         )}
@@ -64,7 +79,7 @@ export default async function OccasionPage({ page }) {
       </div>
 
       {/* ===== TRIO: image – video – image ===== */}
-      {(trioLeft || videoUrl || trioRight) && (
+      {(trioLeft || trioVideoUrl || trioRight) && (
         <section className="my-0 w-full px-0">
           <div className="oc-row">
             <div className="oc-4">
@@ -74,8 +89,8 @@ export default async function OccasionPage({ page }) {
               )}
             </div>
             <div className="oc-4">
-              {videoUrl && (
-                <video src={videoUrl} className="oc-img" style={{ height: "520px" }} autoPlay loop muted playsInline controls />
+              {trioVideoUrl && (
+                <video src={trioVideoUrl} className="oc-img" style={{ height: "520px" }} autoPlay loop muted playsInline controls />
               )}
             </div>
             <div className="oc-4">
@@ -104,11 +119,11 @@ export default async function OccasionPage({ page }) {
       </div>
 
       {/* ===== WIDE: video + image ===== */}
-      {(videoUrl || wideImg) && (
+      {(wideVideoUrl || wideImg) && (
         <div className="oc-row mx-0 mt-1">
           <div className="oc-9 p-0">
-            {videoUrl && (
-              <video src={videoUrl} className="w-full" style={{ height: "500px", objectFit: "cover" }} autoPlay loop muted playsInline />
+            {wideVideoUrl && (
+              <video src={wideVideoUrl} className="w-full" style={{ height: "500px", objectFit: "cover" }} autoPlay loop muted playsInline />
             )}
           </div>
           <div className="oc-3 p-0">

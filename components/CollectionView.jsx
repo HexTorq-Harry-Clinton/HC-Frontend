@@ -16,10 +16,27 @@ export default function CollectionView({ meta, products, sizes, clothTypes, colo
     );
   }, [products, search]);
 
+  const COLLECTION_VIDEOS = {
+    cigarettes: "/brand/88-cigarettes.mp4",
+    cigarette: "/brand/88-cigarettes.mp4",
+    tuxedo: "/brand/luxury-wedding-home.mp4",
+    "extreme-poppins": "/brand/wedding-label.mp4",
+  };
+  const bannerVideo = meta.bannerVideo || COLLECTION_VIDEOS[meta.category] || COLLECTION_VIDEOS[meta.slug] || null;
+
   return (
     <>
-      <section className="relative bg-neutral-950">
-        {meta.bannerImage ? (
+      <section className="relative overflow-hidden bg-neutral-950">
+        {bannerVideo ? (
+          <video
+            src={bannerVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="h-[520px] w-full object-cover opacity-55"
+          />
+        ) : meta.bannerImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={meta.bannerImage} alt={meta.title} className="h-[480px] w-full object-cover" />
         ) : (
