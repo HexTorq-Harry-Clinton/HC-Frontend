@@ -24,6 +24,10 @@ const kindOf = (item, url) => {
 // Hero carousel: same behavior as the previous UI — arrows, dots, autoplay,
 // pause on hover, slide counter. Slides come from the Image-Sliders API
 // (all imagery is backend-served by design).
+// Pacing rule: IMAGE slides hold their own auto_slide_interval_seconds;
+// VIDEO slides play through fully ONCE (no loop, no fixed timer) and the
+// hero advances on the video's `ended` event — a 90s safety cap covers
+// streams whose `ended` never fires, so the hero can never stall.
 export default function VideoImageSlider() {
   const router = useRouter();
   const [slides, setSlides] = useState([]);
@@ -81,15 +85,29 @@ export default function VideoImageSlider() {
     [slides.length]
   );
 
-  // Per-slide autoplay: each slide's own auto_slide_interval_seconds
-  // (clamped 2–12s), so the DB controls pacing per image.
+  // Per-slide autoplay: IMAGE slides hold their own
+  // auto_slide_interval_seconds (clamped 2–12s) from the DB. VIDEO slides
+  // ignore the timer — they play once fully and advance on `ended`.
+  // A 90s safety cap covers streams whose `ended` never fires.
   useEffect(() => {
     if (paused || slides.length < 2) return undefined;
+    if (slides[index]?.kind === "video") {
+      timer.current = setTimeout(() => go(1), 90000);
+      return () => clearTimeout(timer.current);
+    }
     const secs = Number(slides[index]?.secs) || 4;
     const ms = Math.min(Math.max(secs, 2), 12) * 1000;
     timer.current = setTimeout(() => go(1), ms);
     return () => clearTimeout(timer.current);
   }, [paused, slides, index, go]);
+
+  // Hover pauses the video element too, not just the timer.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (paused) v.pause();
+    else if (playing) v.play().catch(() => {});
+  }, [paused, playing, index]);
 
   // Mobile swipe: horizontal drag flips slides (40px threshold).
   const onTouchStart = (e) => {
@@ -170,9 +188,9 @@ export default function VideoImageSlider() {
                 className="h-full w-full object-cover"
                 autoPlay
                 muted
-                loop
                 playsInline
                 preload="auto"
+                onEnded={() => go(1)}
                 onError={() => {
                   if (!failed[index]) setFailed((m) => ({ ...m, [index]: true }));
                 }}
