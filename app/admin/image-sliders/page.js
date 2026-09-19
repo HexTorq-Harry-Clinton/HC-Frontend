@@ -62,6 +62,8 @@ export default function AdminImageSlidersPage() {
   // false | array of ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
   const [orderIds, setOrderIds] = useState([]);
+  // null | { url, isVideo, title } — fullscreen file viewer.
+  const [lightbox, setLightbox] = useState(null);
   const dragId = useRef(null);
 
   useEffect(() => {
@@ -83,6 +85,16 @@ export default function AdminImageSlidersPage() {
   useEffect(() => () => {
     if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
+
+  // Esc closes the fullscreen viewer.
+  useEffect(() => {
+    if (!lightbox) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [lightbox]);
 
   const reload = () => {
     setRefresh((n) => n + 1);
@@ -365,17 +377,29 @@ export default function AdminImageSlidersPage() {
                   <td className={`${tdCls} font-bold text-neutral-500`}>{i + 1}</td>
                   <td className={tdCls}>
                     {(r.media_type === "video" || isVideoUrl(r.image_url)) ? (
-                      <span className="flex h-12 w-24 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold">
+                      <button
+                        type="button"
+                        title="View fullscreen"
+                        onClick={() => setLightbox({ url: resolveUploadUrl(r.image_url), isVideo: true, title: r.title || "Slide video" })}
+                        className="flex h-12 w-24 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold transition hover:border-gold"
+                      >
                         <i className="bi bi-film" /> Video
-                      </span>
+                      </button>
                     ) : (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={resolveUploadUrl(r.image_url) || "/brand/logo-black.png"}
-                        alt=""
-                        className="h-12 w-24 rounded-md border border-neutral-200 object-cover"
-                        loading="lazy"
-                      />
+                      <button
+                        type="button"
+                        title="View fullscreen"
+                        onClick={() => setLightbox({ url: resolveUploadUrl(r.image_url), isVideo: false, title: r.title || "Slide image" })}
+                        className="block overflow-hidden rounded-md border border-neutral-200 transition hover:border-gold"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={resolveUploadUrl(r.image_url) || "/brand/logo-black.png"}
+                          alt=""
+                          className="h-12 w-24 object-cover"
+                          loading="lazy"
+                        />
+                      </button>
                     )}
                   </td>
                   <td className={`${tdCls} max-w-xs`}>
@@ -414,6 +438,32 @@ export default function AdminImageSlidersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ---- fullscreen file viewer ---- */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-neutral-950/90 p-6"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightbox(null)}
+            aria-label="Close viewer"
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-gold hover:text-neutral-950"
+          >
+            <i className="bi bi-x-lg" />
+          </button>
+          <figure className="max-h-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
+            {lightbox.isVideo ? (
+              <video src={lightbox.url} controls autoPlay muted playsInline className="max-h-[80vh] w-auto max-w-full rounded-lg" />
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={lightbox.url} alt={lightbox.title} className="max-h-[80vh] w-auto max-w-full rounded-lg object-contain" />
+            )}
+            <figcaption className="mt-3 text-center text-sm text-white/70">{lightbox.title}</figcaption>
+          </figure>
+        </div>
+      )}
 
       {/* ---- create/edit popup with live preview ---- */}
       {modal && (
