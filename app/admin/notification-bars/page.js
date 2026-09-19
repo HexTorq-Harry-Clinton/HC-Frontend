@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch, unwrap, revalidateSite, friendlyError } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import HtmlEditor from "../HtmlEditor";
+import Pagination, { paginate } from "../Pagination";
 import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
@@ -41,6 +42,9 @@ export default function AdminNotificationBarsPage() {
   // false | array of ids in manual order — reorder mode.
   const [orderMode, setOrderMode] = useState(false);
   const [orderIds, setOrderIds] = useState([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const dragId = useRef(null);
 
   useEffect(() => {
@@ -225,6 +229,12 @@ export default function AdminNotificationBarsPage() {
   const ordered = orderMode
     ? orderIds.map((id) => live.find((r) => String(r.notification_bar_id) === String(id))).filter(Boolean)
     : live;
+  // Search + pagination (reorder mode shows everything for dragging).
+  const needle = search.trim().toLowerCase();
+  const filtered = needle
+    ? ordered.filter((r) => stripTags(r.notification_text).toLowerCase().includes(needle))
+    : ordered;
+  const shown = orderMode ? filtered : paginate(filtered, page, pageSize);
 
   return (
     <div>
@@ -241,9 +251,16 @@ export default function AdminNotificationBarsPage() {
         </p>
       )}
 
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search notifications..."
+          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          style={{ minWidth: 200 }}
+        />
         {!orderMode ? (
-          <>
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setModal({ notification_text: "", duration_seconds: 4, orderpriority: "", isactive: true })}
@@ -256,16 +273,16 @@ export default function AdminNotificationBarsPage() {
                 <i className="bi bi-grip-vertical" /> Edit order
               </button>
             )}
-          </>
+          </div>
         ) : (
-          <>
+          <div className="flex gap-2">
             <button type="button" onClick={saveOrder} disabled={busy} className={btnPrimary}>
               <i className="bi bi-check-lg" /> {busy ? "Saving..." : "Save order"}
             </button>
             <button type="button" onClick={() => setOrderMode(false)} className={btnOutline}>
               Cancel
             </button>
-          </>
+          </div>
         )}
       </div>
       {orderMode && (
@@ -283,14 +300,14 @@ export default function AdminNotificationBarsPage() {
             </tr>
           </thead>
           <tbody>
-            {ordered.length === 0 ? (
+            {shown.length === 0 ? (
               <tr>
                 <td colSpan={orderMode ? 4 : 3} className="p-5 text-center text-neutral-500">
                   No notifications yet — add the first one.
                 </td>
               </tr>
             ) : (
-              ordered.map((r, i) => {
+              shown.map((r, i) => {
                 const preview = stripTags(r.notification_text);
                 return (
                   <tr
@@ -347,6 +364,9 @@ export default function AdminNotificationBarsPage() {
           </tbody>
         </table>
       </div>
+      {!orderMode && (
+        <Pagination page={page} setPage={setPage} total={filtered.length} pageSize={pageSize} setPageSize={setPageSize} />
+      )}
 
       {/* ---- create/edit popup ---- */}
       {modal && (

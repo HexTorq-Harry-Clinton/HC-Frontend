@@ -7,6 +7,7 @@ import {
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "../FilePick";
+import Pagination, { paginate } from "../Pagination";
 import UploadRing from "../UploadRing";
 import useLockBody from "../useLockBody";
 import useUploader from "../useUploader";
@@ -302,6 +303,15 @@ export default function AdminMenuVideosPage() {
   const ordered = orderMode
     ? orderIds.map((id) => live.find((r) => String(r.menu_video_id) === String(id))).filter(Boolean)
     : live;
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  // Search + pagination (reorder mode shows everything for dragging).
+  const needle = search.trim().toLowerCase();
+  const filtered = needle
+    ? ordered.filter((r) => `${r.video_type || ""}`.toLowerCase().includes(needle))
+    : ordered;
+  const shown = orderMode ? filtered : paginate(filtered, page, pageSize);
 
   const flag = (v) => (v === 1 || v === true ? "On" : "Off");
 
@@ -320,7 +330,14 @@ export default function AdminMenuVideosPage() {
         </p>
       )}
 
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search videos..."
+          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          style={{ minWidth: 200 }}
+        />
         {!orderMode ? (
           <>
             <button type="button" onClick={openCreate} className={btnPrimary}>
@@ -360,14 +377,14 @@ export default function AdminMenuVideosPage() {
             </tr>
           </thead>
           <tbody>
-            {ordered.length === 0 ? (
+            {shown.length === 0 ? (
               <tr>
                 <td colSpan={orderMode ? 6 : 5} className="p-5 text-center text-neutral-500">
                   No videos yet — add the first one.
                 </td>
               </tr>
             ) : (
-              ordered.map((r, i) => (
+              shown.map((r, i) => (
                 <tr
                   key={r.menu_video_id}
                   draggable={orderMode}
@@ -438,6 +455,9 @@ export default function AdminMenuVideosPage() {
           </tbody>
         </table>
       </div>
+      {!orderMode && (
+        <Pagination page={page} setPage={setPage} total={filtered.length} pageSize={pageSize} setPageSize={setPageSize} />
+      )}
 
       {/* ---- fullscreen video viewer ---- */}
       {lightbox && (

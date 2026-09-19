@@ -6,6 +6,7 @@ import { adminModule, REFS } from "@/lib/admin";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "./FilePick";
 import HtmlEditor from "./HtmlEditor";
+import Pagination, { paginate } from "./Pagination";
 import UploadRing from "./UploadRing";
 import useLockBody from "./useLockBody";
 import useUploader from "./useUploader";
@@ -139,6 +140,13 @@ export default function AdminModulePage({ module: slug, lock }) {
       mod.columns.some((c) => String(r[c.key] ?? "").toLowerCase().includes(needle))
     );
   }, [rows, search, mod, lock]);
+  // Pagination (page sizes 5/10/15/25/50) — resets on search/module change.
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  useEffect(() => {
+    setPage(1);
+  }, [search, mod]);
+  const shown = paginate(visible, page, pageSize);
 
   if (!mod) return <p className="text-sm text-neutral-500">Unknown module.</p>;
 
@@ -530,7 +538,7 @@ export default function AdminModulePage({ module: slug, lock }) {
                 </td>
               </tr>
             ) : (
-            visible.map((r, i) => (
+            shown.map((r, i) => (
               <tr key={r[mod.id] || i} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
                 {mod.columns.map((c) => (
                   <td key={c.key} className={tdCls}>
@@ -565,6 +573,7 @@ export default function AdminModulePage({ module: slug, lock }) {
           </tbody>
         </table>
       </div>
+      <Pagination page={page} setPage={setPage} total={visible.length} pageSize={pageSize} setPageSize={setPageSize} />
     </div>
   );
 }
