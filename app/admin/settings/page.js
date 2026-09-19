@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, unwrap, resolveUploadUrl, revalidateSite, uploadFile } from "@/lib/api";
+import FilePick from "../FilePick";
 
 // Site settings singleton: same fields as the previous UI —
 // names, descriptions, 3 logo uploads, maintenance toggle.
@@ -125,7 +126,15 @@ export default function AdminSettingsPage() {
             ) : f.type === "upload" ? (
               <span className="mt-1 block font-normal">
                 <input value={form[f.key] || ""} onChange={set(f.key)} placeholder="Logo URL or pick a file below" className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
-                <input type="file" accept="image/*" onChange={(e) => stageFile(f.key, e.target.files?.[0])} className="mt-1 w-full text-xs text-neutral-600" />
+                <div className="mt-1">
+                  <FilePick
+                    small
+                    accept="image/*"
+                    onPick={(file) => stageFile(f.key, file)}
+                    fileName={staged[f.key]?.name}
+                    hint="Logo image — click or drop"
+                  />
+                </div>
                 {staged[f.key] ? (
                   <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-green-800">
                     Staged: {staged[f.key].name}

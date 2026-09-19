@@ -6,6 +6,7 @@ import {
   uploadFile, resolveUploadUrl, detectMediaType,
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
+import FilePick from "../FilePick";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -469,26 +470,32 @@ export default function AdminMenuVideosPage() {
                 ))}
               </div>
             </div>
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Video file (MP4/WEBM ≤ 50 MB){modal.id ? " — leave empty to keep current" : ""}
-              {stagedVideo && <span className="mt-1 block font-normal normal-case tracking-normal text-green-800">Staged: {stagedVideo.name}</span>}
-              <input
-                type="file"
-                accept=".mp4,.webm,.mov"
-                onChange={(e) => stageVideo(e.target.files?.[0])}
-                className="mt-1 w-full text-xs"
-              />
-            </label>
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Poster image (JPG/PNG/WEBP ≤ 3 MB){modal.id ? " — leave empty to keep current" : ""}
-              {stagedPoster && <span className="mt-1 block font-normal normal-case tracking-normal text-green-800">Staged: {stagedPoster.name}</span>}
-              <input
-                type="file"
-                accept=".jpg,.jpeg,.png,.webp"
-                onChange={(e) => stagePoster(e.target.files?.[0])}
-                className="mt-1 w-full text-xs"
-              />
-            </label>
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                Video file{modal.id ? " — leave empty to keep current" : ""}
+              </p>
+              <div className="mt-1">
+                <FilePick
+                  accept=".mp4,.webm,.mov"
+                  onPick={stageVideo}
+                  fileName={stagedVideo?.name}
+                  hint="MP4 / WEBM / MOV ≤ 50 MB"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                Poster image{modal.id ? " — leave empty to keep current" : ""}
+              </p>
+              <div className="mt-1">
+                <FilePick
+                  accept=".jpg,.jpeg,.png,.webp"
+                  onPick={stagePoster}
+                  fileName={stagedPoster?.name}
+                  hint="JPG / PNG / WEBP ≤ 3 MB"
+                />
+              </div>
+            </div>
             <label className="mt-4 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-neutral-500">
               Section on
               <ActiveToggle active={modal.isactive} onToggle={async (next) => setModal({ ...modal, isactive: next })} />

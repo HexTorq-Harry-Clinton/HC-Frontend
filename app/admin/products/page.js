@@ -5,6 +5,7 @@ import { apiFetch, unwrap, inr, resolveUploadUrl, revalidateSite, friendlyError,
 import AdminModulePage from "../AdminModule";
 import AdminToast from "@/components/AdminToast";
 import ActiveToggle from "@/components/ActiveToggle";
+import FilePick from "../FilePick";
 import { useConfirm } from "../ConfirmProvider";
 
 const empty = { product_name: "", product_slug: "", short_description: "", description: "", base_price: "", currency_code: "INR", isactive: true };
@@ -697,15 +698,12 @@ function ProductWorkspace({ product, onBack }) {
                             </div>
                           ))
                         )}
-                        <label className="relative flex cursor-pointer items-center justify-center rounded-md border border-dashed border-neutral-400 px-2 py-1 text-xs font-semibold text-neutral-600 transition-colors hover:border-gold hover:text-gold-deep">
-                          {vUploadingId === v.product_variant_id ? "..." : "+ Image"}
-                          <input
-                            type="file"
-                            accept="image/*,video/*"
-                            onChange={pickVariantMedia(v.product_variant_id)}
-                            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                          />
-                        </label>
+                        <FilePick
+                          small
+                          accept="image/*,video/*"
+                          onPick={(f) => pickVariantMedia(v.product_variant_id)({ target: { files: [f] } })}
+                          hint="+ Image — click or drop"
+                        />
                       </div>
                       {vPreview?.variantId === v.product_variant_id && (
                             <div className="mt-2 flex flex-wrap items-start gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2">
@@ -823,10 +821,15 @@ function ProductWorkspace({ product, onBack }) {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Set as primary
         </label>
-        <label className="relative flex cursor-pointer items-center justify-center rounded-md border border-dashed border-neutral-400 px-4 py-2 text-sm font-semibold text-neutral-600 transition-colors hover:border-gold hover:text-gold-deep">
-          {mPreview ? `Selected: ${mPreview.name}` : "Choose file..."}
-          <input type="file" accept="image/*,video/*" onChange={pickMedia} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
-        </label>
+        <div className="md:col-span-3">
+          <FilePick
+            small
+            accept="image/*,video/*"
+            onPick={(f) => pickMedia({ target: { files: [f] } })}
+            fileName={mPreview?.name}
+            hint="Product media — click or drop"
+          />
+        </div>
         {mPreview ? (
           <div className="md:col-span-3 flex flex-wrap items-start gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
             {mPreview.type === "image" ? (

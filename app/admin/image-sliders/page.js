@@ -6,6 +6,7 @@ import {
   uploadFile, resolveUploadUrl, detectMediaType,
 } from "@/lib/api";
 import ActiveToggle from "@/components/ActiveToggle";
+import FilePick from "../FilePick";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
@@ -492,15 +493,19 @@ export default function AdminImageSlidersPage() {
             ) : (
               <p className="mt-3 rounded-md bg-neutral-100 p-3 text-xs text-neutral-500">No file yet — pick one below to preview.</p>
             )}
-            <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Hero file — image (JPG/PNG/WEBP ≤ 3 MB) or video (MP4/WEBM ≤ 50 MB){modal.id ? " — leave empty to keep current" : ""}
-              <input
-                type="file"
-                accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov"
-                onChange={(e) => stage(e.target.files?.[0])}
-                className="mt-1 w-full text-xs"
-              />
-            </label>
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                Hero file{modal.id ? " — leave empty to keep current" : ""}
+              </p>
+              <div className="mt-1">
+                <FilePick
+                  accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov"
+                  onPick={stage}
+                  fileName={staged?.name}
+                  hint="Image JPG / PNG / WEBP ≤ 3 MB — or video MP4 / WEBM ≤ 50 MB"
+                />
+              </div>
+            </div>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500">
                 Title

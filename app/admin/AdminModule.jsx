@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetch, unwrap, revalidateSite, uploadFile, detectMediaType } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
 import ActiveToggle from "@/components/ActiveToggle";
+import FilePick from "./FilePick";
 import { useToast } from "./ToastProvider";
 import { useConfirm } from "./ConfirmProvider";
 
@@ -346,12 +347,15 @@ export default function AdminModulePage({ module: slug, lock }) {
             placeholder="URL or pick a file below"
             className={inputCls}
           />
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={(e) => stageFile(c.key, e.target.files?.[0])}
-            className="mt-1 w-full text-xs"
-          />
+          <div className="mt-1">
+            <FilePick
+              small
+              accept="image/*,video/*"
+              onPick={(f) => stageFile(c.key, f)}
+              fileName={file?.name}
+              hint="Image / video — click or drop"
+            />
+          </div>
           {file ? (
             <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-green-800">
               Staged: {file.name}
