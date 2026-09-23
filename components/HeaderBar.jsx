@@ -83,7 +83,7 @@ export default function HeaderBar({ categories }) {
     <>
       {searchOpen && <SearchDropdown onClose={() => setSearchOpen(false)} />}
 
-      <header className="topbar-enter relative sticky top-0 z-[80] flex h-10 items-center justify-between bg-white px-4">
+      <header className="topbar-enter relative sticky top-0 z-[80] flex h-10 items-center justify-between bg-[#101010] px-4 text-[#f7f4ec]">
         <div className="flex items-center gap-3">
           <Hamburger categories={categories} />
 
@@ -121,7 +121,7 @@ export default function HeaderBar({ categories }) {
         <div className="logo pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 justify-center text-center">
           <Link href="/" aria-label="Harry Clinton home" className="pointer-events-auto block">
             <Image
-              src="/brand/logo-black.png"
+              src="/brand/logo-white.png"
               alt="Harry Clinton"
               width={26}
               height={26}
@@ -132,7 +132,7 @@ export default function HeaderBar({ categories }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/wishlist" className="hicon relative text-neutral-900" aria-label="Wishlist">
+          <Link href="/wishlist" className="hicon relative text-[#f7f4ec]" aria-label="Wishlist">
             <HeartGlyph />
             {wishlistCount > 0 && (
               <span className="absolute -right-2 -top-1  bg-red-600 px-1.5 text-[10px] font-bold text-white">
@@ -140,7 +140,7 @@ export default function HeaderBar({ categories }) {
               </span>
             )}
           </Link>
-          <button type="button" onClick={() => setBagOpen(true)} className="hicon relative text-neutral-900" aria-label="Open bag">
+          <button type="button" onClick={() => setBagOpen(true)} className="hicon relative text-[#f7f4ec]" aria-label="Open bag">
             <BagGlyph />
             {cartCount > 0 && (
               <span className="absolute -right-2 -top-1  bg-red-600 px-1.5 text-[10px] font-bold text-white">
@@ -190,7 +190,7 @@ export default function HeaderBar({ categories }) {
         .c-home { position: relative; }
         .c-icon {
           width: 30px; height: 30px; border-radius:0;
-          border: 1.5px solid #111; background: #fff;
+          border: 1.5px solid #c6a15b; background: #101010; color: #f7f4ec;
           font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer; transition: transform 0.15s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;

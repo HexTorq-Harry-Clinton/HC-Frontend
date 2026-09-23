@@ -76,27 +76,27 @@ export default function HomeFaqs() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-14">
-      <h2 className="text-center font-display text-4xl font-bold">{title}</h2>
+    <section className="mx-auto max-w-3xl px-4 py-14 bg-[#101010]">
+      <h2 className="text-center font-display text-4xl font-bold text-[#f7f4ec]">{title}</h2>
       {subtitle ? (
-        <p className="mt-2 text-center text-sm text-neutral-500">{subtitle}</p>
+        <p className="mt-2 text-center text-sm text-neutral-400">{subtitle}</p>
       ) : null}
       <div className="mt-8 space-y-3">
         {faqs.map((faq, i) => {
           const id = i + 1;
           const isOpen = openId === id;
           return (
-            <div key={id} className="border border-neutral-200">
+            <div key={id} className="border border-white/15 bg-white/5">
               <button
                 onClick={() => setOpenId(isOpen ? null : id)}
                 aria-expanded={isOpen}
-                className="flex w-full items-center justify-between p-4 text-left font-medium"
+                className="flex w-full items-center justify-between p-4 text-left font-medium text-[#f7f4ec]"
               >
                 {faq.question}
                 <span className="ml-3 text-gold">{isOpen ? "−" : "+"}</span>
               </button>
               {isOpen && (
-                <p className="px-4 pb-4 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.answer) }} />
+                <p className="px-4 pb-4 text-sm text-neutral-300" dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.answer) }} />
               )}
             </div>
           );

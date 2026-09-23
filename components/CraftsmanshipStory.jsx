@@ -55,18 +55,18 @@ export default function CraftsmanshipStory() {
       </div>
 
       {/* BLOCK 2: Three-column feature grid */}
-      <div className="bg-[#f7f4ec] py-20 px-4 sm:px-6 md:px-12 lg:px-24">
+      <div className="bg-[#101010] py-20 px-4 sm:px-6 md:px-12 lg:px-24">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           <Reveal>
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
+              className="bg-white/5 backdrop-blur-sm border border-[#c6a15b]/25  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
             >
-              <div className="w-16 h-16  bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
+              <div className="w-16 h-16  bg-white/10 border border-[#c6a15b]/30 flex items-center justify-center mb-6">
                 <i className="bi bi-scissors text-3xl text-[#c6a15b]"></i>
               </div>
-              <h3 className="font-display text-2xl text-[#101010] mb-4">Precision Cutting</h3>
-              <p className="font-sans text-base text-[#101010]/70 leading-relaxed font-light">
+              <h3 className="font-display text-2xl text-[#f7f4ec] mb-4">Precision Cutting</h3>
+              <p className="font-sans text-base text-[#f7f4ec]/70 leading-relaxed font-light">
                 Every pattern is hand-drawn and cut with surgical precision, ensuring a silhouette that moves with you.
               </p>
             </motion.div>
@@ -75,13 +75,13 @@ export default function CraftsmanshipStory() {
           <Reveal>
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
+              className="bg-white/5 backdrop-blur-sm border border-[#c6a15b]/25  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
             >
-              <div className="w-16 h-16  bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
+              <div className="w-16 h-16  bg-white/10 border border-[#c6a15b]/30 flex items-center justify-center mb-6">
                 <i className="bi bi-palette2 text-3xl text-[#c6a15b]"></i>
               </div>
-              <h3 className="font-display text-2xl text-[#101010] mb-4">Fine Fabrics</h3>
-              <p className="font-sans text-base text-[#101010]/70 leading-relaxed font-light">
+              <h3 className="font-display text-2xl text-[#f7f4ec] mb-4">Fine Fabrics</h3>
+              <p className="font-sans text-base text-[#f7f4ec]/70 leading-relaxed font-light">
                 Sourced from the finest mills across Italy, England, and Japan — only materials worthy of the Harry Clinton name.
               </p>
             </motion.div>
@@ -90,13 +90,13 @@ export default function CraftsmanshipStory() {
           <Reveal>
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
+              className="bg-white/5 backdrop-blur-sm border border-[#c6a15b]/25  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
             >
-              <div className="w-16 h-16  bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
+              <div className="w-16 h-16  bg-white/10 border border-[#c6a15b]/30 flex items-center justify-center mb-6">
                 <i className="bi bi-award text-3xl text-[#c6a15b]"></i>
               </div>
-              <h3 className="font-display text-2xl text-[#101010] mb-4">Perfect Fit</h3>
-              <p className="font-sans text-base text-[#101010]/70 leading-relaxed font-light">
+              <h3 className="font-display text-2xl text-[#f7f4ec] mb-4">Perfect Fit</h3>
+              <p className="font-sans text-base text-[#f7f4ec]/70 leading-relaxed font-light">
                 Your measurements, your style, your rules. Every stitch is placed with intention and pride.
               </p>
             </motion.div>

@@ -109,7 +109,7 @@ export default function CIconModal({ isOpen, onClose }) {
     }
   };
 
-  const inputCls = "w-full border border-neutral-300 px-3 py-2 text-sm focus:border-gold focus:outline-none";
+  const inputCls = "w-full border border-white/25 bg-white/5 px-3 py-2 text-sm text-[#f7f4ec] placeholder:text-neutral-500 focus:border-gold focus:outline-none";
 
   return (
     <>
@@ -120,13 +120,13 @@ export default function CIconModal({ isOpen, onClose }) {
           onMouseDown={() => !isSubmitting && handleClose()}
         >
           <div
-            className="max-h-[90vh] w-full max-w-lg overflow-y-auto bg-white"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto bg-[#141414] text-[#f7f4ec]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="appointment-modal-title"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between border-b border-neutral-200 p-5">
+            <div className="flex items-start justify-between border-b border-white/15 p-5">
               <div>
                 <span className="eyebrow text-gold">Harry Clinton</span>
                 <h5 className="mt-1 font-display text-2xl font-bold" id="appointment-modal-title">

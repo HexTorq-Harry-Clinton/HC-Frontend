@@ -295,28 +295,28 @@ export default function SearchDropdown({ onClose }) {
         </div>
       )}
       <style jsx>{`
-        .sd-wrap { position: fixed; top: 0; left: 0; right: 0; z-index: 120; background: rgba(255,255,255,0.98); border-bottom: 1px solid #e5e5e5; padding: 14px 16px; }
+        .sd-wrap { position: fixed; top: 0; left: 0; right: 0; z-index: 120; background: rgba(16,16,16,0.98); border-bottom: 1px solid rgba(255,255,255,0.15); padding: 14px 16px; color: #f7f4ec; }
         .sd-input-row { display: flex; align-items: center; gap: 10px; max-width: 720px; margin: 0 auto; }
         .sd-icon { font-size: 1.2rem; }
-        .sd-input { flex: 1; border: none; border-bottom: 1px solid #111; padding: 8px 4px; font-size: 1rem; outline: none; background: transparent; }
-        .sd-clear { border: none; background: none; cursor: pointer; }
+        .sd-input { flex: 1; border: none; border-bottom: 1px solid #c6a15b; padding: 8px 4px; font-size: 1rem; outline: none; background: transparent; color: #f7f4ec; }
+        .sd-clear { border: none; background: none; cursor: pointer; color: #f7f4ec; }
         .sd-dropdown { max-width: 720px; margin: 10px auto 0; max-height: 60vh; overflow-y: auto; }
-        .sd-state { display: flex; align-items: center; gap: 10px; padding: 14px 4px; font-size: 0.9rem; color: #555; }
-        .sd-spinner { width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #111; border-radius:0; animation: sd-spin 0.7s linear infinite; }
+        .sd-state { display: flex; align-items: center; gap: 10px; padding: 14px 4px; font-size: 0.9rem; color: #bbb; }
+        .sd-spinner { width: 16px; height: 16px; border: 2px solid #444; border-top-color: #c6a15b; border-radius:0; animation: sd-spin 0.7s linear infinite; }
         @keyframes sd-spin { to { transform: rotate(360deg); } }
         .sd-section { margin-top: 10px; }
-        .sd-section__label { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: #888; margin-bottom: 4px; }
-        .sd-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 8px 4px; border: none; background: none; cursor: pointer; }
-        .sd-item:hover { background: #f6f4ee; }
-        .sd-item__icon { color: #888; }
+        .sd-section__label { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: #999; margin-bottom: 4px; }
+        .sd-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 8px 4px; border: none; background: none; cursor: pointer; color: #f7f4ec; }
+        .sd-item:hover { background: rgba(255,255,255,0.07); }
+        .sd-item__icon { color: #999; }
         .sd-item__text { flex: 1; font-size: 0.92rem; }
-        .sd-item__tag { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: #a8823f; }
+        .sd-item__tag { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: #c6a15b; }
         .sd-item__thumb { width: 44px; height: 54px; object-fit: cover; }
-        .sd-item__thumb-placeholder { width: 44px; height: 54px; display: flex; align-items: center; justify-content: center; background: #f1efe9; color: #999; }
+        .sd-item__thumb-placeholder { width: 44px; height: 54px; display: flex; align-items: center; justify-content: center; background: #222; color: #999; }
         .sd-item__info { flex: 1; display: flex; flex-direction: column; }
         .sd-item__price { font-size: 0.8rem; font-weight: 700; }
-        .sd-footer { border-top: 1px solid #eee; margin-top: 8px; padding-top: 8px; }
-        .sd-footer__btn { border: none; background: none; cursor: pointer; font-size: 0.9rem; }
+        .sd-footer { border-top: 1px solid #333; margin-top: 8px; padding-top: 8px; }
+        .sd-footer__btn { border: none; background: none; cursor: pointer; font-size: 0.9rem; color: #f7f4ec; }
       `}</style>
     </div>
   );

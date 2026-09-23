@@ -17,7 +17,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body className="min-h-screen bg-white text-neutral-900 antialiased">
+      <body className="min-h-screen bg-[#101010] text-[#f7f4ec] antialiased">
         <SmoothScroll>
           <AuthListener />
           <CartProvider>{children}</CartProvider>

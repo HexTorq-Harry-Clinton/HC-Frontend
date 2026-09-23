@@ -12,12 +12,12 @@ export default function LoginPopup({ onSkip }) {
       onClick={onSkip}
     >
       <div
-        className="w-full max-w-md bg-white p-8 text-center shadow-xl"
+        className="w-full max-w-md bg-[#141414] p-8 text-center text-[#f7f4ec] shadow-xl"
         style={{ borderRadius:"0" }}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-display text-3xl font-bold">Welcome to Harry Clinton</h2>
-        <p className="mt-3 text-sm text-neutral-500">
+        <p className="mt-3 text-sm text-neutral-400">
           Login to enjoy a personalised experience, save addresses, and track your orders.
         </p>
         <button
@@ -26,7 +26,7 @@ export default function LoginPopup({ onSkip }) {
         >
           Login / Register
         </button>
-        <button onClick={onSkip} className="mt-3 text-sm text-neutral-500 underline">
+        <button onClick={onSkip} className="mt-3 text-sm text-neutral-400 underline">
           Continue as Guest
         </button>
       </div>

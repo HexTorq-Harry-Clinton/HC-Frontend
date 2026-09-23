@@ -155,12 +155,13 @@ export default function CategoryShowcase() {
     };
   }, []);
   return (
-    <section className="py-24 bg-[#f7f4ec] text-[#101010]">
+    <section className="py-24 bg-[#101010] text-[#f7f4ec]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <Reveal>
           <SectionHeading
             eyebrow={eyebrow}
             title={title}
+            dark
           />
         </Reveal>
 

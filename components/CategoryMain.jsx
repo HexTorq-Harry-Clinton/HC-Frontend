@@ -86,7 +86,7 @@ export default async function CategoryMain({ category }) {
         </div>
       </section>
 
-      <div className="overflow-hidden bg-neutral-100">
+      <div className="overflow-hidden bg-[#141414] text-[#f7f4ec]">
         <div className="animate-marquee py-4">
           {Array(4).fill(marquee).flat().map((word, idx) => (
             <span key={idx} className="mx-4 font-bold uppercase">

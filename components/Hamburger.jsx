@@ -127,7 +127,7 @@ export default function Hamburger({ categories }) {
       <style jsx>{`
         .hamburger { width: 32px; height: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
         .hamburger span {
-          display: block; width: 18px; height: 2px; background: #111;
+          display: block; width: 18px; height: 2px; background: #f7f4ec;
           transform-origin: center; transition: transform 0.35s ease, width 0.35s ease, background 0.35s ease, opacity 0.25s ease;
           animation: lineIn 0.5s ease backwards;
         }
@@ -143,7 +143,7 @@ export default function Hamburger({ categories }) {
         .hamburger.active span:nth-child(2) { width: 14px; }
         .hamburger.active span:nth-child(3) { transform: translate(6px, -6px) rotate(90deg); }
         .topmenu {
-          position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 70;
+          position: absolute; top: 100%; left: 0; right: 0; background: #141414; color: #f7f4ec; z-index: 70;
           max-height: 0; opacity: 0; transform: translateY(-14px); overflow: hidden;
           transition: max-height 0.45s ease, opacity 0.3s ease, transform 0.35s ease;
           box-shadow: 0 30px 40px -20px rgba(0,0,0,0.18);
@@ -152,7 +152,7 @@ export default function Hamburger({ categories }) {
         .Hdropdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; padding: 2rem; }
         .Hdropdown strong { font-size: 0.72rem; letter-spacing: 0.25em; }
         .Hdropdown ul { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
-        .Hdropdown button { font-size: 0.9rem; }
+        .Hdropdown button { font-size: 0.9rem; color: #f7f4ec; }
         .Hdropdown button:hover { color: #a8823f; }
         .topmenu.show li { animation: itemIn 0.35s ease backwards; }
         .topmenu.show li:nth-child(2) { animation-delay: 0.05s; }

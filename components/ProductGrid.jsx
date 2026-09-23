@@ -60,17 +60,17 @@ export default async function ProductGrid({ keyword = "", keywords = [] }) {
                 hearts fill red via WishlistHeart itself). */}
             <WishlistHeart
               product={{ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image }}
-              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center  bg-white/90 text-neutral-800 shadow transition hover:bg-gold"
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center  bg-black/70 text-[#f7f4ec] shadow transition hover:bg-gold hover:text-neutral-950"
             />
-            <Link href={`/product/${product.slug || product.id}`} className="text-decoration-none text-dark">
+            <Link href={`/product/${product.slug || product.id}`} className="text-decoration-none text-cream">
               <div className="card h-100 border-0 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={product.image || "data:image/svg+xml;charset=UTF-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#e9ecef"/><text x="200" y="250" font-family="Arial" font-size="20" fill="#6c757d" text-anchor="middle">Harry Clinton</text></svg>')}
+                  src={product.image || "data:image/svg+xml;charset=UTF-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#1a1a1a"/><text x="200" y="250" font-family="Arial" font-size="20" fill="#c6a15b" text-anchor="middle">Harry Clinton</text></svg>')}
                   alt={product.name}
                   loading="lazy"
                   className="card-img-top"
-                  style={{ objectFit: "cover", height: "280px", background: "#f1eeea" }}
+                  style={{ objectFit: "cover", height: "280px", background: "#1a1a1a" }}
                 />
                 <div className="card-body">
                   <h5 className="card-title">{product.name}</h5>
@@ -90,13 +90,13 @@ export default async function ProductGrid({ keyword = "", keywords = [] }) {
         @media (min-width: 768px) { .row-cols-md-3 > * { width: 33.3333%; } }
         @media (min-width: 1024px) { .row-cols-lg-4 > * { width: 25%; } }
         .col { padding: 0 0.75rem; }
-        .card { border: 1px solid #eee; background: #fff; }
+        .card { border: 1px solid rgba(255,255,255,0.12); background: #141414; }
         .card-img-top { width: 100%; }
         .card-body { padding: 1rem; text-align: center; }
-        .card-title { font-size: 1rem; margin-bottom: 0.25rem; }
-        .card-text.fw-bold { font-weight: 700; }
+        .card-title { font-size: 1rem; margin-bottom: 0.25rem; color: #f7f4ec; }
+        .card-text.fw-bold { font-weight: 700; color: #c6a15b; }
         .text-decoration-none { text-decoration: none; }
-        .text-dark { color: #111; }
+        .text-cream { color: #f7f4ec; }
         .h-100 { height: 100%; } .border-0 { border: 0; } .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
         .mb-4 { margin-bottom: 1.5rem; } .text-center { text-align: center; }
         .py-5 { padding-top: 3rem; padding-bottom: 3rem; } .py-3 { padding-top: 1rem; padding-bottom: 1rem; }

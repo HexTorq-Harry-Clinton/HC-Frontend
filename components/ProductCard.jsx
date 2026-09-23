@@ -11,7 +11,7 @@ import WishlistHeart from "./WishlistHeart";
 export const PLACEHOLDER_IMAGE =
   "data:image/svg+xml;charset=UTF-8," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#e9ecef"/><text x="200" y="250" font-family="Arial" font-size="20" fill="#6c757d" text-anchor="middle">Harry Clinton</text></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="#1a1a1a"/><text x="200" y="250" font-family="Arial" font-size="20" fill="#c6a15b" text-anchor="middle">Harry Clinton</text></svg>`
   );
 
 // Product card: image zoom + slide-up quick actions (add to bag, wishlist)
@@ -38,7 +38,7 @@ export default function ProductCard({ product, index = 0 }) {
       transition={{ duration: 0.45, delay: (index % 4) * 0.06 }}
       className="group relative"
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
+      <div className="relative aspect-[4/5] overflow-hidden bg-neutral-900">
         <Link href={href} aria-label={product.name}>
           <Image
             src={product.image || PLACEHOLDER_IMAGE}
@@ -68,7 +68,7 @@ export default function ProductCard({ product, index = 0 }) {
         className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center  shadow transition-all duration-300 ${
           wished
             ? "bg-gold text-neutral-950"
-            : "bg-white/90 text-neutral-800 hover:bg-gold lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100"
+            : "bg-black/70 text-[#f7f4ec] hover:bg-gold hover:text-neutral-950 lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100"
         }`}
       />
       <Link href={href} className="block pt-3 text-center">

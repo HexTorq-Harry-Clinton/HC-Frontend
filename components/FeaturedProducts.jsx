@@ -75,12 +75,12 @@ export default function FeaturedProducts() {
 
   if (isLoading) {
     return (
-      <section className="py-16">
+      <section className="py-16 bg-[#101010]">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="w-48 h-8 bg-gray-200 animate-pulse mb-8 mx-auto"></div>
+          <div className="w-48 h-8 bg-neutral-800 animate-pulse mb-8 mx-auto"></div>
           <div className={`grid grid-cols-2 gap-4 md:gap-6 ${COLS_CLS[cfg.cols] || "md:grid-cols-4"}`}>
             {[...Array(cfg.count)].map((_, i) => (
-              <div key={i} className="aspect-[3/4] bg-gray-200 animate-pulse " />
+              <div key={i} className="aspect-[3/4] bg-neutral-800 animate-pulse " />
             ))}
           </div>
         </div>
@@ -93,12 +93,13 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <section className="py-16">
+    <section className="py-16 bg-[#101010]">
       <div className="max-w-7xl mx-auto px-4">
         <SectionHeading
           eyebrow={cfg.eyebrow}
           title={cfg.title}
           sub={cfg.sub}
+          dark
         />
 
         <div className={`grid grid-cols-2 gap-4 md:gap-6 mt-10 ${COLS_CLS[cfg.cols] || "md:grid-cols-4"}`}>
@@ -110,7 +111,7 @@ export default function FeaturedProducts() {
         </div>
 
         <div className="mt-12 flex justify-center">
-          <Link href="/new-arrivals" className="btn-ghost">
+          <Link href="/new-arrivals" className="btn-ghost !border-[#f7f4ec] !text-[#f7f4ec] hover:!bg-[#f7f4ec] hover:!text-[#101010]">
             View All
           </Link>
         </div>

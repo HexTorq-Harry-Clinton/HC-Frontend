@@ -68,7 +68,7 @@ export default async function OccasionPage({ page }) {
       </section>
 
       {/* MARQUEE */}
-      <div className="overflow-hidden bg-neutral-100">
+      <div className="overflow-hidden bg-[#141414] text-[#f7f4ec]">
         <div className="animate-marquee py-4">
           {Array(4).fill(page.marquee).flat().map((word, idx) => (
             <span key={idx} className="mx-4 font-bold uppercase">
@@ -110,9 +110,9 @@ export default async function OccasionPage({ page }) {
         </div>
         <div className="oc-6 oc-flex p-4">
           <div>
-            <h3 className="font-display text-3xl font-bold">{page.descTitle}</h3>
+            <h3 className="font-display text-3xl font-bold text-[#f7f4ec]">{page.descTitle}</h3>
             {page.descText.split("\n").map((para, idx) => (
-              <p key={idx} className="mt-3 text-neutral-600">{para}</p>
+              <p key={idx} className="mt-3 text-neutral-300">{para}</p>
             ))}
           </div>
         </div>
@@ -136,7 +136,7 @@ export default async function OccasionPage({ page }) {
       )}
 
       {/* FADE BAR */}
-      <div className="bg-neutral-100 py-4 text-center">
+      <div className="bg-[#141414] py-4 text-center text-[#f7f4ec]">
         <span className="fade-in-out-text text-xl font-bold uppercase">{page.footer}</span>
       </div>
       <style>{`

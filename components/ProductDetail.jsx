@@ -85,7 +85,7 @@ export default function ProductDetail({ product }) {
       <div className="mx-auto max-w-7xl px-4 py-8">
         <div className="grid items-start gap-10 md:grid-cols-2">
         <div>
-          <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
+          <div className="relative aspect-[4/5] overflow-hidden bg-neutral-900">
             <Image
               src={effectiveGallery[activeImg] || effectiveGallery[0]}
               alt={product.name}
@@ -101,7 +101,7 @@ export default function ProductDetail({ product }) {
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
-                  className={`relative aspect-square overflow-hidden bg-neutral-100 ${i === activeImg ? "ring-2 ring-neutral-900" : ""}`}
+                  className={`relative aspect-square overflow-hidden bg-neutral-900 ${i === activeImg ? "ring-2 ring-gold" : ""}`}
                 >
                   <Image src={src} alt={`${product.name} ${i + 1}`} fill sizes="150px" className="object-cover" />
                 </button>
@@ -112,12 +112,12 @@ export default function ProductDetail({ product }) {
 
         <Reveal className="md:sticky md:top-24">
           <h1 className="font-display text-4xl font-bold">{product.name}</h1>
-          {product.description && <p className="mt-1 text-neutral-500">{product.description}</p>}
+          {product.description && <p className="mt-1 text-neutral-400">{product.description}</p>}
           <h3 className="mt-3 text-2xl font-bold">{inr(displayPrice)}</h3>
           {product.fullDescription && product.fullDescription !== product.description && (
             <>
               <h5 className="mt-5 font-semibold">Description</h5>
-              <div className="mt-1 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }} />
+              <div className="mt-1 text-sm text-neutral-300" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }} />
             </>
           )}
 
@@ -131,7 +131,7 @@ export default function ProductDetail({ product }) {
                     onClick={() => { setSize(s.key); setSizeError(""); }}
                     disabled={!s.available}
                     className={`border px-4 py-2 text-sm disabled:opacity-40 ${
-                      size === s.key ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300"
+                      size === s.key ? "border-gold bg-gold text-neutral-950" : "border-white/25"
                     }`}
                   >
                     {s.label}
@@ -148,7 +148,7 @@ export default function ProductDetail({ product }) {
                 <button
                   onClick={() => cart?.updateQty(bagLine.key || bagLine.id, Math.max(1, (bagLine.qty || 1) - 1))}
                   disabled={(bagLine.qty || 1) <= 1}
-                  className="border border-neutral-300 px-3 py-1 disabled:opacity-40"
+                  className="border border-white/25 px-3 py-1 text-[#f7f4ec] disabled:opacity-40"
                   aria-label="Decrease quantity"
                 >
                   −
@@ -156,7 +156,7 @@ export default function ProductDetail({ product }) {
                 <span className="w-8 text-center font-semibold">{bagLine.qty || 1}</span>
                 <button
                   onClick={() => cart?.updateQty(bagLine.key || bagLine.id, (bagLine.qty || 1) + 1)}
-                  className="border border-neutral-300 px-3 py-1"
+                  className="border border-white/25 px-3 py-1 text-[#f7f4ec]"
                   aria-label="Increase quantity"
                 >
                   +
@@ -170,16 +170,16 @@ export default function ProductDetail({ product }) {
                 </button>
                 <WishlistHeart
                   product={{ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] }}
-                  className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
+                  className="border border-white/25 px-5 py-3 text-lg text-[#f7f4ec] transition hover:border-gold"
                 />
               </div>
             </>
           ) : (
             <>
               <div className="mt-6 flex items-center gap-3" role="group" aria-label="Quantity">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity" className="border border-neutral-300 px-3 py-1">−</button>
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity" className="border border-white/25 px-3 py-1 text-[#f7f4ec]">−</button>
                 <span className="w-8 text-center" aria-live="polite">{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity" className="border border-neutral-300 px-3 py-1">+</button>
+                <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity" className="border border-white/25 px-3 py-1 text-[#f7f4ec]">+</button>
               </div>
 
               <div className="mt-6 flex gap-3">
@@ -188,7 +188,7 @@ export default function ProductDetail({ product }) {
                 </button>
                 <WishlistHeart
                   product={{ id: product.id, name: product.name, price: displayPrice, image: effectiveGallery[0] }}
-                  className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-gold"
+                  className="border border-white/25 px-5 py-3 text-lg text-[#f7f4ec] transition hover:border-gold"
                 />
               </div>
             </>
@@ -197,14 +197,14 @@ export default function ProductDetail({ product }) {
             ← Continue Shopping
           </button>
 
-          <div className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
+          <div className="mt-8 divide-y divide-white/15 border-y border-white/15">
             <details className="group py-4">
-              <summary className="cursor-pointer text-sm font-semibold uppercase tracking-widest marker:text-gold">Shipping & Returns</summary>
-              <p className="mt-2 text-sm text-neutral-600">Dispatched in 5–7 working days. Easy 7-day returns on unworn pieces with tags intact.</p>
+              <summary className="cursor-pointer text-sm font-semibold uppercase tracking-widest text-[#f7f4ec] marker:text-gold">Shipping & Returns</summary>
+              <p className="mt-2 text-sm text-neutral-300">Dispatched in 5–7 working days. Easy 7-day returns on unworn pieces with tags intact.</p>
             </details>
             <details className="group py-4">
-              <summary className="cursor-pointer text-sm font-semibold uppercase tracking-widest marker:text-gold">Care</summary>
-              <p className="mt-2 text-sm text-neutral-600">Dry clean only. Store on a broad hanger in the garment bag provided.</p>
+              <summary className="cursor-pointer text-sm font-semibold uppercase tracking-widest text-[#f7f4ec] marker:text-gold">Care</summary>
+              <p className="mt-2 text-sm text-neutral-300">Dry clean only. Store on a broad hanger in the garment bag provided.</p>
             </details>
           </div>
         </Reveal>
@@ -212,8 +212,8 @@ export default function ProductDetail({ product }) {
       </div>
 
       {product.related?.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-14">
-          <SectionHeading eyebrow="Pairs Well" title="Complete the Look" />
+        <section className="mx-auto max-w-7xl bg-[#101010] px-4 py-14">
+          <SectionHeading eyebrow="Pairs Well" title="Complete the Look" dark />
           <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
             {product.related.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
@@ -222,7 +222,7 @@ export default function ProductDetail({ product }) {
         </section>
       )}
 
-      <div className="bg-cream">
+      <div className="bg-[#101010]">
         <ReviewsSection
           productId={product.id}
           initialReviews={product.reviews || []}

@@ -58,13 +58,13 @@ export default function ProfileDropdown({ onClose }) {
           <i className="bi bi-person-plus"></i> Register
         </div>
         <style jsx>{`
-          .profile-dropdown { position: absolute; right: 0; top: calc(100% + 10px); min-width: 230px; background: #fff; border: 1px solid #e7e2d6; border-radius:0; box-shadow: 0 18px 44px rgba(0,0,0,0.16); z-index: 95; padding: 6px; }
-          .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 0.88rem; cursor: pointer; border-radius:0; color: #111; background: #fff; }
-          .dropdown-item:hover { background: #f6f4ee; }
-          .dropdown-item.logout { color: #b3261e; }
-          .dropdown-header { padding: 10px 12px; color: #111; }
-          .dropdown-role { font-size: 0.75rem; color: #777; margin-top: 2px; }
-          .dropdown-divider { height: 1px; background: #eee; margin: 4px 0; }
+          .profile-dropdown { position: absolute; right: 0; top: calc(100% + 10px); min-width: 230px; background: #141414; border: 1px solid rgba(255,255,255,0.15); border-radius:0; box-shadow: 0 18px 44px rgba(0,0,0,0.5); z-index: 95; padding: 6px; }
+          .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 0.88rem; cursor: pointer; border-radius:0; color: #f7f4ec; background: #141414; }
+          .dropdown-item:hover { background: rgba(255,255,255,0.08); }
+          .dropdown-item.logout { color: #f08080; }
+          .dropdown-header { padding: 10px 12px; color: #f7f4ec; }
+          .dropdown-role { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+          .dropdown-divider { height: 1px; background: #333; margin: 4px 0; }
         `}</style>
       </div>
     );
@@ -102,13 +102,13 @@ export default function ProfileDropdown({ onClose }) {
         <i className="bi bi-box-arrow-right"></i> Logout
       </div>
       <style jsx>{`
-        .profile-dropdown { position: absolute; right: 0; top: calc(100% + 10px); min-width: 230px; background: #fff; border: 1px solid #e7e2d6; border-radius:0; box-shadow: 0 18px 44px rgba(0,0,0,0.16); z-index: 95; padding: 6px; }
-        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 0.88rem; cursor: pointer; border-radius:0; color: #111; background: #fff; }
-        .dropdown-item:hover { background: #f6f4ee; }
-        .dropdown-item.logout { color: #b3261e; }
-        .dropdown-header { padding: 10px 12px; color: #111; }
-        .dropdown-role { font-size: 0.75rem; color: #777; margin-top: 2px; }
-        .dropdown-divider { height: 1px; background: #eee; margin: 4px 0; }
+        .profile-dropdown { position: absolute; right: 0; top: calc(100% + 10px); min-width: 230px; background: #141414; border: 1px solid rgba(255,255,255,0.15); border-radius:0; box-shadow: 0 18px 44px rgba(0,0,0,0.5); z-index: 95; padding: 6px; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 0.88rem; cursor: pointer; border-radius:0; color: #f7f4ec; background: #141414; }
+        .dropdown-item:hover { background: rgba(255,255,255,0.08); }
+        .dropdown-item.logout { color: #f08080; }
+        .dropdown-header { padding: 10px 12px; color: #f7f4ec; }
+        .dropdown-role { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+        .dropdown-divider { height: 1px; background: #333; margin: 4px 0; }
       `}</style>
     </div>
   );

@@ -81,19 +81,20 @@ export default function HomeTestimonials() {
   }, [testimonials.length, isHovered]);
 
   if (loading) {
-    return <div className="py-20 bg-[#f7f4ec] min-h-[400px]"></div>;
+    return <div className="py-20 bg-[#101010] min-h-[400px]"></div>;
   }
 
   const currentTestimonial = testimonials[currentIndex];
 
   return (
-    <section className="py-20 bg-[#f7f4ec]">
+    <section className="py-20 bg-[#101010]">
       <div className="max-w-4xl mx-auto px-4">
         <Reveal>
           <SectionHeading
             eyebrow={copy.eyebrow}
             title={copy.title}
             sub={copy.sub}
+            dark
           />
         </Reveal>
 
@@ -115,12 +116,12 @@ export default function HomeTestimonials() {
                 <div className="text-6xl text-[#c6a15b] font-display mb-6 leading-none">
                   &ldquo;
                 </div>
-                <p className="text-xl md:text-2xl font-display italic text-[#101010] mb-8 max-w-2xl mx-auto px-4">
+                <p className="text-xl md:text-2xl font-display italic text-[#f7f4ec] mb-8 max-w-2xl mx-auto px-4">
                   {currentTestimonial.review_text}
                 </p>
                 <div className="w-12 h-px bg-[#c6a15b] mx-auto mb-6"></div>
                 
-                <h4 className="uppercase tracking-widest text-sm text-[#101010] font-semibold mb-2">
+                <h4 className="uppercase tracking-widest text-sm text-[#f7f4ec] font-semibold mb-2">
                   {currentTestimonial.reviewer_name}
                 </h4>
                 

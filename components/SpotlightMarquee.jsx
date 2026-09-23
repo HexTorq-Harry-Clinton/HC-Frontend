@@ -152,17 +152,17 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
   );
 
   return (
-    <section ref={sectionRef} className="overflow-hidden bg-white py-16">
+    <section ref={sectionRef} className="overflow-hidden bg-[#101010] py-16">
       <div className="mx-auto mb-8 flex max-w-7xl items-end justify-between px-4 sm:px-6 lg:px-8">
         <div>
           <p className="eyebrow text-gold-deep">Showcase</p>
-          <h2 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900 md:text-4xl">
+          <h2 className="mt-1 font-display text-3xl font-bold tracking-tight text-[#f7f4ec] md:text-4xl">
             {title}
           </h2>
         </div>
         <Link
           href="/hc-spotlight"
-          className="link-sweep text-xs font-semibold uppercase tracking-[0.25em] text-neutral-900"
+          className="link-sweep text-xs font-semibold uppercase tracking-[0.25em] text-[#f7f4ec]"
         >
           Explore
         </Link>
