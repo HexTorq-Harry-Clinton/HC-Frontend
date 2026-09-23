@@ -14,18 +14,18 @@ import useUploader from "../useUploader";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
-const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
-const tableWrapCls = "overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm";
+const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
+const tableWrapCls = "overflow-x-auto  border border-neutral-200 bg-white shadow-sm";
 const thCls = "px-4 py-3 whitespace-nowrap";
 const tdCls = "px-4 py-3";
 const inputCls =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 const btnPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
 const btnOutline =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
+  "inline-flex items-center justify-center gap-1.5  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
 const iconBtn =
-  "inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900";
+  "inline-flex h-8 w-8 items-center justify-center  text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900";
 
 // Images: JPG / PNG / WEBP, max 3 MB. Videos: MP4 / WEBM / MOV, max 50 MB.
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
@@ -325,7 +325,7 @@ export default function AdminImageSlidersPage() {
         Hero slider — images + videos mixed • {live.length} slide(s) • IMG ≤ 3 MB / VID ≤ 50 MB
       </p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
           {msg}
         </p>
       )}
@@ -335,7 +335,7 @@ export default function AdminImageSlidersPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search slides..."
-          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
           style={{ minWidth: 200 }}
         />
         {!orderMode ? (
@@ -406,7 +406,7 @@ export default function AdminImageSlidersPage() {
                         type="button"
                         title="View fullscreen"
                         onClick={() => setLightbox({ url: resolveUploadUrl(r.image_url), isVideo: true, title: r.title || "Slide video" })}
-                        className="flex h-12 w-24 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold transition hover:border-gold"
+                        className="flex h-12 w-24 items-center justify-center gap-1  border border-neutral-200 bg-neutral-950 text-[10px] font-bold uppercase tracking-wider text-gold transition hover:border-gold"
                       >
                         <i className="bi bi-film" /> Video
                       </button>
@@ -415,7 +415,7 @@ export default function AdminImageSlidersPage() {
                         type="button"
                         title="View fullscreen"
                         onClick={() => setLightbox({ url: resolveUploadUrl(r.image_url), isVideo: false, title: r.title || "Slide image" })}
-                        className="block overflow-hidden rounded-md border border-neutral-200 transition hover:border-gold"
+                        className="block overflow-hidden  border border-neutral-200 transition hover:border-gold"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -431,7 +431,7 @@ export default function AdminImageSlidersPage() {
                     <span className="block truncate font-semibold">{r.title || "—"}</span>
                     <span className="block truncate text-xs text-neutral-500">{r.subtitle || ""}</span>
                     {(r.isactive !== 1 && r.isactive !== true) && (
-                      <span className="mt-1 inline-block rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
+                      <span className="mt-1 inline-block  bg-neutral-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
                         Off
                       </span>
                     )}
@@ -477,16 +477,16 @@ export default function AdminImageSlidersPage() {
             type="button"
             onClick={() => setLightbox(null)}
             aria-label="Close viewer"
-            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-gold hover:text-neutral-950"
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center  bg-white/10 text-xl text-white transition hover:bg-gold hover:text-neutral-950"
           >
             <i className="bi bi-x-lg" />
           </button>
           <figure className="max-h-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
             {lightbox.isVideo ? (
-              <video src={lightbox.url} controls autoPlay muted playsInline className="max-h-[80vh] w-auto max-w-full rounded-lg" />
+              <video src={lightbox.url} controls autoPlay muted playsInline className="max-h-[80vh] w-auto max-w-full " />
             ) : (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={lightbox.url} alt={lightbox.title} className="max-h-[80vh] w-auto max-w-full rounded-lg object-contain" />
+              <img src={lightbox.url} alt={lightbox.title} className="max-h-[80vh] w-auto max-w-full  object-contain" />
             )}
             <figcaption className="mt-3 text-center text-sm text-white/70">{lightbox.title}</figcaption>
           </figure>
@@ -510,15 +510,15 @@ export default function AdminImageSlidersPage() {
             {previewUrl ? (
               <div className="mt-3">
                 {isVideoUrl(previewUrl) || (staged && detectMediaType(staged) === "video") ? (
-                  <video src={previewUrl} className="aspect-[16/7] w-full rounded-md border border-neutral-200 bg-neutral-950 object-cover" muted playsInline preload="metadata" />
+                  <video src={previewUrl} className="aspect-[16/7] w-full  border border-neutral-200 bg-neutral-950 object-cover" muted playsInline preload="metadata" />
                 ) : (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={previewUrl} alt="Slide preview" className="aspect-[16/7] w-full rounded-md border border-neutral-200 object-cover" />
+                  <img src={previewUrl} alt="Slide preview" className="aspect-[16/7] w-full  border border-neutral-200 object-cover" />
                 )}
                 <p className="mt-1 text-xs text-neutral-500">Preview — how it looks in the hero.</p>
               </div>
             ) : (
-              <p className="mt-3 rounded-md bg-neutral-100 p-3 text-xs text-neutral-500">No file yet — pick one below to preview.</p>
+              <p className="mt-3  bg-neutral-100 p-3 text-xs text-neutral-500">No file yet — pick one below to preview.</p>
             )}
             <div className="mt-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">

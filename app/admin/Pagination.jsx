@@ -32,7 +32,7 @@ function pageNums(page, pages) {
 }
 
 const numBtn =
-  "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-semibold transition-colors";
+  "inline-flex h-8 min-w-8 items-center justify-center  px-2 text-sm font-semibold transition-colors";
 
 export default function Pagination({ page, setPage, total, pageSize, setPageSize }) {
   const { from, to, pages } = pageRange(page, total, pageSize);
@@ -40,7 +40,7 @@ export default function Pagination({ page, setPage, total, pageSize, setPageSize
   if (count === 0) return null;
   const safe = Math.min(Math.max(1, Number(page) || 1), pages);
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-sm">
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3  border border-neutral-200 bg-white px-4 py-3 shadow-sm">
       <p className="text-xs text-neutral-500">
         Showing <span className="font-bold text-neutral-900">{from}–{to}</span> of{" "}
         <span className="font-bold text-neutral-900">{count}</span>
@@ -54,7 +54,7 @@ export default function Pagination({ page, setPage, total, pageSize, setPageSize
               setPageSize(Number(e.target.value));
               setPage(1);
             }}
-            className="rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm font-semibold text-neutral-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+            className=" border border-neutral-300 bg-white px-2 py-1.5 text-sm font-semibold text-neutral-900 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
           >
             {PAGE_SIZES.map((s) => (
               <option key={s} value={s}>

@@ -43,7 +43,7 @@ export default function CartDrawer({ open, onClose }) {
           <h2 className="font-display text-lg font-bold text-neutral-900">
             Your Bag {cart?.count > 0 && <span className="text-sm font-normal text-neutral-500">({cart.count})</span>}
           </h2>
-          <button type="button" onClick={onClose} aria-label="Close bag" className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-neutral-100">
+          <button type="button" onClick={onClose} aria-label="Close bag" className="flex h-9 w-9 items-center justify-center  transition hover:bg-neutral-100">
             <i className="bi bi-x-lg" />
           </button>
         </div>
@@ -71,7 +71,7 @@ export default function CartDrawer({ open, onClose }) {
                     <img
                       src={it.image || "/brand/logo-black.png"}
                       alt={it.name || ""}
-                      className="h-20 w-16 shrink-0 rounded-md border border-neutral-200 object-cover"
+                      className="h-20 w-16 shrink-0  border border-neutral-200 object-cover"
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-neutral-900">{it.name}</p>
@@ -148,7 +148,7 @@ export default function CartDrawer({ open, onClose }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xs rounded-2xl border border-neutral-200 bg-white p-5 shadow-xl"
+            className="w-full max-w-xs  border border-neutral-200 bg-white p-5 shadow-xl"
           >
             <h3 className="font-display text-base font-bold text-neutral-900">Remove this item?</h3>
             <p className="mt-1 text-xs text-neutral-500">
@@ -159,14 +159,14 @@ export default function CartDrawer({ open, onClose }) {
               <button
                 type="button"
                 onClick={() => setPendingRemove(null)}
-                className="rounded-md border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
+                className=" border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => { cart?.removeFromCart(pendingRemove); setPendingRemove(null); }}
-                className="rounded-md bg-red-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-800"
+                className=" bg-red-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-800"
               >
                 Remove
               </button>

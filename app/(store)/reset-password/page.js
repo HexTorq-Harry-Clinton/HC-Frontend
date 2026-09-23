@@ -55,7 +55,7 @@ function ResetInner() {
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-neutral-100 px-4 py-14">
-      <div className="w-full max-w-md bg-white p-6 shadow-lg" style={{ borderRadius: "12px" }}>
+      <div className="w-full max-w-md bg-white p-6 shadow-lg" style={{ borderRadius:"0" }}>
         <h3 className="mb-4 text-center font-display text-3xl font-bold">Reset Password</h3>
         {message && (
           <div className={`mb-3 p-2 text-center text-sm ${isError ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>

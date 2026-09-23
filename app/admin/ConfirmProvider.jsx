@@ -41,11 +41,11 @@ export function ConfirmProvider({ children }) {
           onClick={() => handle(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-black/5 bg-white p-7 text-center shadow-2xl"
+            className="w-full max-w-md  border border-black/5 bg-white p-7 text-center shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div
-              className={`mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full text-2xl ${
+              className={`mx-auto flex h-[52px] w-[52px] items-center justify-center  text-2xl ${
                 dialog.danger ? "bg-red-50 text-red-600" : "bg-gold/15 text-gold-deep"
               }`}
             >
@@ -57,7 +57,7 @@ export function ConfirmProvider({ children }) {
               <button
                 type="button"
                 onClick={() => handle(false)}
-                className="inline-flex items-center justify-center rounded-lg border border-neutral-300 bg-white px-5 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-5 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               >
                 {dialog.cancelLabel}
               </button>
@@ -65,7 +65,7 @@ export function ConfirmProvider({ children }) {
                 type="button"
                 onClick={() => handle(true)}
                 autoFocus
-                className={`inline-flex items-center justify-center rounded-lg px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+                className={`inline-flex items-center justify-center  px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                   dialog.danger
                     ? "bg-red-600 hover:bg-red-700 focus:ring-red-500/40"
                     : "bg-neutral-950 hover:bg-gold hover:text-neutral-950 focus:ring-gold/50"

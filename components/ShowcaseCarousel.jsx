@@ -182,7 +182,7 @@ export default function ShowcaseCarousel({
                 key={i}
                 onClick={() => goToSlide(i)}
                 style={{
-                  display: "inline-block", width: "8px", height: "8px", borderRadius: "50%",
+                  display: "inline-block", width: "8px", height: "8px", borderRadius:"0",
                   backgroundColor: activeIndex === i ? "white" : "#bbb",
                   cursor: "pointer", transition: "0.3s", margin: "0 4px",
                 }}

@@ -42,7 +42,7 @@ export default function Hero({ title, tagline, ctaHref = "#shop" }) {
           <span className="block overflow-hidden"><span className="hero-line block">{tagline}</span></span>
         </p>
         <div className="mt-8 overflow-hidden">
-          <a href={ctaHref} className="hero-line inline-block rounded-full bg-white px-8 py-3 text-sm font-semibold text-neutral-950 transition hover:bg-neutral-200">
+          <a href={ctaHref} className="hero-line inline-block  bg-white px-8 py-3 text-sm font-semibold text-neutral-950 transition hover:bg-neutral-200">
             Shop Now
           </a>
         </div>

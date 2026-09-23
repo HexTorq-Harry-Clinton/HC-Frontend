@@ -80,7 +80,7 @@ export default async function CategoryMain({ category }) {
         <div className="relative z-10 flex min-h-[480px] flex-col items-start justify-center px-6 text-white md:px-16">
           <h1 className="font-display text-5xl font-bold md:text-6xl">{heroTitle}</h1>
           <h5 className="mt-2 text-lg font-normal text-neutral-200">{heroSubtitle}</h5>
-          <a href="#category-grid" className="btn-primary mt-6 !rounded-full !bg-white !text-neutral-950 hover:!bg-gold">
+          <a href="#category-grid" className="btn-primary mt-6  !bg-white !text-neutral-950 hover:!bg-gold">
             Shop Now
           </a>
         </div>

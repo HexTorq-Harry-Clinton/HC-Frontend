@@ -4,13 +4,13 @@ import HtmlEditor from "../HtmlEditor";
 import useHomeSettings from "../useHomeSettings";
 import { useToast } from "../ToastProvider";
 
-const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
+const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
 const inputCls =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 const btnPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
 const btnOutline =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
+  "inline-flex items-center justify-center gap-1.5  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
 
 function parseLinks(json, fallback) {
   try {
@@ -60,7 +60,7 @@ function LinkEditor({ title, links, onChange }) {
               type="button"
               onClick={() => onChange(links.filter((_, idx) => idx !== i))}
               title="Remove link"
-              className="rounded-md px-2 py-1 text-red-600 hover:bg-red-50"
+              className=" px-2 py-1 text-red-600 hover:bg-red-50"
             >
               <i className="bi bi-trash3" />
             </button>
@@ -114,7 +114,7 @@ export default function AdminHomeFooterPage() {
         Bottom-of-site content • contact email/phone live on Support Contacts • newsletter text on Settings
       </p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
           {msg}
         </p>
       )}

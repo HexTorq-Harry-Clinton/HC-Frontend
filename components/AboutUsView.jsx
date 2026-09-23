@@ -140,7 +140,7 @@ function ValueCard({ title, desc }) {
 function TeamCard({ name, role }) {
   return (
     <div className="border border-neutral-200 p-8 text-center">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 font-display text-2xl">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center  bg-neutral-100 font-display text-2xl">
         {name.charAt(0)}
       </div>
       <p className="mt-3 font-semibold">{name}</p>

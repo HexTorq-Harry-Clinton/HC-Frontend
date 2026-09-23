@@ -60,7 +60,7 @@ export default async function ProductGrid({ keyword = "", keywords = [] }) {
                 hearts fill red via WishlistHeart itself). */}
             <WishlistHeart
               product={{ id: product.id, slug: product.slug, name: product.name, price: product.price, image: product.image }}
-              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow transition hover:bg-gold"
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center  bg-white/90 text-neutral-800 shadow transition hover:bg-gold"
             />
             <Link href={`/product/${product.slug || product.id}`} className="text-decoration-none text-dark">
               <div className="card h-100 border-0 shadow-sm">

@@ -50,7 +50,7 @@ export default function NewArrivalsGrid({ products }) {
               </span>
               <WishlistHeart
                 product={p}
-                className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow transition-all duration-300 ${
+                className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center  shadow transition-all duration-300 ${
                   wished
                     ? "bg-gold text-neutral-950"
                     : "bg-white/90 text-neutral-800 hover:bg-gold lg:translate-y-1 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100"

@@ -302,7 +302,7 @@ export default function SearchDropdown({ onClose }) {
         .sd-clear { border: none; background: none; cursor: pointer; }
         .sd-dropdown { max-width: 720px; margin: 10px auto 0; max-height: 60vh; overflow-y: auto; }
         .sd-state { display: flex; align-items: center; gap: 10px; padding: 14px 4px; font-size: 0.9rem; color: #555; }
-        .sd-spinner { width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #111; border-radius: 50%; animation: sd-spin 0.7s linear infinite; }
+        .sd-spinner { width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #111; border-radius:0; animation: sd-spin 0.7s linear infinite; }
         @keyframes sd-spin { to { transform: rotate(360deg); } }
         .sd-section { margin-top: 10px; }
         .sd-section__label { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: #888; margin-bottom: 4px; }

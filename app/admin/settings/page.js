@@ -141,11 +141,11 @@ export default function AdminSettingsPage() {
         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900">Settings</h1>
       </div>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
           {msg}
         </p>
       )}
-      <div className="mt-4 max-w-3xl rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mt-4 max-w-3xl  border border-neutral-200 bg-white p-6 shadow-sm">
         <dl className="grid gap-3 text-sm md:grid-cols-2">
           {FIELDS.filter((f) => f.type !== "checkbox").map((f) => (
             <div key={f.key} className={f.type === "textarea" ? "md:col-span-2" : ""}>
@@ -163,7 +163,7 @@ export default function AdminSettingsPage() {
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          className="mt-4 inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
         >
           <i className="bi bi-pencil" /> Edit Settings
         </button>
@@ -176,7 +176,7 @@ export default function AdminSettingsPage() {
           <form
             onSubmit={submit}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            className="max-h-[90vh] w-full max-w-3xl overflow-y-auto  border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <h3 className="font-display text-lg font-bold text-neutral-900">Edit Settings</h3>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -184,12 +184,12 @@ export default function AdminSettingsPage() {
           <label key={f.key} className={`block text-xs font-semibold uppercase tracking-wider text-neutral-500 ${f.type === "textarea" ? "md:col-span-2" : ""}`}>
             {f.label}
             {f.type === "textarea" ? (
-              <textarea value={form[f.key] || ""} onChange={set(f.key)} rows={2} className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-normal text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
+              <textarea value={form[f.key] || ""} onChange={set(f.key)} rows={2} className="mt-1 w-full  border border-neutral-300 bg-white px-3 py-2 text-sm font-normal text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
             ) : f.type === "checkbox" ? (
-              <input type="checkbox" checked={!!form[f.key]} onChange={set(f.key, "checkbox")} className="ml-2 h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" />
+              <input type="checkbox" checked={!!form[f.key]} onChange={set(f.key, "checkbox")} className="ml-2 h-4 w-4  border-neutral-300 text-neutral-950 focus:ring-gold/40" />
             ) : f.type === "upload" ? (
               <span className="mt-1 block font-normal">
-                <input value={form[f.key] || ""} onChange={set(f.key)} placeholder="Logo URL or pick a file below" className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
+                <input value={form[f.key] || ""} onChange={set(f.key)} placeholder="Logo URL or pick a file below" className="w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
                 <div className="mt-1">
                   <FilePick
                     small
@@ -211,11 +211,11 @@ export default function AdminSettingsPage() {
                 )}
                 {form[f.key] && !staged[f.key] && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={resolveUploadUrl(form[f.key])} alt={f.label} style={{ height: 48, marginTop: 6 }} className="rounded-md border border-neutral-200" />
+                  <img src={resolveUploadUrl(form[f.key])} alt={f.label} style={{ height: 48, marginTop: 6 }} className=" border border-neutral-200" />
                 )}
               </span>
             ) : (
-              <input type="text" value={form[f.key] || ""} onChange={set(f.key)} className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-normal text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
+              <input type="text" value={form[f.key] || ""} onChange={set(f.key)} className="mt-1 w-full  border border-neutral-300 bg-white px-3 py-2 text-sm font-normal text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25" />
             )}
           </label>
         ))}
@@ -224,14 +224,14 @@ export default function AdminSettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={busy !== null}
-                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center  bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {busy === "uploading" ? "Uploading..." : busy === "saving" ? "Saving..." : "Save Settings"}
               </button>

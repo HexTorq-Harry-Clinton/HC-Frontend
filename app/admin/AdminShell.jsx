@@ -172,18 +172,18 @@ function AdminShellInner({ children }) {
             type="button"
             onClick={() => setSidebarOpen((v) => !v)}
             aria-label="Toggle menu"
-            className="rounded-md border border-white/25 px-2.5 py-1.5 text-sm text-white transition-colors hover:bg-white/10 lg:hidden"
+            className=" border border-white/25 px-2.5 py-1.5 text-sm text-white transition-colors hover:bg-white/10 lg:hidden"
           >
             <i className="bi bi-list" />
           </button>
           <div className="flex items-center gap-2.5 font-semibold tracking-tight">
-            <span className="rounded-md bg-gold px-2 py-0.5 text-sm font-bold text-neutral-950">HC</span>
+            <span className=" bg-gold px-2 py-0.5 text-sm font-bold text-neutral-950">HC</span>
             <span className="hidden text-[15px] sm:inline">Harry Clinton Admin</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-sm">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold/20 font-bold text-gold">
+            <span className="flex h-7 w-7 items-center justify-center  bg-gold/20 font-bold text-gold">
               {initial}
             </span>
             <span className="hidden text-white/85 sm:inline">{displayName}</span>
@@ -191,7 +191,7 @@ function AdminShellInner({ children }) {
           <button
             type="button"
             onClick={logout}
-            className="inline-flex items-center gap-1.5 rounded-md border border-white/25 px-3.5 py-1.5 text-[12.5px] font-semibold text-white transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
+            className="inline-flex items-center gap-1.5  border border-white/25 px-3.5 py-1.5 text-[12.5px] font-semibold text-white transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
           >
             <i className="bi bi-box-arrow-right text-sm" />
             Logout
@@ -216,7 +216,7 @@ function AdminShellInner({ children }) {
                     type="button"
                     onClick={() => toggleGroup(group.key)}
                     aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between rounded-md px-2.5 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/90"
+                    className="flex w-full items-center justify-between  px-2.5 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/90"
                   >
                     <span className="flex items-center gap-2">
                       <i className={`${GROUP_ICON[group.key]} text-[13px] text-gold/70`} />
@@ -238,7 +238,7 @@ function AdminShellInner({ children }) {
                             key={item.href}
                             href={item.href}
                             onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-[13.5px] transition-colors ${
+                            className={`flex items-center gap-2.5  border-l-2 px-3 py-2 text-[13.5px] transition-colors ${
                               active
                                 ? "border-gold bg-gold/10 font-semibold text-gold"
                                 : "border-transparent text-white/65 hover:bg-white/5 hover:text-white"

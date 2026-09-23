@@ -14,18 +14,18 @@ import useUploader from "../useUploader";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
-const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
-const tableWrapCls = "overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm";
+const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
+const tableWrapCls = "overflow-x-auto  border border-neutral-200 bg-white shadow-sm";
 const thCls = "px-4 py-3 whitespace-nowrap";
 const tdCls = "px-4 py-3";
 const inputCls =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 const btnPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
 const btnOutline =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
+  "inline-flex items-center justify-center gap-1.5  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
 const iconBtn =
-  "inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900";
+  "inline-flex h-8 w-8 items-center justify-center  text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900";
 
 // Videos: MP4 / WEBM / MOV, max 50 MB. Posters: JPG / PNG / WEBP, max 3 MB.
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
@@ -325,7 +325,7 @@ export default function AdminMenuVideosPage() {
         Full-viewport section below the running bar • {live.length} video(s) • MP4/WEBM ≤ 50 MB
       </p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
           {msg}
         </p>
       )}
@@ -335,7 +335,7 @@ export default function AdminMenuVideosPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search videos..."
-          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
           style={{ minWidth: 200 }}
         />
         {!orderMode ? (
@@ -404,7 +404,7 @@ export default function AdminMenuVideosPage() {
                       type="button"
                       title="Play fullscreen"
                       onClick={() => setLightbox({ url: resolveUploadUrl(r.video_url), poster: resolveUploadUrl(r.poster_image_url), title: r.video_type || "Home video" })}
-                      className="block overflow-hidden rounded-md border border-neutral-200 transition hover:border-gold"
+                      className="block overflow-hidden  border border-neutral-200 transition hover:border-gold"
                     >
                       {r.poster_image_url ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
@@ -424,7 +424,7 @@ export default function AdminMenuVideosPage() {
                   <td className={tdCls}>
                     <span className="font-semibold">{r.video_type || "brand"}</span>
                     {(r.isactive !== 1 && r.isactive !== true) && (
-                      <span className="ml-2 rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
+                      <span className="ml-2  bg-neutral-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
                         Off
                       </span>
                     )}
@@ -469,7 +469,7 @@ export default function AdminMenuVideosPage() {
             type="button"
             onClick={() => setLightbox(null)}
             aria-label="Close viewer"
-            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-gold hover:text-neutral-950"
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center  bg-white/10 text-xl text-white transition hover:bg-gold hover:text-neutral-950"
           >
             <i className="bi bi-x-lg" />
           </button>
@@ -480,7 +480,7 @@ export default function AdminMenuVideosPage() {
               controls
               autoPlay
               playsInline
-              className="max-h-[80vh] w-full rounded-lg bg-black"
+              className="max-h-[80vh] w-full  bg-black"
             />
             <figcaption className="mt-3 text-center text-sm text-white/70">{lightbox.title}</figcaption>
           </figure>
@@ -505,7 +505,7 @@ export default function AdminMenuVideosPage() {
               <div className="mt-3">
                 <video
                   src={stagedVideo ? URL.createObjectURL(stagedVideo) : resolveUploadUrl(modal.video_url)}
-                  className="aspect-video w-full rounded-md border border-neutral-200 bg-neutral-950 object-cover"
+                  className="aspect-video w-full  border border-neutral-200 bg-neutral-950 object-cover"
                   muted
                   playsInline
                   preload="metadata"
@@ -521,7 +521,7 @@ export default function AdminMenuVideosPage() {
                 <img
                   src={stagedPoster ? URL.createObjectURL(stagedPoster) : resolveUploadUrl(modal.poster_image_url)}
                   alt="Poster preview"
-                  className="aspect-video w-full rounded-md border border-neutral-200 object-cover"
+                  className="aspect-video w-full  border border-neutral-200 object-cover"
                 />
                 <p className="mt-1 text-xs text-neutral-500">Poster preview.</p>
               </div>

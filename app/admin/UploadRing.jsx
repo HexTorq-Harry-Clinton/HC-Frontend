@@ -30,7 +30,7 @@ export default function UploadRing({ prog }) {
   const C = 2 * Math.PI * R;
   const done = prog.percent >= 100;
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-gold/50 bg-gold/10 px-4 py-3">
+    <div className="flex items-center gap-4  border border-gold/50 bg-gold/10 px-4 py-3">
       <div className="relative h-[76px] w-[76px] flex-none">
         <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
           <circle cx="40" cy="40" r={R} fill="none" stroke="#e7e2d6" strokeWidth="8" />
@@ -58,9 +58,9 @@ export default function UploadRing({ prog }) {
         <p className="mt-0.5 text-xs tabular-nums text-neutral-600">
           {fmtMB(prog.loaded)} / {fmtMB(prog.total)} MB · {fmtSpeed(prog.speedBps)} · ETA {fmtEta(prog.etaSecs)}
         </p>
-        <div className="mt-1.5 h-1.5 w-44 max-w-full overflow-hidden rounded-full bg-neutral-200">
+        <div className="mt-1.5 h-1.5 w-44 max-w-full overflow-hidden  bg-neutral-200">
           <div
-            className={`h-full rounded-full transition-[width] duration-150 ${done ? "bg-green-600" : "bg-gold"}`}
+            className={`h-full  transition-[width] duration-150 ${done ? "bg-green-600" : "bg-gold"}`}
             style={{ width: `${percent}%` }}
           />
         </div>

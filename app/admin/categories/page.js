@@ -11,7 +11,7 @@ import { useConfirm } from "../ConfirmProvider";
 
 const empty = { menu_subcategory_name: "", menu_subcategory_slug: "", redirect_link: "", display_order: "", isactive: true };
 const input =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 
 // Categories & Subcategories: category tabs on top, subcategories of the
 // selected category below — new subs auto-attach to the open category.
@@ -185,12 +185,12 @@ export default function AdminCategoriesPage() {
         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900">Categories & Subcategories</h1>
       </div>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
           {msg}
         </p>
       )}
 
-      <details className="mt-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <details className="mt-4 overflow-hidden  border border-neutral-200 bg-white shadow-sm">
         <summary className="flex cursor-pointer items-center gap-2 p-4 text-sm font-semibold text-neutral-800 transition-colors hover:bg-[#faf8f4]">
           <i className="bi bi-gear-wide-connected text-gold-deep" />
           Manage categories (add / rename / reorder)
@@ -206,7 +206,7 @@ export default function AdminCategoriesPage() {
               type="button"
               key={c.menu_category_id}
               onClick={() => { setActiveCat(c.menu_category_id); setEditing(null); setForm(empty); setSubPage(1); }}
-              className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
+              className={` border px-4 py-2 text-sm font-semibold transition-colors ${
                 activeCat === c.menu_category_id
                   ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
                   : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50"
@@ -230,13 +230,13 @@ export default function AdminCategoriesPage() {
           <form
             onSubmit={submit}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto  border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <h3 className="font-display text-lg font-bold text-neutral-900">
               {editing ? "Edit subcategory" : "New subcategory"}
             </h3>
             {current && (
-              <p className="mt-1 rounded-md bg-neutral-100 p-2 text-xs font-semibold">
+              <p className="mt-1  bg-neutral-100 p-2 text-xs font-semibold">
                 Adding to: {current.menu_category_name} ({current.menu_category_slug})
               </p>
             )}
@@ -246,20 +246,20 @@ export default function AdminCategoriesPage() {
               <input value={form.redirect_link} onChange={set("redirect_link")} placeholder="Redirect link (e.g. /wedding)" className={input} />
               <input value={form.display_order} onChange={set("display_order")} inputMode="numeric" placeholder="Order" className={input} />
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
+                <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4  border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
               </label>
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={closeForm}
-                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                className="inline-flex items-center justify-center  bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
               >
                 {editing ? "Update" : "Add"}
               </button>
@@ -280,19 +280,19 @@ export default function AdminCategoriesPage() {
             value={subSearch}
             onChange={(e) => { setSubSearch(e.target.value); setSubPage(1); }}
             placeholder="Search subcategories..."
-            className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+            className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             style={{ minWidth: 200 }}
           />
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+            className="inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
           >
             <i className="bi bi-plus-lg" /> New subcategory
           </button>
         </div>
       </div>
-      <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mt-2 overflow-x-auto  border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">

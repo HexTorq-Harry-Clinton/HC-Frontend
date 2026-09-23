@@ -41,7 +41,7 @@ export default function FilePick({ accept, onPick, fileName, hint, small }) {
         setDrag(false);
         take(e.dataTransfer.files?.[0]);
       }}
-      className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed transition-colors ${
+      className={`flex cursor-pointer items-center gap-3  border-2 border-dashed transition-colors ${
         small ? "px-3 py-2" : "px-4 py-3.5"
       } ${
         drag
@@ -52,7 +52,7 @@ export default function FilePick({ accept, onPick, fileName, hint, small }) {
       }`}
     >
       <span
-        className={`flex flex-none items-center justify-center rounded-full bg-gold text-neutral-950 ${
+        className={`flex flex-none items-center justify-center  bg-gold text-neutral-950 ${
           small ? "h-7 w-7 text-sm" : "h-10 w-10 text-xl"
         }`}
       >

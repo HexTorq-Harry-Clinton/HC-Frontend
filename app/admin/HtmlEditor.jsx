@@ -52,11 +52,11 @@ export default function HtmlEditor({ value, onChange, placeholder, minHeight = 1
   }, [editor, value]);
 
   if (!editor) {
-    return <div className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-400" style={{ minHeight }}>Loading editor…</div>;
+    return <div className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-400" style={{ minHeight }}>Loading editor…</div>;
   }
 
   const btn = (active) =>
-    `flex h-8 w-8 items-center justify-center rounded-md text-sm transition-colors ${
+    `flex h-8 w-8 items-center justify-center  text-sm transition-colors ${
       active ? "bg-neutral-950 text-gold" : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
     }`;
 
@@ -72,7 +72,7 @@ export default function HtmlEditor({ value, onChange, placeholder, minHeight = 1
   };
 
   return (
-    <div className="overflow-hidden rounded-md border border-neutral-300 bg-white shadow-sm focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/25">
+    <div className="overflow-hidden  border border-neutral-300 bg-white shadow-sm focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/25">
       <div className="flex flex-wrap items-center gap-0.5 border-b border-neutral-200 bg-neutral-50 px-2 py-1.5">
         <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} title="Bold" className={btn(editor.isActive("bold"))}>
           <i className="bi bi-type-bold" />
@@ -104,7 +104,7 @@ export default function HtmlEditor({ value, onChange, placeholder, minHeight = 1
             setSourceMode((v) => !v);
           }}
           title="Toggle HTML source"
-          className={`flex h-8 items-center gap-1 rounded-md px-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+          className={`flex h-8 items-center gap-1  px-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
             sourceMode ? "bg-neutral-950 text-gold" : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
           }`}
         >

@@ -135,7 +135,7 @@ export default function HeaderBar({ categories }) {
           <Link href="/wishlist" className="hicon relative text-neutral-900" aria-label="Wishlist">
             <HeartGlyph />
             {wishlistCount > 0 && (
-              <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
+              <span className="absolute -right-2 -top-1  bg-red-600 px-1.5 text-[10px] font-bold text-white">
                 {wishlistCount}
               </span>
             )}
@@ -143,7 +143,7 @@ export default function HeaderBar({ categories }) {
           <button type="button" onClick={() => setBagOpen(true)} className="hicon relative text-neutral-900" aria-label="Open bag">
             <BagGlyph />
             {cartCount > 0 && (
-              <span className="absolute -right-2 -top-1 rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
+              <span className="absolute -right-2 -top-1  bg-red-600 px-1.5 text-[10px] font-bold text-white">
                 {cartCount}
               </span>
             )}
@@ -189,7 +189,7 @@ export default function HeaderBar({ categories }) {
         @keyframes topbarDrop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
         .c-home { position: relative; }
         .c-icon {
-          width: 30px; height: 30px; border-radius: 50%;
+          width: 30px; height: 30px; border-radius:0;
           border: 1.5px solid #111; background: #fff;
           font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
           display: flex; align-items: center; justify-content: center;
@@ -198,7 +198,7 @@ export default function HeaderBar({ categories }) {
         .c-icon:hover { background: #111; color: #c6a15b; border-color: #111; }
         .c-icon:active { transform: scale(0.85); }
         .c-ring {
-          position: absolute; inset: 0; border-radius: 50%;
+          position: absolute; inset: 0; border-radius:0;
           border: 1.5px solid #c6a15b; pointer-events: none;
           animation: cRing 0.5s ease-out forwards;
         }

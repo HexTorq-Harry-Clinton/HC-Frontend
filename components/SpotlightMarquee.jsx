@@ -128,7 +128,7 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
                 key={`${dup}-${c.id}`}
                 href="/hc-spotlight"
                 tabIndex={dup > 0 ? -1 : 0}
-                className="group w-[22rem] shrink-0 overflow-hidden rounded-xl bg-neutral-950 md:w-[26rem]"
+                className="group w-[22rem] shrink-0 overflow-hidden  bg-neutral-950 md:w-[26rem]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

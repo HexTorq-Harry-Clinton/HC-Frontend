@@ -129,7 +129,7 @@ export default function VideoImageSlider() {
           <span className="visually-hidden">Loading slider...</span>
         </div>
         <style jsx>{`
-          .spinner-border { width: 2rem; height: 2rem; border: 0.25em solid #ddd; border-top-color: #111; border-radius: 50%; animation: sd-spin 0.75s linear infinite; }
+          .spinner-border { width: 2rem; height: 2rem; border: 0.25em solid #ddd; border-top-color: #111; border-radius:0; animation: sd-spin 0.75s linear infinite; }
           @keyframes sd-spin { to { transform: rotate(360deg); } }
           .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
         `}</style>
@@ -210,7 +210,7 @@ export default function VideoImageSlider() {
                 />
                 {failed[index] && (
                   <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/70 text-white">
-                    <span className="rounded bg-white/15 px-3 py-1 text-xs tracking-widest">HARRY CLINTON</span>
+                    <span className=" bg-white/15 px-3 py-1 text-xs tracking-widest">HARRY CLINTON</span>
                   </div>
                 )}
               </>
@@ -223,7 +223,7 @@ export default function VideoImageSlider() {
               type="button"
               aria-label={playing ? "Pause video" : "Play video"}
               onClick={togglePlay}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
+              className="flex h-9 w-9 items-center justify-center  border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
             >
               <i className={`bi ${playing ? "bi-pause-fill" : "bi-play-fill"} leading-none`} />
             </button>
@@ -231,7 +231,7 @@ export default function VideoImageSlider() {
               type="button"
               aria-label={muted ? "Unmute video" : "Mute video"}
               onClick={toggleMute}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
+              className="flex h-9 w-9 items-center justify-center  border border-white/25 bg-neutral-950/55 text-white backdrop-blur-sm transition-colors hover:border-gold hover:bg-gold hover:text-neutral-950"
             >
               <i className={`bi ${muted ? "bi-volume-mute-fill" : "bi-volume-up-fill"} leading-none`} />
             </button>
@@ -243,7 +243,7 @@ export default function VideoImageSlider() {
               type="button"
               aria-label="Previous slide"
               onClick={() => go(-1)}
-              className="absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover:opacity-100"
+              className="absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center  border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover:opacity-100"
             >
               <i className="bi bi-chevron-left text-lg leading-none" />
             </button>
@@ -251,7 +251,7 @@ export default function VideoImageSlider() {
               type="button"
               aria-label="Next slide"
               onClick={() => go(1)}
-              className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover:opacity-100"
+              className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center  border border-white/25 bg-neutral-950/55 text-white opacity-0 backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold hover:text-neutral-950 focus-visible:opacity-100 group-hover:opacity-100"
             >
               <i className="bi bi-chevron-right text-lg leading-none" />
             </button>
@@ -264,7 +264,7 @@ export default function VideoImageSlider() {
             key={i}
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => setIndex(i)}
-            className={`h-2 w-2 rounded-full ${i === index ? "bg-white" : "bg-white/50"}`}
+            className={`h-2 w-2  ${i === index ? "bg-white" : "bg-white/50"}`}
           />
         ))}
       </div>

@@ -13,7 +13,7 @@ export default function LoginPopup({ onSkip }) {
     >
       <div
         className="w-full max-w-md bg-white p-8 text-center shadow-xl"
-        style={{ borderRadius: "12px" }}
+        style={{ borderRadius:"0" }}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-display text-3xl font-bold">Welcome to Harry Clinton</h2>

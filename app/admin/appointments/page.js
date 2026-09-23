@@ -115,7 +115,7 @@ export default function AdminAppointmentsManager() {
       </div>
       <p className="mt-1 text-xs text-neutral-500">{rows.length} record(s)</p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
           {msg}
         </p>
       )}
@@ -124,10 +124,10 @@ export default function AdminAppointmentsManager() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search customer, status..."
-          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className="w-full max-w-md  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
         />
       </div>
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mt-4 overflow-x-auto  border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -151,7 +151,7 @@ export default function AdminAppointmentsManager() {
                     <td className="px-4 py-3">{dateLabel(r.appointment_date_slot_id)}</td>
                     <td className="px-4 py-3">{timeLabel(r.appointment_time_slot_id)}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge(r.appointment_status)}`}>
+                      <span className={` px-2.5 py-0.5 text-xs font-semibold ${badge(r.appointment_status)}`}>
                         {r.appointment_status || "Pending"}
                       </span>
                     </td>
@@ -171,7 +171,7 @@ export default function AdminAppointmentsManager() {
                           <select
                             value={edits[r.appointment_id] || r.appointment_status || "Pending"}
                             onChange={(e) => setEdits((m) => ({ ...m, [r.appointment_id]: e.target.value }))}
-                            className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                            className=" border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                           >
                             {STATUSES.map((s) => (
                               <option key={s} value={s}>{s}</option>
@@ -180,7 +180,7 @@ export default function AdminAppointmentsManager() {
                           <button
                             type="button"
                             onClick={() => saveStatus(r)}
-                            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                            className="inline-flex items-center justify-center  bg-neutral-950 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
                           >
                             Save
                           </button>

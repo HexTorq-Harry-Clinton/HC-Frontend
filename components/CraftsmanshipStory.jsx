@@ -60,9 +60,9 @@ export default function CraftsmanshipStory() {
           <Reveal>
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20 rounded-xl p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
+              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
             >
-              <div className="w-16 h-16 rounded-full bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
+              <div className="w-16 h-16  bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
                 <i className="bi bi-scissors text-3xl text-[#c6a15b]"></i>
               </div>
               <h3 className="font-display text-2xl text-[#101010] mb-4">Precision Cutting</h3>
@@ -75,9 +75,9 @@ export default function CraftsmanshipStory() {
           <Reveal>
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20 rounded-xl p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
+              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
             >
-              <div className="w-16 h-16 rounded-full bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
+              <div className="w-16 h-16  bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
                 <i className="bi bi-palette2 text-3xl text-[#c6a15b]"></i>
               </div>
               <h3 className="font-display text-2xl text-[#101010] mb-4">Fine Fabrics</h3>
@@ -90,9 +90,9 @@ export default function CraftsmanshipStory() {
           <Reveal>
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20 rounded-xl p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
+              className="bg-white/60 backdrop-blur-sm border border-[#a8823f]/20  p-10 h-full flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-500"
             >
-              <div className="w-16 h-16 rounded-full bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
+              <div className="w-16 h-16  bg-[#f7f4ec] border border-[#c6a15b]/30 flex items-center justify-center mb-6">
                 <i className="bi bi-award text-3xl text-[#c6a15b]"></i>
               </div>
               <h3 className="font-display text-2xl text-[#101010] mb-4">Perfect Fit</h3>

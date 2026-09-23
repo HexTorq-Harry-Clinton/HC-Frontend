@@ -44,7 +44,7 @@ html {
 }
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #d8b978 0%, #c6a15b 55%, #a8823f 100%);
-  border-radius: 999px;
+  border-radius:0;
   border: 2px solid #f1efe9;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -69,7 +69,7 @@ html {
 }
 .scroll-slim::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #d8b978 0%, #a8823f 100%);
-  border-radius: 999px;
+  border-radius:0;
   border: none;
 }
 
@@ -171,3 +171,6 @@ html.lenis, html.lenis body { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee, .animate-slow-zoom, .fade-in-out-text { animation: none; }
 }
+
+/* sharp-square site rule: no round corners anywhere */
+*, *::before, *::after { border-radius:0!important; }

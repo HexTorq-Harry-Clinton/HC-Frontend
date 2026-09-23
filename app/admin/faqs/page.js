@@ -9,18 +9,18 @@ import useLockBody from "../useLockBody";
 import { useToast } from "../ToastProvider";
 import { useConfirm } from "../ConfirmProvider";
 
-const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
-const tableWrapCls = "overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm";
+const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
+const tableWrapCls = "overflow-x-auto  border border-neutral-200 bg-white shadow-sm";
 const thCls = "px-4 py-3 whitespace-nowrap";
 const tdCls = "px-4 py-3";
 const inputCls =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 const btnPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
 const btnOutline =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
+  "inline-flex items-center justify-center gap-1.5  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
 const iconBtn =
-  "inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900";
+  "inline-flex h-8 w-8 items-center justify-center  text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900";
 
 const stripTags = (s) => String(s || "").replace(/<[^>]*>/g, "").trim();
 
@@ -233,7 +233,7 @@ export default function AdminFaqsPage() {
         Homepage + FAQs page • {live.length} record(s) • rich answers
       </p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
           {msg}
         </p>
       )}
@@ -243,7 +243,7 @@ export default function AdminFaqsPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search FAQs..."
-          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
           style={{ minWidth: 200 }}
         />
         {!orderMode ? (
@@ -310,7 +310,7 @@ export default function AdminFaqsPage() {
                     <span className="block truncate font-semibold">{r.question || "—"}</span>
                     <span className="block truncate text-xs text-neutral-500">{stripTags(r.answer).slice(0, 90)}</span>
                     {(r.isactive !== 1 && r.isactive !== true) && (
-                      <span className="mt-1 inline-block rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
+                      <span className="mt-1 inline-block  bg-neutral-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
                         Off
                       </span>
                     )}
@@ -352,7 +352,7 @@ export default function AdminFaqsPage() {
           <form
             onSubmit={save}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto  border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <h3 className="font-display text-lg font-bold text-neutral-900">
               {modal.id ? "Edit FAQ" : "New FAQ"}

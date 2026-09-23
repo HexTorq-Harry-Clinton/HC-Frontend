@@ -5,11 +5,11 @@ import { apiFetch, unwrap, resolveUploadUrl } from "@/lib/api";
 import useHomeSettings from "../useHomeSettings";
 import { useToast } from "../ToastProvider";
 
-const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
+const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
 const inputCls =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 const btnPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
 
 // Home Screen Content → New Arrivals: eyebrow + title + subtitle, how many
 // products to show, grid columns — with a LIVE preview on real products.
@@ -78,7 +78,7 @@ export default function AdminHomeNewArrivalsPage() {
         CURATED FOR YOU block • count + columns + rows • stored on tbl_settings
       </p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
           {msg}
         </p>
       )}
@@ -172,7 +172,7 @@ export default function AdminHomeNewArrivalsPage() {
             <p className="col-span-full py-6 text-center text-xs text-neutral-500">No live products to preview.</p>
           ) : (
             shown.map((p, i) => (
-              <div key={i} className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+              <div key={i} className="overflow-hidden  border border-neutral-200 bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.image} alt={p.name} className="aspect-[4/5] w-full object-cover" loading="lazy" />
                 <div className="p-2">

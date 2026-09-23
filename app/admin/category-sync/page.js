@@ -176,14 +176,14 @@ export default function CategorySyncPage() {
         type="button"
         onClick={rebuild}
         disabled={busy}
-        className="mt-4 inline-flex items-center gap-2 rounded-md bg-red-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/40 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-4 inline-flex items-center gap-2  bg-red-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/40 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <i className="bi bi-exclamation-triangle" />
         {busy ? "Rebuilding..." : "Delete & Rebuild"}
       </button>
-      {done && <p className="mt-2 rounded-lg bg-green-50 p-2 text-sm font-medium text-green-700">Rebuild complete.</p>}
+      {done && <p className="mt-2  bg-green-50 p-2 text-sm font-medium text-green-700">Rebuild complete.</p>}
       {log.length > 0 && (
-        <pre className="mt-3 max-h-48 overflow-y-auto rounded-lg bg-neutral-950 p-3 font-mono text-xs text-green-400">
+        <pre className="mt-3 max-h-48 overflow-y-auto  bg-neutral-950 p-3 font-mono text-xs text-green-400">
           {log.join("\n")}
         </pre>
       )}
@@ -194,10 +194,10 @@ export default function CategorySyncPage() {
           value={cSearch}
           onChange={(e) => { setCSearch(e.target.value); setCPage(1); }}
           placeholder="Search categories..."
-          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className="w-full max-w-md  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
         />
       </div>
-      <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mt-2 overflow-x-auto  border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -233,10 +233,10 @@ export default function CategorySyncPage() {
           value={sSearch}
           onChange={(e) => { setSSearch(e.target.value); setSPage(1); }}
           placeholder="Search sub-categories..."
-          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className="w-full max-w-md  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
         />
       </div>
-      <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mt-2 overflow-x-auto  border border-neutral-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">

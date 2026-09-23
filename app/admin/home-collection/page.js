@@ -9,13 +9,13 @@ import useHomeSettings from "../useHomeSettings";
 import useUploader from "../useUploader";
 import { useToast } from "../ToastProvider";
 
-const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
+const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
 const inputCls =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 const btnPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
 const btnOutline =
-  "inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
+  "inline-flex items-center justify-center gap-1.5  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
 
 const DEFAULT_TILES = [
   { name: "Suits", tagline: "For the Men Who Wear Royalty, Not Just Suits.", image_url: "", link: "/suits", order: 1, active: true },
@@ -120,7 +120,7 @@ export default function AdminHomeCollectionPage() {
         THE COLLECTION tiles on the homepage • stored on tbl_settings • images upload on Save
       </p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700 shadow-sm">
           {msg}
         </p>
       )}
@@ -156,14 +156,14 @@ export default function AdminHomeCollectionPage() {
                 #{i + 1} {tile.name || "Untitled tile"}
               </p>
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => move(i, -1)} title="Move up" className="rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900">
+                <button type="button" onClick={() => move(i, -1)} title="Move up" className=" px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900">
                   <i className="bi bi-arrow-up" />
                 </button>
-                <button type="button" onClick={() => move(i, 1)} title="Move down" className="rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900">
+                <button type="button" onClick={() => move(i, 1)} title="Move down" className=" px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900">
                   <i className="bi bi-arrow-down" />
                 </button>
                 <ActiveToggle active={tile.active} onToggle={(next) => setTile(i, { active: next })} />
-                <button type="button" onClick={() => removeTile(i)} title="Remove tile" className="rounded-md px-2 py-1 text-red-600 hover:bg-red-50">
+                <button type="button" onClick={() => removeTile(i)} title="Remove tile" className=" px-2 py-1 text-red-600 hover:bg-red-50">
                   <i className="bi bi-trash3" />
                 </button>
               </div>
@@ -196,9 +196,9 @@ export default function AdminHomeCollectionPage() {
                 </div>
                 {tileImg(tile) ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={tileImg(tile)} alt="" className="h-16 w-24 rounded-md border border-neutral-200 object-cover" />
+                  <img src={tileImg(tile)} alt="" className="h-16 w-24  border border-neutral-200 object-cover" />
                 ) : (
-                  <span className="flex h-16 w-24 items-center justify-center rounded-md border border-dashed border-neutral-300 text-[10px] uppercase tracking-wider text-neutral-400">
+                  <span className="flex h-16 w-24 items-center justify-center  border border-dashed border-neutral-300 text-[10px] uppercase tracking-wider text-neutral-400">
                     No image
                   </span>
                 )}
@@ -233,7 +233,7 @@ export default function AdminHomeCollectionPage() {
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
           {liveTiles.filter((t) => t.active).map((t, i) => (
-            <div key={i} className="relative h-44 overflow-hidden rounded-xl bg-neutral-900">
+            <div key={i} className="relative h-44 overflow-hidden  bg-neutral-900">
               {tileImg(t) ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={tileImg(t)} alt={t.name} className="absolute inset-0 h-full w-full object-cover" />

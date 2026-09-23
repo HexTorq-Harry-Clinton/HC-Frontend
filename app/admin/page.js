@@ -61,11 +61,11 @@ export default async function AdminDashboard() {
           <Link
             key={c.label}
             href={c.href}
-            className={`group relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-6 shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md ${c.ring}`}
+            className={`group relative overflow-hidden  border border-neutral-200 bg-white p-6 shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md ${c.ring}`}
           >
-            <span className={`absolute right-0 top-0 h-20 w-20 -translate-y-6 translate-x-6 rounded-full ${c.tint} blur-2xl`} />
+            <span className={`absolute right-0 top-0 h-20 w-20 -translate-y-6 translate-x-6  ${c.tint} blur-2xl`} />
             <div className="relative flex items-center justify-between">
-              <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.tint} text-neutral-700`}>
+              <span className={`flex h-10 w-10 items-center justify-center  ${c.tint} text-neutral-700`}>
                 <i className={`${c.icon} text-lg`} />
               </span>
               <i className="bi bi-arrow-up-right text-base text-neutral-300 transition-colors group-hover:text-gold" />

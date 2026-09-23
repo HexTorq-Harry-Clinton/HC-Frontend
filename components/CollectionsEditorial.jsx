@@ -118,7 +118,7 @@ export default function CollectionsEditorial() {
             return (
               <Reveal key={collection.name}>
                 <Link href={collection.href} className="block group">
-                  <div className={`relative w-full rounded-2xl overflow-hidden shadow-xl transition-all duration-700 ease-out hover:shadow-2xl hover:scale-[1.01] ${collection.bgGradient}`}>
+                  <div className={`relative w-full  overflow-hidden shadow-xl transition-all duration-700 ease-out hover:shadow-2xl hover:scale-[1.01] ${collection.bgGradient}`}>
                     {images[collection.key] ? (
                       <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}

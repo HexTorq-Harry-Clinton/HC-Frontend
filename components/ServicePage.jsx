@@ -185,7 +185,7 @@ export default async function ServicePage({ config }) {
             {process.steps.map((step, idx) => (
               <div key={step.label} className="flex flex-col items-center md:flex-row md:gap-4">
                 <div className="text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-gold font-display text-xl font-bold text-gold">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center  border border-gold font-display text-xl font-bold text-gold">
                     {step.no}
                   </div>
                   <p className="mt-2 text-sm">{step.label}</p>

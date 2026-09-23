@@ -20,17 +20,17 @@ import { useConfirm } from "./ConfirmProvider";
 
 // Shared admin design tokens (dark + gold, matches AdminShell).
 const inputCls =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 const btnPrimary =
-  "inline-flex items-center justify-center rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40 disabled:cursor-not-allowed disabled:opacity-50";
 const btnOutline =
-  "inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
+  "inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10";
 const rowAction =
   "font-semibold text-neutral-700 underline underline-offset-2 transition-colors hover:text-gold-deep";
 const rowDanger =
   "text-red-600 underline underline-offset-2 transition-colors hover:text-red-700";
-const panelCls = "rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm";
-const tableWrapCls = "overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm";
+const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
+const tableWrapCls = "overflow-x-auto  border border-neutral-200 bg-white shadow-sm";
 const thCls = "px-4 py-3 whitespace-nowrap";
 const tdCls = "max-w-xs truncate px-4 py-3";
 
@@ -179,7 +179,7 @@ export default function AdminModulePage({ module: slug, lock }) {
               type="button"
               key={c.slug}
               onClick={() => setWorkspaceTab(i)}
-              className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
+              className={` border px-4 py-2 text-sm font-semibold transition-colors ${
                 (workspaceTab || 0) === i
                   ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
                   : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50"
@@ -451,7 +451,7 @@ export default function AdminModulePage({ module: slug, lock }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Search ${mod.title}...`}
-            className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+            className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             style={{ minWidth: 200 }}
           />
           {!mod.readOnly && (
@@ -462,7 +462,7 @@ export default function AdminModulePage({ module: slug, lock }) {
         </div>
       </div>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
           {msg}
         </p>
       )}
@@ -481,7 +481,7 @@ export default function AdminModulePage({ module: slug, lock }) {
               {editing ? `Edit ${mod.title.replace(/s$/, "")}` : `New ${mod.title.replace(/s$/, "")}`}
             </h3>
             {lock && (
-              <p className="mt-2 rounded-md bg-neutral-100 p-2 text-xs font-semibold">
+              <p className="mt-2  bg-neutral-100 p-2 text-xs font-semibold">
                 Adding to: {lock.label}
               </p>
             )}

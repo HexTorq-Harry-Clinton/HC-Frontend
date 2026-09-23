@@ -26,7 +26,7 @@ export default function OccasionSlider({ images }) {
         ))}
       </div>
       <button
-        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-3 py-2 shadow"
+        className="absolute left-2 top-1/2 -translate-y-1/2  bg-white/80 px-3 py-2 shadow"
         type="button"
         onClick={() => go(-1)}
       >
@@ -34,7 +34,7 @@ export default function OccasionSlider({ images }) {
         <span className="visually-hidden">Previous</span>
       </button>
       <button
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-3 py-2 shadow"
+        className="absolute right-2 top-1/2 -translate-y-1/2  bg-white/80 px-3 py-2 shadow"
         type="button"
         onClick={() => go(1)}
       >

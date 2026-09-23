@@ -138,7 +138,7 @@ export default function HomeTestimonials() {
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                className={`w-2 h-2  transition-all duration-300 ${
                   index === currentIndex ? "bg-[#c6a15b] w-6" : "bg-[#c6a15b]/30"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}

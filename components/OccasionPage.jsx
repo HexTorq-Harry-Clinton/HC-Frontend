@@ -60,7 +60,7 @@ export default async function OccasionPage({ page }) {
           <h5 className="mt-2 text-lg font-normal">{page.heroSubtitle}</h5>
           <a
             href={scrollToGrid}
-            className="btn-primary mt-4 !rounded-full"
+            className="btn-primary mt-4 "
           >
             Shop Now
           </a>

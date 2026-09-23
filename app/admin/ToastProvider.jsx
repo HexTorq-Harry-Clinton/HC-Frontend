@@ -43,7 +43,7 @@ export function ToastProvider({ children }) {
           <div
             key={t.id}
             role="status"
-            className={`flex items-center gap-3 rounded-xl border-l-[3px] bg-[#1b1a1f] p-3.5 text-[13.5px] text-[#f2f0ea] shadow-2xl ring-1 ring-white/10 backdrop-blur ${
+            className={`flex items-center gap-3  border-l-[3px] bg-[#1b1a1f] p-3.5 text-[13.5px] text-[#f2f0ea] shadow-2xl ring-1 ring-white/10 backdrop-blur ${
               t.type === "success"
                 ? "border-[#1e7a3c]"
                 : t.type === "error"
@@ -67,7 +67,7 @@ export function ToastProvider({ children }) {
               type="button"
               onClick={() => remove(t.id)}
               aria-label="Dismiss"
-              className="rounded p-0.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+              className=" p-0.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
             >
               <i className="bi bi-x text-base leading-none" />
             </button>

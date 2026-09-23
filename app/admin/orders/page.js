@@ -156,7 +156,7 @@ export default function AdminOrdersPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-950" />
+        <div className="h-8 w-8 animate-spin  border-2 border-neutral-300 border-t-neutral-950" />
         <p className="text-sm text-neutral-500">Loading orders...</p>
       </div>
     );
@@ -173,7 +173,7 @@ export default function AdminOrdersPage() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search order, customer, status..."
-          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className="w-full max-w-md  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
         />
       </div>
       {(() => {
@@ -186,7 +186,7 @@ export default function AdminOrdersPage() {
         const shown = paginate(filtered, page, pageSize);
         if (shown.length === 0) {
           return (
-            <p className="mt-4 rounded-xl border border-neutral-200 bg-white p-5 text-sm text-neutral-500 shadow-sm">No orders found.</p>
+            <p className="mt-4  border border-neutral-200 bg-white p-5 text-sm text-neutral-500 shadow-sm">No orders found.</p>
           );
         }
         return (
@@ -202,7 +202,7 @@ export default function AdminOrdersPage() {
             const ship = orderShipment(o.order_id);
             const rets = orderReturns(o.order_id);
             return (
-              <div key={o.order_id} className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+              <div key={o.order_id} className="overflow-hidden  border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md">
                 <button
                   type="button"
                   onClick={() => toggleExpand(o.order_id)}
@@ -215,8 +215,8 @@ export default function AdminOrdersPage() {
                     {userName(o.user_id) && <span className="text-sm text-neutral-500">{userName(o.user_id)}</span>}
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="rounded-full bg-neutral-950 px-2.5 py-0.5 text-xs font-semibold text-white">{status}</span>
-                    <span className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600">{o.payment_status}</span>
+                    <span className=" bg-neutral-950 px-2.5 py-0.5 text-xs font-semibold text-white">{status}</span>
+                    <span className=" border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600">{o.payment_status}</span>
                     <span className="font-bold text-neutral-900">₹{Number(o.total_amount ?? o.total ?? subtotal).toLocaleString("en-IN")}</span>
                   </span>
                 </button>
@@ -252,7 +252,7 @@ export default function AdminOrdersPage() {
                           <select
                             value={statusDraft[o.order_id] || status}
                             onChange={(e) => setStatusDraft((m) => ({ ...m, [o.order_id]: e.target.value }))}
-                            className="w-auto rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                            className="w-auto  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                           >
                             {ORDER_STATUSES.map((s) => (
                               <option key={s} value={s}>{s}</option>
@@ -261,7 +261,7 @@ export default function AdminOrdersPage() {
                           <button
                             type="button"
                             onClick={() => saveStatus(o)}
-                            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                            className="inline-flex items-center justify-center  bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
                           >
                             Save
                           </button>
@@ -282,7 +282,7 @@ export default function AdminOrdersPage() {
                         {list.length === 0 ? (
                           <p className="text-sm text-neutral-500">No items.</p>
                         ) : (
-                          <div className="overflow-x-auto rounded-lg border border-neutral-200">
+                          <div className="overflow-x-auto  border border-neutral-200">
                           <table className="w-full text-left text-sm">
                             <thead>
                               <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -327,7 +327,7 @@ export default function AdminOrdersPage() {
                                 onChange={(e) =>
                                   setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), shipment_status: e.target.value } }))
                                 }
-                                className="w-auto rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                                className="w-auto  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                               >
                                 {SHIP_STATUSES.map((s) => (
                                   <option key={s} value={s}>{s}</option>
@@ -336,7 +336,7 @@ export default function AdminOrdersPage() {
                               <button
                                 type="button"
                                 onClick={() => saveShipment(o, false)}
-                                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                                className="inline-flex items-center justify-center  bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
                               >
                                 Save
                               </button>
@@ -349,7 +349,7 @@ export default function AdminOrdersPage() {
                               onChange={(e) =>
                                 setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), courier_partner_id: e.target.value } }))
                               }
-                              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                              className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                             >
                               <option value="">Select Courier</option>
                               {couriers.map((c) => (
@@ -364,14 +364,14 @@ export default function AdminOrdersPage() {
                                 setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), tracking_number: e.target.value } }))
                               }
                               placeholder="Tracking number"
-                              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                              className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                             />
                             <select
                               value={(shipForm[o.order_id] || {}).shipment_status || "created"}
                               onChange={(e) =>
                                 setShipForm((m) => ({ ...m, [o.order_id]: { ...(m[o.order_id] || {}), shipment_status: e.target.value } }))
                               }
-                              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                              className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                             >
                               {SHIP_STATUSES.map((s) => (
                                 <option key={s} value={s}>{s}</option>
@@ -380,7 +380,7 @@ export default function AdminOrdersPage() {
                             <button
                               type="button"
                               onClick={() => saveShipment(o, true)}
-                              className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                              className="inline-flex items-center justify-center  bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
                             >
                               Save
                             </button>
@@ -394,7 +394,7 @@ export default function AdminOrdersPage() {
                         {rets.length === 0 ? (
                           <p className="text-sm text-neutral-500">No return requests for this order.</p>
                         ) : (
-                          <div className="overflow-x-auto rounded-lg border border-neutral-200">
+                          <div className="overflow-x-auto  border border-neutral-200">
                           <table className="w-full text-left text-sm">
                             <thead>
                               <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -423,7 +423,7 @@ export default function AdminOrdersPage() {
                                             load();
                                           }).catch(() => toast?.error("Failed to update return."));
                                         }}
-                                        className="w-auto rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+                                        className="w-auto  border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                                       >
                                         {RETURN_STATUSES.map((s) => (
                                           <option key={s} value={s}>{s}</option>

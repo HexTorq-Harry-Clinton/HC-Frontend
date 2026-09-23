@@ -22,7 +22,7 @@ const TAB_MODULES = {
 };
 
 const input =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
+  "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 
 // Product Management: grouped workspace like before —
 // tabs (Products/Sizes/Cloth Types/Care/Attributes) + search,
@@ -190,7 +190,7 @@ export default function AdminProductsPage() {
             type="button"
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-md border px-4 py-2 text-sm font-semibold transition-colors ${
+            className={` border px-4 py-2 text-sm font-semibold transition-colors ${
               tab === t
                 ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
                 : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50"
@@ -201,7 +201,7 @@ export default function AdminProductsPage() {
         ))}
       </div>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
           {msg}
         </p>
       )}
@@ -220,7 +220,7 @@ export default function AdminProductsPage() {
               <form
                 onSubmit={submit}
                 onClick={(e) => e.stopPropagation()}
-                className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+                className="max-h-[90vh] w-full max-w-2xl overflow-y-auto  border border-neutral-200 bg-white p-6 shadow-sm"
               >
                 <h3 className="font-display text-lg font-bold text-neutral-900">
                   {editing ? "Edit Product" : "New Product"}
@@ -235,20 +235,20 @@ export default function AdminProductsPage() {
                   </div>
                   <textarea value={form.description} onChange={set("description")} placeholder="Full description" rows={2} className={`${input} md:col-span-2`} />
                   <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
+                    <input type="checkbox" checked={form.isactive} onChange={set("isactive")} className="h-4 w-4  border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Active
                   </label>
                 </div>
                 <div className="mt-4 flex justify-end gap-2">
                   <button
                     type="button"
                     onClick={closeForm}
-                    className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                    className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                    className="inline-flex items-center justify-center  bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
                   >
                     {editing ? "Update Product" : "Add Product"}
                   </button>
@@ -262,12 +262,12 @@ export default function AdminProductsPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setProdPage(1); }}
               placeholder="Search products..."
-              className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+              className="w-full max-w-md  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             />
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setProdPage(1); }}
-              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+              className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             >
               <option value="all">All</option>
               <option value="active">Active only</option>
@@ -287,12 +287,12 @@ export default function AdminProductsPage() {
             <button
               type="button"
               onClick={() => { setForm(empty); setEditing(null); setShowForm(true); }}
-              className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+              className="inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
             >
               <i className="bi bi-plus-lg" /> New Product
             </button>
           </div>
-          <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="overflow-x-auto  border border-neutral-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -719,7 +719,7 @@ function ProductWorkspace({ product, onBack }) {
       <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-neutral-900">{product.product_name}</h1>
       <p className="mt-1 text-xs text-neutral-500">{product.product_slug} · {inr(product.base_price)}</p>
       {msg && (
-        <p className="mt-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
+        <p className="mt-3  border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm text-neutral-700">
           {msg}
         </p>
       )}
@@ -732,13 +732,13 @@ function ProductWorkspace({ product, onBack }) {
           value={vSearch}
           onChange={(e) => { setVSearch(e.target.value); setVPage(1); }}
           placeholder="Search variants..."
-          className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+          className="w-full max-w-md  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
         />
       </div>
       {variants.length === 0 ? (
-        <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No variants yet.</p>
+        <p className="mt-2  border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No variants yet.</p>
       ) : (
-        <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="mt-2 overflow-x-auto  border border-neutral-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -770,14 +770,14 @@ function ProductWorkspace({ product, onBack }) {
                                 src={resolveUploadUrl(m.media_url)}
                                 alt={m.alt_text || v.sku}
                                 style={{ height: 48, width: 48, objectFit: "cover" }}
-                                className="rounded-md border border-neutral-300 bg-white"
+                                className=" border border-neutral-300 bg-white"
                                 onError={(e) => { e.currentTarget.style.display = "none"; }}
                               />
                               <button
                                 type="button"
                                 onClick={() => deleteVariantMedia(m)}
                                 title="Delete variant image"
-                                className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs text-red-600 shadow ring-1 ring-neutral-200 transition-colors hover:bg-red-50"
+                                className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center  bg-white text-xs text-red-600 shadow ring-1 ring-neutral-200 transition-colors hover:bg-red-50"
                               >
                                 ×
                               </button>
@@ -792,12 +792,12 @@ function ProductWorkspace({ product, onBack }) {
                         />
                       </div>
                       {vPreview?.variantId === v.product_variant_id && (
-                            <div className="mt-2 flex flex-wrap items-start gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+                            <div className="mt-2 flex flex-wrap items-start gap-2  border border-neutral-200 bg-neutral-50 p-2">
                               {vPreview.type === "image" ? (
                                 /* eslint-disable-next-line @next/next/no-img-element */
-                                <img src={vPreview.url} alt="preview" style={{ height: 60, width: 60, objectFit: "cover" }} className="rounded-md border border-neutral-300" />
+                                <img src={vPreview.url} alt="preview" style={{ height: 60, width: 60, objectFit: "cover" }} className=" border border-neutral-300" />
                               ) : (
-                                <video src={vPreview.url} style={{ height: 60, width: 60, objectFit: "cover" }} controls className="rounded-md border border-neutral-300" />
+                                <video src={vPreview.url} style={{ height: 60, width: 60, objectFit: "cover" }} controls className=" border border-neutral-300" />
                               )}
                           <div className="flex-1">
                             <p className="text-xs">{vPreview.name}</p>
@@ -807,14 +807,14 @@ function ProductWorkspace({ product, onBack }) {
                             type="button"
                             onClick={uploadVariantMedia}
                             disabled={vUploadingId === v.product_variant_id}
-                            className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-gold hover:text-neutral-950 disabled:opacity-50"
+                            className="inline-flex items-center justify-center  bg-neutral-950 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-gold hover:text-neutral-950 disabled:opacity-50"
                           >
                             {vUploadingId === v.product_variant_id ? "..." : "Upload"}
                           </button>
                           <button
                             type="button"
                             onClick={clearVariantPreview}
-                            className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition-colors hover:border-neutral-950 hover:bg-neutral-50"
+                            className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition-colors hover:border-neutral-950 hover:bg-neutral-50"
                           >
                             ×
                           </button>
@@ -843,7 +843,7 @@ function ProductWorkspace({ product, onBack }) {
             setEditingVariant(null);
             setShowVariantForm(true);
           }}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          className="inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
         >
           <i className="bi bi-plus-lg" /> Add Variant
         </button>
@@ -856,7 +856,7 @@ function ProductWorkspace({ product, onBack }) {
           <form
             onSubmit={saveVariant}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto  border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <h3 className="font-display text-lg font-bold text-neutral-900">{editingVariant ? "Edit Variant" : "Add Variant"}</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -884,13 +884,13 @@ function ProductWorkspace({ product, onBack }) {
               <button
                 type="button"
                 onClick={closeVariantForm}
-                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                className="inline-flex items-center justify-center  bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
               >
                 {editingVariant ? "Update Variant" : "Add Variant"}
               </button>
@@ -903,17 +903,17 @@ function ProductWorkspace({ product, onBack }) {
         <i className="bi bi-images text-gold-deep" /> Images / Media
       </h2>
       {media.length === 0 ? (
-        <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No images yet.</p>
+        <p className="mt-2  border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No images yet.</p>
       ) : (
         <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
           {media.map((m) => (
-            <div key={m.product_media_id} className="relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-2 shadow-sm">
+            <div key={m.product_media_id} className="relative overflow-hidden  border border-neutral-200 bg-white p-2 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={resolveUploadUrl(m.media_url)}
                 alt={m.alt_text || product.product_name}
                 style={{ height: 140, width: "100%", objectFit: "cover" }}
-                className="rounded-lg bg-neutral-100"
+                className=" bg-neutral-100"
                 onError={(e) => {
                   e.currentTarget.src = "/brand/logo-black.png";
                   e.currentTarget.style.objectFit = "contain";
@@ -930,7 +930,7 @@ function ProductWorkspace({ product, onBack }) {
         <button
           type="button"
           onClick={() => setShowMediaForm(true)}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          className="inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
         >
           <i className="bi bi-plus-lg" /> Add Media
         </button>
@@ -942,13 +942,13 @@ function ProductWorkspace({ product, onBack }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto  border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <h3 className="font-display text-lg font-bold text-neutral-900">Add Media</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
         <input value={mAlt} onChange={(e) => setMAlt(e.target.value)} placeholder="Alt Text" className={input} />
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} className="h-4 w-4 rounded border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Set as primary
+          <input type="checkbox" checked={mPrimary} onChange={(e) => setMPrimary(e.target.checked)} className="h-4 w-4  border-neutral-300 text-neutral-950 focus:ring-gold/40" /> Set as primary
         </label>
         <div className="md:col-span-3">
           <FilePick
@@ -965,12 +965,12 @@ function ProductWorkspace({ product, onBack }) {
           </div>
         )}
         {mPreview ? (
-          <div className="md:col-span-3 flex flex-wrap items-start gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+          <div className="md:col-span-3 flex flex-wrap items-start gap-3  border border-neutral-200 bg-neutral-50 p-3">
             {mPreview.type === "image" ? (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={mPreview.url} alt="preview" style={{ height: 100, width: 140, objectFit: "cover" }} className="rounded-md border border-neutral-300" />
+              <img src={mPreview.url} alt="preview" style={{ height: 100, width: 140, objectFit: "cover" }} className=" border border-neutral-300" />
             ) : (
-              <video src={mPreview.url} style={{ height: 100, width: 140, objectFit: "cover" }} controls className="rounded-md border border-neutral-300" />
+              <video src={mPreview.url} style={{ height: 100, width: 140, objectFit: "cover" }} controls className=" border border-neutral-300" />
             )}
             <div className="flex-1">
               <p className="text-xs font-medium">{mPreview.name}</p>
@@ -981,14 +981,14 @@ function ProductWorkspace({ product, onBack }) {
                 type="button"
                 onClick={saveMedia}
                 disabled={uploading}
-                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-gold hover:text-neutral-950 disabled:opacity-50"
+                className="inline-flex items-center justify-center  bg-neutral-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-gold hover:text-neutral-950 disabled:opacity-50"
               >
                 {uploading ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
                 onClick={clearMediaPreview}
-                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:border-neutral-950 hover:bg-neutral-50"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:border-neutral-950 hover:bg-neutral-50"
               >
                 Cancel
               </button>
@@ -1002,7 +1002,7 @@ function ProductWorkspace({ product, onBack }) {
               <button
                 type="button"
                 onClick={() => { clearMediaPreview(); setShowMediaForm(false); }}
-                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               >
                 Close
               </button>
@@ -1018,7 +1018,7 @@ function ProductWorkspace({ product, onBack }) {
         <button
           type="button"
           onClick={() => setShowAttrForm(true)}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+          className="inline-flex items-center justify-center gap-1.5  bg-neutral-950 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
         >
           <i className="bi bi-plus-lg" /> Add Attribute
         </button>
@@ -1031,7 +1031,7 @@ function ProductWorkspace({ product, onBack }) {
           <form
             onSubmit={addAttr}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            className="w-full max-w-lg  border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <h3 className="font-display text-lg font-bold text-neutral-900">Add Attribute</h3>
             <div className="mt-4 grid gap-3">
@@ -1047,13 +1047,13 @@ function ProductWorkspace({ product, onBack }) {
               <button
                 type="button"
                 onClick={() => setShowAttrForm(false)}
-                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                className="inline-flex items-center justify-center  bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
               >
                 Add
               </button>
@@ -1062,7 +1062,7 @@ function ProductWorkspace({ product, onBack }) {
         </div>
       )}
       {attrValues.length === 0 ? (
-        <p className="mt-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No attribute values yet.</p>
+        <p className="mt-2  border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">No attribute values yet.</p>
       ) : (
         <>
           <div className="mt-2 flex justify-end">
@@ -1070,10 +1070,10 @@ function ProductWorkspace({ product, onBack }) {
               value={aSearch}
               onChange={(e) => { setASearch(e.target.value); setAPage(1); }}
               placeholder="Search attributes..."
-              className="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
+              className="w-full max-w-md  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             />
           </div>
-          <div className="mt-2 overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="mt-2 overflow-x-auto  border border-neutral-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
@@ -1104,7 +1104,7 @@ function ProductWorkspace({ product, onBack }) {
         <button
           type="button"
           onClick={() => setShowSeoForm(true)}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-neutral-300 bg-white px-5 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+          className="inline-flex items-center justify-center gap-1.5  border border-neutral-300 bg-white px-5 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
         >
           <i className="bi bi-pencil" /> Edit SEO
         </button>
@@ -1117,7 +1117,7 @@ function ProductWorkspace({ product, onBack }) {
           <form
             onSubmit={saveSeo}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto  border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <h3 className="font-display text-lg font-bold text-neutral-900">Edit SEO</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -1130,13 +1130,13 @@ function ProductWorkspace({ product, onBack }) {
               <button
                 type="button"
                 onClick={() => setShowSeoForm(false)}
-                className="inline-flex items-center justify-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                className="inline-flex items-center justify-center  border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition-colors hover:border-neutral-950 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-md bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
+                className="inline-flex items-center justify-center  bg-neutral-950 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gold hover:text-neutral-950 focus:outline-none focus:ring-2 focus:ring-gold/40"
               >
                 Save SEO
               </button>
