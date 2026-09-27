@@ -15,8 +15,8 @@ html {
 }
 
 body {
-  background: #101010;
-  color: #f7f4ec;
+  background: #fff;
+  color: #171717;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }

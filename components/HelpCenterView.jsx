@@ -27,18 +27,19 @@ export default async function HelpCenterView() {
     : DEFAULT_GUIDES);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-14">
-      <div className="text-center">
+    <div className="min-h-screen bg-[#f8f9fa] pb-16">
+      <section className="bg-[#212529] py-14 text-center text-white">
         <h1 className="font-display text-5xl font-bold">Help Center</h1>
-        <p className="mx-auto mt-3 max-w-xl text-neutral-500">
+        <p className="mx-auto mt-3 max-w-xl text-neutral-300">
           Find answers, manage orders, and learn more about Harry Clinton.
         </p>
-      </div>
+      </section>
 
+      <div className="mx-auto max-w-5xl px-4 py-14">
       <h2 className="mt-12 font-display text-3xl font-bold">Browse by Topic</h2>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {TOPICS.map((t) => (
-          <Link key={t.title} href={t.href} className="border border-neutral-200 p-6 transition-colors hover:border-gold">
+          <Link key={t.title} href={t.href} className="border border-neutral-200 bg-white p-6 transition-colors hover:border-gold">
             <p className="font-display text-xl font-bold">{t.title}</p>
             <p className="mt-2 text-sm text-neutral-600">{t.desc}</p>
           </Link>
@@ -48,14 +49,14 @@ export default async function HelpCenterView() {
       <h2 className="mt-12 font-display text-3xl font-bold">Quick Guides</h2>
       <div className="mt-6 space-y-3">
         {guides.map((g, i) => (
-          <details key={i} className="border border-neutral-200">
+          <details key={i} className="border border-neutral-200 bg-white">
             <summary className="cursor-pointer p-4 font-medium">{g.question}</summary>
             <p className="px-4 pb-4 text-sm text-neutral-600">{g.answer}</p>
           </details>
         ))}
       </div>
 
-      <div className="mt-12 bg-neutral-950 p-8 text-center text-white md:p-12">
+      <div className="mt-12 bg-[#212529] p-8 text-center text-white md:p-12">
         <h2 className="font-display text-3xl font-bold">Still need help?</h2>
         <p className="mx-auto mt-2 max-w-xl text-sm text-neutral-300">
           Our support team is available Monday to Saturday, 10am–7pm IST.
@@ -71,6 +72,7 @@ export default async function HelpCenterView() {
             Contact Page
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

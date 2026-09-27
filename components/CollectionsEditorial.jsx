@@ -105,12 +105,11 @@ export default function CollectionsEditorial() {
     };
   }, []);
   return (
-    <section className="py-24 px-4 md:px-8 bg-[#101010]">
+    <section className="py-24 px-4 md:px-8 bg-[#f7f4ec]">
       <div className="max-w-7xl mx-auto">
         <SectionHeading 
           eyebrow="SIGNATURE COLLECTIONS" 
           title="The Edits" 
-          dark
         />
         
         <div className="mt-16 space-y-12">

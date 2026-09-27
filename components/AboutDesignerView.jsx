@@ -2,7 +2,7 @@
 export default function AboutDesignerView() {
   return (
     <div>
-      <section className="bg-neutral-950 py-20 text-center text-white md:py-28">
+      <section className="bg-white py-20 text-center text-[#101010] md:py-28">
         <h1 className="font-display text-5xl font-bold md:text-6xl">About Us</h1>
       </section>
       <section className="mx-auto max-w-3xl px-4 py-14 md:py-20">

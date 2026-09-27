@@ -4,12 +4,12 @@ import Link from "next/link";
 export default function AboutUsView() {
   return (
     <div>
-      <section className="bg-neutral-950 py-20 text-center text-white md:py-28">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">Est. in Pursuit of Perfection</p>
+      <section className="bg-white py-20 text-center text-[#101010] md:py-28">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold-deep">Est. in Pursuit of Perfection</p>
         <h1 className="mx-auto mt-2 max-w-4xl font-display text-5xl font-bold leading-tight md:text-7xl">
           Where Bespoke<br />Meets Soul.
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-neutral-300">
+        <p className="mx-auto mt-4 max-w-2xl text-[#101010]/70">
           Harry Clinton is not a label. It is a declaration of men&apos;s bold craftsmanship, timeless design, and personal touch.
         </p>
         <Link href="/about-designer" className="btn-primary mt-8 !bg-gold !text-neutral-950 hover:!bg-white">
@@ -17,8 +17,8 @@ export default function AboutUsView() {
         </Link>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14">
-        <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
+      <section className="bg-[#111111] py-10 text-center text-white">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 md:grid-cols-4">
           <Stat value="12+" label="Years of Craft" />
           <Stat value="2400+" label="Bespoke Pieces" />
           <Stat value="98%" label="Client Satisfaction" />
@@ -38,11 +38,11 @@ export default function AboutUsView() {
         </Link>
       </section>
 
-      <section className="bg-cream py-16 md:py-24">
+      <section className="bg-white py-16 md:py-24">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 md:grid-cols-2">
-          <div className="flex min-h-72 items-center justify-center bg-neutral-950 p-10 text-center text-white">
+          <div className="flex min-h-72 items-center justify-center bg-[#f4f4f4] p-10 text-center text-[#101010]">
             <div>
-              <p className="eyebrow text-gold">The Atelier</p>
+              <p className="eyebrow text-gold-deep">The Atelier</p>
               <p className="mt-2 font-display text-2xl">Where It All Happens</p>
             </div>
           </div>
@@ -55,9 +55,9 @@ export default function AboutUsView() {
         </div>
         <div className="mx-auto mt-12 grid max-w-7xl items-center gap-10 px-4 md:grid-cols-2">
           <div className="md:order-2">
-            <div className="flex min-h-72 items-center justify-center bg-neutral-950 p-10 text-center text-white">
+            <div className="flex min-h-72 items-center justify-center bg-[#f4f4f4] p-10 text-center text-[#101010]">
               <div>
-                <p className="eyebrow text-gold">The Craft</p>
+                <p className="eyebrow text-gold-deep">The Craft</p>
                 <p className="mt-2 font-display text-2xl">Our Process</p>
               </div>
             </div>
@@ -71,14 +71,16 @@ export default function AboutUsView() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 md:py-24">
-        <p className="eyebrow text-center text-neutral-500">What We Stand For</p>
-        <h2 className="mt-2 text-center font-display text-4xl font-bold">Our Values</h2>
+      <section className="bg-[#111111] py-16 md:py-24">
+        <div className="mx-auto max-w-7xl px-4">
+          <p className="eyebrow text-center text-[#c9a96e]">What We Stand For</p>
+          <h2 className="mt-2 text-center font-display text-4xl font-bold text-white">Our Values</h2>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <ValueCard title="Craftsmanship" desc="Every stitch is placed with intention. We never compromise on construction quality." />
           <ValueCard title="Excellence" desc="Award-winning garments recognised across top fashion publications and editorials." />
           <ValueCard title="Personal Touch" desc="Each piece is tailored to the individual — your fit, your story, your statement." />
           <ValueCard title="Integrity" desc="Transparent pricing, honest timelines, and a brand you can genuinely trust." />
+        </div>
         </div>
       </section>
 
@@ -91,15 +93,16 @@ export default function AboutUsView() {
         </div>
       </section>
 
-      <section className="bg-neutral-950 py-16 text-center text-white md:py-24">
+      <section className="bg-white py-16 text-center text-[#101010] md:py-24">
         <h2 className="font-display text-4xl font-bold md:text-5xl">Heritage. Craft. Identity.</h2>
-        <p className="mx-auto mt-3 max-w-xl text-neutral-300">Committed to timeless tailoring since the very first stitch.</p>
+        <p className="mx-auto mt-3 max-w-xl text-[#101010]/70">Committed to timeless tailoring since the very first stitch.</p>
         <Link href="/about-designer" className="btn-primary mt-8 !bg-gold !text-neutral-950 hover:!bg-white">
           Meet the Designer
         </Link>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 md:py-24">
+      <section className="bg-[#fafafa] py-16 md:py-24">
+        <div className="mx-auto max-w-7xl px-4">
         <p className="eyebrow text-center text-neutral-500">The People</p>
         <h2 className="mt-2 text-center font-display text-4xl font-bold">Our Team</h2>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -107,6 +110,7 @@ export default function AboutUsView() {
           <TeamCard name="Mounika" role="Operations Lead" />
           <TeamCard name="Sabarish" role="Master Tailor" />
           <TeamCard name="Suganthi" role="Client Relations" />
+        </div>
         </div>
       </section>
 
@@ -121,18 +125,18 @@ export default function AboutUsView() {
 
 function Stat({ value, label }) {
   return (
-    <div className="border border-neutral-200 p-6">
-      <p className="font-display text-4xl font-bold">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-neutral-500">{label}</p>
+    <div className="border border-white/15 p-6">
+      <p className="font-display text-4xl font-bold text-[#c9a96e]">{value}</p>
+      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-neutral-300">{label}</p>
     </div>
   );
 }
 
 function ValueCard({ title, desc }) {
   return (
-    <div className="border border-neutral-200 p-8">
-      <p className="font-display text-xl font-bold">{title}</p>
-      <p className="mt-2 text-sm text-neutral-600">{desc}</p>
+    <div className="border border-white/10 bg-white/[0.04] p-8">
+      <p className="font-display text-xl font-bold text-white">{title}</p>
+      <p className="mt-2 text-sm text-neutral-300">{desc}</p>
     </div>
   );
 }

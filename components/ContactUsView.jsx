@@ -44,9 +44,8 @@ export default function ContactUsView() {
 
   return (
     <div className="pb-16">
-      <div className="bg-neutral-950 py-14 text-white">
+      <div className="bg-white py-14 text-[#101010]">
         <ShowcaseHeader
-          dark
           title="Contact Us"
           sub="We would love to hear from you. Reach out for bespoke consultations, orders, or any questions."
         />
@@ -103,20 +102,20 @@ export default function ContactUsView() {
           </form>
         </div>
 
-        <div className="mt-10 bg-neutral-950 p-8 text-white md:p-12">
+        <div className="mt-10 bg-[#f4f4f4] p-8 text-[#101010] md:p-12">
           <div className="mx-auto max-w-3xl text-center">
             <h3 className="font-display text-3xl font-bold md:text-4xl">Visit Our Atelier</h3>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-300">
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-[#101010]/70">
               Experience the world of Harry Clinton in person. Schedule a bespoke consultation with our master tailors and explore fabrics, fits, and finishes tailored to you.
             </p>
-            <ul className="mx-auto mt-6 grid max-w-2xl gap-2 text-sm text-neutral-300 sm:grid-cols-2">
-              <li className="border border-neutral-800 px-4 py-3">Harry Clinton Atelier, Chennai, Tamil Nadu, India</li>
-              <li className="border border-neutral-800 px-4 py-3">connect@harryclinton.com</li>
-              <li className="border border-neutral-800 px-4 py-3">+91 7094 094 194</li>
-              <li className="border border-neutral-800 px-4 py-3">Mon – Sat, 10am – 7pm IST</li>
+            <ul className="mx-auto mt-6 grid max-w-2xl gap-2 text-sm text-[#101010]/70 sm:grid-cols-2">
+              <li className="border border-neutral-300 bg-white px-4 py-3">Harry Clinton Atelier, Chennai, Tamil Nadu, India</li>
+              <li className="border border-neutral-300 bg-white px-4 py-3">connect@harryclinton.com</li>
+              <li className="border border-neutral-300 bg-white px-4 py-3">+91 7094 094 194</li>
+              <li className="border border-neutral-300 bg-white px-4 py-3">Mon – Sat, 10am – 7pm IST</li>
             </ul>
-            <p className="mt-6 text-sm text-neutral-300">Prefer a face-to-face consultation?</p>
-            <Link href="/help-center" className="btn-primary mt-3 !bg-gold !text-neutral-950 hover:!bg-white">
+            <p className="mt-6 text-sm text-[#101010]/70">Prefer a face-to-face consultation?</p>
+            <Link href="/help-center" className="btn-primary mt-3 !bg-gold !text-neutral-950 hover:!bg-neutral-950 hover:!text-white">
               Visit Help Center
             </Link>
           </div>

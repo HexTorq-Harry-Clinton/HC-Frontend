@@ -18,10 +18,10 @@ export default function ServicesHub() {
       </p>
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
         {SERVICES.map((s) => (
-          <Link key={s.href} href={s.href} className="group border border-neutral-200 bg-neutral-950 p-10 text-white transition-colors hover:border-gold">
-            <h2 className="font-display text-3xl font-bold group-hover:text-gold">{s.title}</h2>
-            <p className="mt-2 text-sm text-neutral-400">{s.note}</p>
-            <span className="mt-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-gold">Discover →</span>
+          <Link key={s.href} href={s.href} className="group border border-neutral-200 bg-white p-10 text-[#101010] transition-colors hover:border-gold">
+            <h2 className="font-display text-3xl font-bold group-hover:text-gold-deep">{s.title}</h2>
+            <p className="mt-2 text-sm text-neutral-500">{s.note}</p>
+            <span className="mt-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep">Discover →</span>
           </Link>
         ))}
       </div>

@@ -29,11 +29,11 @@ export default function StyleByHCView({ liveCollections }) {
 
   return (
     <div>
-      <section className="bg-neutral-950 py-20 text-center text-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">Harry Clinton</p>
+      <section className="bg-white py-20 text-center text-[#101010]">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold-deep">Harry Clinton</p>
         <h1 className="mt-2 font-display text-5xl font-bold md:text-6xl">Style by HC</h1>
-        <p className="mx-auto mt-3 max-w-xl text-neutral-300">Curated looks, style guides and outfit inspiration from our in-house stylists.</p>
-        <a href="#style-content" className="btn-primary mt-6 !bg-white !text-neutral-950 hover:!bg-gold">
+        <p className="mx-auto mt-3 max-w-xl text-[#101010]/70">Curated looks, style guides and outfit inspiration from our in-house stylists.</p>
+        <a href="#style-content" className="btn-primary mt-6 !bg-gold !text-neutral-950 hover:!bg-neutral-950 hover:!text-white">
           Explore Looks
         </a>
       </section>
@@ -117,10 +117,10 @@ export default function StyleByHCView({ liveCollections }) {
           </cite>
         </blockquote>
 
-        <div className="mt-14 bg-neutral-950 px-6 py-12 text-center text-white">
+        <div className="mt-14 bg-[#f4f4f4] px-6 py-12 text-center text-[#101010]">
           <h2 className="font-display text-3xl font-bold md:text-4xl">Ready to build your look?</h2>
-          <p className="mx-auto mt-2 max-w-xl text-neutral-300">Book a Personal Styling Session</p>
-          <p className="mx-auto mt-1 max-w-xl text-sm text-neutral-400">Sit with one of our in-house stylists and let us curate your wardrobe from scratch.</p>
+          <p className="mx-auto mt-2 max-w-xl text-[#101010]/70">Book a Personal Styling Session</p>
+          <p className="mx-auto mt-1 max-w-xl text-sm text-[#101010]/60">Sit with one of our in-house stylists and let us curate your wardrobe from scratch.</p>
           <Link href="/book-appointment" className="btn-primary mt-6 !bg-gold !text-neutral-950 hover:!bg-white">
             Book Now
           </Link>

@@ -27,7 +27,7 @@ export default async function FAQsView() {
           ))}
         </div>
       )}
-      <div className="mt-12 border-t border-neutral-200 bg-neutral-950 py-6 text-center text-sm text-white">
+      <div className="mt-12 border-t border-neutral-200 bg-[#f4f4f4] py-6 text-center text-sm text-[#101010]">
         <p>© 2025 Harry Clinton. All rights reserved.</p>
         <p className="mt-2">
           <Link href="/" className="underline">Home</Link>

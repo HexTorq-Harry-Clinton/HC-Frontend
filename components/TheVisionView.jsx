@@ -4,29 +4,29 @@ import Link from "next/link";
 export default function TheVisionView() {
   return (
     <div>
-      <section className="bg-neutral-950 py-20 text-center text-white md:py-28">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">HC Presents</p>
+      <section className="bg-white py-20 text-center text-[#101010] md:py-28">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold-deep">HC Presents</p>
         <h1 className="mt-2 font-display text-5xl font-bold md:text-7xl">THE VISION</h1>
-        <p className="mt-3 font-display text-2xl italic text-neutral-300">Beyond Sight.</p>
-        <p className="mx-auto mt-4 max-w-2xl text-neutral-300">Not every vision begins with sight.</p>
-        <p className="mx-auto mt-2 max-w-2xl text-neutral-300">
+        <p className="mt-3 font-display text-2xl italic text-[#101010]/70">Beyond Sight.</p>
+        <p className="mx-auto mt-4 max-w-2xl text-[#101010]/70">Not every vision begins with sight.</p>
+        <p className="mx-auto mt-2 max-w-2xl text-[#101010]/70">
           A collection created with visually impaired artists who imagine, interpret and express the world in their own unique way.
         </p>
-        <p className="mx-auto mt-2 max-w-2xl font-semibold text-white">Their art. Their story. Your style.</p>
+        <p className="mx-auto mt-2 max-w-2xl font-semibold text-[#101010]">Their art. Their story. Your style.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm">
           <span>👁️ Their Imagination Our Prints</span>
           <span>👕 Their Perspective Your Style</span>
           <span>❤️ Every Purchase Creates Impact</span>
         </div>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <a href="#tv-collection" className="btn-primary !bg-gold !text-neutral-950 hover:!bg-white">
+          <a href="#tv-collection" className="btn-primary !bg-gold !text-neutral-950 hover:!bg-neutral-950 hover:!text-white">
             Explore Collection
           </a>
-          <a href="#tv-artists" className="btn-ghost !border-white !text-white hover:!bg-white hover:!text-neutral-950">
+          <a href="#tv-artists" className="btn-ghost !border-neutral-950 !text-neutral-950 hover:!bg-neutral-950 hover:!text-white">
             Meet the Artists →
           </a>
         </div>
-        <p className="mt-8 text-xs uppercase tracking-[0.25em] text-neutral-400">
+        <p className="mt-8 text-xs uppercase tracking-[0.25em] text-[#101010]/60">
           Wear more than fashion. Wear a different way of seeing.
         </p>
       </section>
@@ -113,17 +113,17 @@ export default function TheVisionView() {
         </a>
       </section>
 
-      <section className="bg-neutral-950 py-16 text-center text-white md:py-24">
+      <section className="bg-white py-16 text-center text-[#101010] md:py-24">
         <h2 className="font-display text-4xl font-bold md:text-5xl">Beyond Sight. Beyond Fashion.</h2>
-        <div className="mx-auto mt-6 max-w-xl space-y-1 font-display text-xl italic text-neutral-300">
+        <div className="mx-auto mt-6 max-w-xl space-y-1 font-display text-xl italic text-[#101010]/70">
           <p>The Vision is an invitation to see differently.</p>
           <p>To wear something meaningful.</p>
           <p>To celebrate creativity with them.</p>
           <p>To turn imagination into impact.</p>
         </div>
-        <p className="mt-8 text-sm uppercase tracking-[0.25em] text-gold">Their imagination. Our prints. Your style.</p>
+        <p className="mt-8 text-sm uppercase tracking-[0.25em] text-gold-deep">Their imagination. Our prints. Your style.</p>
         <div className="mt-6">
-          <Link href="/new-arrivals" className="btn-primary !bg-gold !text-neutral-950 hover:!bg-white">
+          <Link href="/new-arrivals" className="btn-primary !bg-gold !text-neutral-950 hover:!bg-neutral-950 hover:!text-white">
             Explore Collection
           </Link>
         </div>
