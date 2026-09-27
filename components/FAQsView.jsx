@@ -15,9 +15,11 @@ export default async function FAQsView() {
         <p className="mt-8 text-center text-sm text-neutral-500">Unable to load FAQs. Please try again later.</p>
       ) : (
         <div className="mt-8 space-y-3">
-          {list.map((f) => (
+          {list.map((f, i) => (
             <details key={f.faq_id} className="border border-neutral-200">
-              <summary className="cursor-pointer p-4 font-medium">{f.question}</summary>
+              <summary className="cursor-pointer p-4 font-medium">
+                {`${i + 1}) ${(f.question || "").replace(/^\s*\d+\s*[).:-]\s*/, "")}`}
+              </summary>
               {/<[a-z][\s\S]*>/i.test(f.answer || "") ? (
                 <div className="px-4 pb-4 text-sm text-neutral-600" dangerouslySetInnerHTML={{ __html: sanitizeHtml(f.answer) }} />
               ) : (
