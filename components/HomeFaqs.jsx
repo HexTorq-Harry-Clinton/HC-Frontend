@@ -4,85 +4,46 @@ import { useEffect, useState } from "react";
 import { apiCached, homeKV } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 
-// The homepage shows a curated subset of the FAQ table — the full list lives on
-// the /FAQs page. Questions here are the canonical (un-numbered) question text
-// stored in the DB; the visible "1) 2) 3)" prefix is added when rendering.
-const HOME_FAQ_QUESTIONS = [
-  "What's the minimum duration required to stitch a bespoke suit?",
-  "What are the steps to place a custom order online?",
-  "What should I do if I received a wrong or defective product?",
-  "How to cancel my order?",
-  "I think I got the sizing wrong on my order. Can I exchange it for a different size?",
-];
-
+// The homepage shows only FAQs flagged show_on_home in the admin panel; the
+// full list always lives on /FAQs. Questions are stored un-numbered — the
+// visible "1) 2) 3)" prefix is added when rendering.
 const DEFAULT_FAQS = [
   {
-    question: HOME_FAQ_QUESTIONS[0],
+    question: "What's the minimum duration required to stitch a bespoke suit?",
     answer: "We usually take 2 weeks for customizing a bespoke suit.",
   },
   {
-    question: HOME_FAQ_QUESTIONS[1],
+    question: "What are the steps to place a custom order online?",
     answer:
       "To place a custom order online, contact us via WhatsApp or email. We'll guide you through fabric selection, sizing, and payment.",
   },
   {
-    question: HOME_FAQ_QUESTIONS[2],
+    question: "What should I do if I received a wrong or defective product?",
     answer: "Please contact our support team within 5 days of order delivery.",
   },
   {
-    question: HOME_FAQ_QUESTIONS[3],
+    question: "How to cancel my order?",
     answer:
       "Cancellation requests are accepted before the product is shipped. Please go to your order page or contact customer support to cancel your order.",
   },
   {
-    question: HOME_FAQ_QUESTIONS[4],
+    question: "I think I got the sizing wrong on my order. Can I exchange it for a different size?",
     answer:
       "Yes, we offer size exchanges. Please initiate the exchange within 5 days of receiving your order. Ensure the item is unused, unwashed, and not damaged. Products should be in resalable condition with all original tags intact.",
   },
 ];
 
-// Loose key so matching survives a re-worded question in the admin panel:
-// drop any "12)" prefix, casefold, strip punctuation, collapse whitespace.
-const faqKey = (q) =>
-  (q || "")
-    .replace(/^\s*\d+\s*[).:-]\s*/, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-// Pick the curated homepage set out of the full DB list, in the order above.
-// Falls back to the first rows if a question was re-worded or removed, so the
-// homepage never renders empty.
-function pickHomeFaqs(list) {
-  const byKey = new Map();
-  list.forEach((f) => {
-    const k = faqKey(f.question);
-    if (k && !byKey.has(k)) byKey.set(k, f);
-  });
-
-  const picked = [];
-  const used = new Set();
-  HOME_FAQ_QUESTIONS.forEach((q) => {
-    const hit = byKey.get(faqKey(q));
-    if (hit && !used.has(hit.faq_id)) {
-      picked.push(hit);
-      used.add(hit.faq_id);
-    }
-  });
-
-  for (const f of list) {
-    if (picked.length >= HOME_FAQ_QUESTIONS.length) break;
-    if (!used.has(f.faq_id)) {
-      picked.push(f);
-      used.add(f.faq_id);
-    }
-  }
-  return picked;
-}
+// BIT columns arrive as true/false or 1/0 depending on the driver.
+const isOn = (v) => v === true || v === 1 || v === "1";
+// home_order is optional (NULL = not on the homepage). Rows without one fall
+// back to display_order so a half-configured set still renders sensibly.
+const homeRank = (f) => {
+  const n = Number(f.home_order);
+  return Number.isFinite(n) && n > 0 ? n : Number(f.display_order) || 0;
+};
 
 // Home FAQs: first item open, single-open accordion, admin title + subtitle
-// override. Renders the curated subset only — /FAQs shows everything.
+// override. Renders the show_on_home subset only — /FAQs shows everything.
 export default function HomeFaqs() {
   const [faqs, setFaqs] = useState(DEFAULT_FAQS);
   const [title, setTitle] = useState("FAQs");
@@ -109,13 +70,23 @@ export default function HomeFaqs() {
             return true;
           });
 
-          setFaqs(
-            pickHomeFaqs(uniqueFaqs).map((item) => ({
-              faq_id: item.faq_id,
-              question: item.question || item.title || "",
-              answer: item.answer || item.description || "",
-            }))
-          );
+          // show_on_home is the source of truth. If the backend is older and
+          // does not return the column yet, fall back to showing everything so
+          // the homepage is never blank mid-deploy.
+          const knowsFlag = uniqueFaqs.some((f) => f.show_on_home !== undefined && f.show_on_home !== null);
+          const chosen = (knowsFlag ? uniqueFaqs.filter((f) => isOn(f.show_on_home)) : uniqueFaqs)
+            .slice()
+            .sort((a, b) => homeRank(a) - homeRank(b));
+
+          if (chosen.length > 0) {
+            setFaqs(
+              chosen.map((item) => ({
+                faq_id: item.faq_id,
+                question: item.question || item.title || "",
+                answer: item.answer || item.description || "",
+              }))
+            );
+          }
         }
         // Admin key-value first (home_faqs_*), else keep defaults.
         if (kv.home_faqs_title) setTitle(kv.home_faqs_title);

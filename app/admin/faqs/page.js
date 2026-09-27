@@ -24,8 +24,12 @@ const iconBtn =
 
 const stripTags = (s) => String(s || "").replace(/<[^>]*>/g, "").trim();
 
-// FAQs: popup create/edit (question + rich answer + order + active),
-// toggle + delete icons, drag-and-drop order with batch save.
+// BIT columns arrive as true/false or 1/0 depending on the driver.
+const isHomeOn = (v) => v === true || v === 1 || v === "1";
+const isActive = (v) => v === true || v === 1 || v === "1";
+
+// FAQs: popup create/edit (question + rich answer + order + active + show on
+// home), toggle + delete icons, drag-and-drop order with batch save.
 export default function AdminFaqsPage() {
   const toast = useToast();
   const confirm = useConfirm();
@@ -78,7 +82,7 @@ export default function AdminFaqsPage() {
   };
 
   const openCreate = () => {
-    setModal({ id: null, question: "", answer: "", display_order: "", isactive: true });
+    setModal({ id: null, question: "", answer: "", display_order: "", isactive: true, show_on_home: false, home_order: "" });
   };
 
   const openEdit = (r) => {
@@ -87,7 +91,9 @@ export default function AdminFaqsPage() {
       question: r.question || "",
       answer: r.answer || "",
       display_order: Number(r.display_order) || "",
-      isactive: r.isactive === 1 || r.isactive === true,
+      isactive: isActive(r.isactive),
+      show_on_home: isHomeOn(r.show_on_home),
+      home_order: r.home_order === null || r.home_order === undefined ? "" : Number(r.home_order) || "",
     });
   };
 
@@ -110,10 +116,13 @@ export default function AdminFaqsPage() {
           question,
           answer: (modal.answer || "").trim(),
           isactive: modal.isactive ? 1 : 0,
+          show_on_home: modal.show_on_home ? 1 : 0,
           luu: "ADMIN_PORTAL",
         };
         const n = Number(modal?.display_order);
         if (Number.isFinite(n) && n > 0) body.display_order = Math.round(n);
+        const hn = Number(modal?.home_order);
+        if (Number.isFinite(hn) && hn > 0) body.home_order = Math.round(hn);
         await apiFetch("/FAQs", { method: "PUT", body });
         setModal(null);
         setMsg("FAQ updated.");
@@ -128,6 +137,10 @@ export default function AdminFaqsPage() {
             answer: (modal.answer || "").trim(),
             display_order: Number.isFinite(n) && n > 0 ? Math.round(n) : maxOrder + 1,
             isactive: modal.isactive ? 1 : 0,
+            show_on_home: modal.show_on_home ? 1 : 0,
+            home_order: Number.isFinite(Number(modal?.home_order)) && Number(modal.home_order) > 0
+              ? Math.round(Number(modal.home_order))
+              : undefined,
             rcu: "ADMIN_PORTAL",
           },
         });
@@ -149,6 +162,17 @@ export default function AdminFaqsPage() {
       body: { faq_id: r.faq_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
     }).catch(() => null);
     toast?.success(next ? "FAQ activated." : "FAQ deactivated.");
+    reload();
+  };
+
+  // Homepage visibility is independent of isactive: an FAQ can stay on /FAQs
+  // while being hidden from the homepage strip.
+  const toggleHome = async (r, next) => {
+    await apiFetch("/FAQs", {
+      method: "PUT",
+      body: { faq_id: r.faq_id, show_on_home: next ? 1 : 0, luu: "ADMIN_PORTAL" },
+    }).catch(() => null);
+    toast?.success(next ? "FAQ shown on homepage." : "FAQ hidden from homepage.");
     reload();
   };
 
@@ -280,13 +304,17 @@ export default function AdminFaqsPage() {
               <th className={thCls}>#</th>
               <th className={thCls}>Question / Answer</th>
               <th className={thCls}>Order</th>
+              <th className="w-[56px] px-2 py-3 text-center" title="Active = listed on /FAQs&#10;Home = also shown in the homepage FAQ strip">
+                <span title="Active (on /FAQs)">Act</span>
+                <span className="ml-1" title="Show on homepage">Home</span>
+              </th>
               <th className="w-[150px] px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {shown.length === 0 ? (
               <tr>
-                <td colSpan={orderMode ? 5 : 4} className="p-5 text-center text-neutral-500">
+                <td colSpan={orderMode ? 6 : 5} className="p-5 text-center text-neutral-500">
                   No FAQs yet — add the first one.
                 </td>
               </tr>
@@ -309,13 +337,32 @@ export default function AdminFaqsPage() {
                   <td className={`${tdCls} max-w-md`}>
                     <span className="block truncate font-semibold">{r.question || "—"}</span>
                     <span className="block truncate text-xs text-neutral-500">{stripTags(r.answer).slice(0, 90)}</span>
-                    {(r.isactive !== 1 && r.isactive !== true) && (
+                    {!isActive(r.isactive) && (
                       <span className="mt-1 inline-block  bg-neutral-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600">
                         Off
                       </span>
                     )}
+                    {isActive(r.isactive) && isHomeOn(r.show_on_home) && (
+                      <span className="mt-1 inline-block  bg-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-950">
+                        Home
+                      </span>
+                    )}
                   </td>
                   <td className={tdCls}>{Number(r.display_order) || "—"}</td>
+                  <td className="whitespace-nowrap px-2 py-3 text-center">
+                    {orderMode ? (
+                      <span className="text-xs text-neutral-400">—</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <span title={isActive(r.isactive) ? "Listed on /FAQs" : "Hidden everywhere"}>
+                          <ActiveToggle active={isActive(r.isactive)} onToggle={(next) => toggle(r, next)} />
+                        </span>
+                        <span title={isHomeOn(r.show_on_home) ? "Showing on homepage" : "Hidden from homepage"}>
+                          <ActiveToggle active={isHomeOn(r.show_on_home)} onToggle={(next) => toggleHome(r, next)} />
+                        </span>
+                      </span>
+                    )}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     {orderMode ? (
                       <span className="text-xs text-neutral-400">drag me</span>
@@ -324,9 +371,6 @@ export default function AdminFaqsPage() {
                         <button type="button" onClick={() => openEdit(r)} title="Edit FAQ" className={iconBtn}>
                           <i className="bi bi-pencil" />
                         </button>
-                        <span className="mr-1 inline-block align-middle">
-                          <ActiveToggle active={r.isactive} onToggle={(next) => toggle(r, next)} />
-                        </span>
                         <button type="button" onClick={() => remove(r)} title="Delete FAQ" className={iconBtn}>
                           <i className="bi bi-trash3" />
                         </button>
@@ -396,6 +440,36 @@ export default function AdminFaqsPage() {
                   active={modal.isactive}
                   onToggle={async (next) => setModal({ ...modal, isactive: next })}
                 />
+              </label>
+            </div>
+            <div className="mt-3">
+              <label className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                <span>
+                  Show on home
+                  <span className="mt-1 block text-[11px] font-normal normal-case tracking-normal text-neutral-500">
+                    Adds this FAQ to the homepage strip. /FAQs always lists it.
+                  </span>
+                </span>
+                <ActiveToggle
+                  active={isHomeOn(modal.show_on_home)}
+                  onToggle={async (next) => setModal({ ...modal, show_on_home: next })}
+                />
+              </label>
+            </div>
+            <div className="mt-3">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                Home order
+                <input
+                  type="number"
+                  min={1}
+                  value={modal.home_order ?? ""}
+                  onChange={(e) => setModal({ ...modal, home_order: e.target.value })}
+                  placeholder="blank = follow list order"
+                  className={`${inputCls} mt-1 font-normal`}
+                />
+                <span className="mt-1 block text-[11px] font-normal normal-case tracking-normal text-neutral-500">
+                  Position within the homepage strip, independent of the /FAQs order.
+                </span>
               </label>
             </div>
             <div className="mt-5 flex justify-end gap-2">
