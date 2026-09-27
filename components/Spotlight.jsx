@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { homeKV } from "@/lib/api";
-import ShowcaseCarousel from "./ShowcaseCarousel";
 import SpotlightMarquee from "./SpotlightMarquee";
+import { StyleByHC as StyleByHCSlider } from "./StyleByHCSlider";
 
 // Spotlight + Style carousels with admin titles (key-value store,
 // legacy key rows, then defaults).
@@ -40,17 +40,10 @@ export function Spotlight() {
   );
 }
 
+// Style By HC — same reference slider as HC Spotlight, fed by the
+// Style Collections tables.
 export function StyleByHC() {
   const title = useHomeTitle("home_style_by_hc_title", "home_style_by_hc_title", "Style By HC");
 
-  return (
-    <ShowcaseCarousel
-      title={title}
-      entriesEndpoint="/Style-Collections"
-      mediaEndpoint="/Style-Collection-Media"
-      fallbackLink="/style-by-hc"
-      intervalMs={2000}
-      backward
-    />
-  );
+  return <StyleByHCSlider title={title} />;
 }
