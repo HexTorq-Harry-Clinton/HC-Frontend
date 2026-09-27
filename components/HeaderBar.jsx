@@ -63,7 +63,6 @@ export default function HeaderBar({ categories }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [bagOpen, setBagOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [cPulse, setCPulse] = useState(0);
   const profileRef = useRef(null);
 
   const cartCount = cart?.count || 0;
@@ -92,11 +91,8 @@ export default function HeaderBar({ categories }) {
               type="button"
               className="c-icon"
               aria-label="Book a custom appointment"
-              onClick={() => { setCPulse((n) => n + 1); setModalOpen(true); }}
-            >
-              C
-            </button>
-            {cPulse > 0 && <span key={cPulse} className="c-ring" aria-hidden />}
+              onClick={() => setModalOpen(true)}
+            />
           </div>
 
           <div
@@ -188,21 +184,25 @@ export default function HeaderBar({ categories }) {
         .topbar-enter { animation: topbarDrop 0.55s cubic-bezier(0.16, 0.8, 0.24, 1) both; }
         @keyframes topbarDrop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
         .c-home { position: relative; }
+        /* Reference mark: not a letter "C" — a 25px circle with a 3px border
+           whose RIGHT edge is transparent, so the gap opens rightward and
+           reads as a C. Hovering spins it a full turn, sweeping the gap
+           around the ring. */
         .c-icon {
-          width: 25px; height: 25px; border-radius:0;
-          border: 1.5px solid #111; background: #fff;
-          font-family: var(--font-mainlux), Arial, sans-serif; font-weight: 600; font-size: 0.95rem;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: transform 0.15s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+          display: block;
+          position: relative;
+          width: 25px; height: 25px;
+          margin: auto; padding: 0;
+          background: transparent;
+          border: 3px solid #000;
+          border-right-color: transparent;
+          /* the one deliberate circle on the site — must beat the global
+             no-round-corners guard in globals.css, hence !important */
+          border-radius: 50% !important;
+          cursor: pointer;
+          transition: transform 0.3s;
         }
-        .c-icon:hover { background: #111; color: #c6a15b; border-color: #111; }
-        .c-icon:active { transform: scale(0.85); }
-        .c-ring {
-          position: absolute; inset: 0; border-radius:0;
-          border: 1.5px solid #c6a15b; pointer-events: none;
-          animation: cRing 0.5s ease-out forwards;
-        }
-        @keyframes cRing { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(1.8); } }
+        .c-icon:hover { transform: rotate(1turn); }
       `}</style>
     </>
   );

@@ -172,8 +172,12 @@ html.lenis, html.lenis body { height: auto; }
   .animate-marquee, .animate-slow-zoom, .fade-in-out-text { animation: none; }
 }
 
-/* sharp-square site rule: no round corners anywhere */
+/* sharp-square site rule: no round corners anywhere.
+   One documented exception: the navbar "C" control, which the reference site
+   draws as a true circle (border-radius 50%) with a transparent top edge. It
+   carries its own !important so it wins over the * selector above. */
 *, *::before, *::after { border-radius:0!important; }
+.c-icon { border-radius: 50% !important; }
 
 /* Brand typeface, scoped to the three chrome bars only (notification bar,
    navbar, running bar) so it matches the reference site without touching the
