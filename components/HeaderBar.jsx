@@ -83,11 +83,11 @@ export default function HeaderBar({ categories }) {
     <>
       {searchOpen && <SearchDropdown onClose={() => setSearchOpen(false)} />}
 
-      <header className="topbar-enter relative sticky top-0 z-[80] flex h-10 items-center justify-between bg-white px-4">
-        <div className="flex items-center gap-3">
+      <header className="hc-bar-font topbar-enter relative sticky top-0 z-[80] flex h-[60px] items-center justify-between bg-white px-4">
+        <div className="flex items-center gap-4">
           <Hamburger categories={categories} />
 
-          <div className="c-home flex h-10 items-center">
+          <div className="c-home flex items-center">
             <button
               type="button"
               className="c-icon"
@@ -123,15 +123,15 @@ export default function HeaderBar({ categories }) {
             <Image
               src="/brand/logo-black.png"
               alt="Harry Clinton"
-              width={26}
-              height={26}
+              width={40}
+              height={40}
               priority
-              style={{ height: "26px", width: "auto", objectFit: "contain" }}
+              style={{ height: "40px", width: "auto", objectFit: "contain" }}
             />
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link href="/wishlist" className="hicon relative text-neutral-900" aria-label="Wishlist">
             <HeartGlyph />
             {wishlistCount > 0 && (
@@ -176,10 +176,10 @@ export default function HeaderBar({ categories }) {
 
       <style jsx>{`
         .fs-4 { font-size: 1.4rem; }
-        /* every topbar control rides in an identical 32px box so icons share
+        /* every topbar control rides in an identical 24x36 box so icons share
            one optical center — no floaters, no size drift. */
         .hicon {
-          width: 32px; height: 32px; flex: none;
+          width: 24px; height: 36px; flex: none;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
         }
@@ -189,9 +189,9 @@ export default function HeaderBar({ categories }) {
         @keyframes topbarDrop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
         .c-home { position: relative; }
         .c-icon {
-          width: 30px; height: 30px; border-radius:0;
+          width: 25px; height: 25px; border-radius:0;
           border: 1.5px solid #111; background: #fff;
-          font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
+          font-family: var(--font-mainlux), Arial, sans-serif; font-weight: 600; font-size: 0.95rem;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer; transition: transform 0.15s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }

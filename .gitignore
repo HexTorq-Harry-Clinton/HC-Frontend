@@ -49,6 +49,11 @@ test-results/
 # (opening splash + header/footer wordmarks). Everything else stays backend-only.
 !public/brand/**
 
+# EXCEPTION: MAINLUX brand typeface, required at BUILD time by next/font/local
+# (app/layout.js) for the notification bar / navbar / running bar. Unlike runtime
+# media it cannot be lazy-loaded from /Uploads, so it has to be committed.
+!fonts/*.ttf
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -20,7 +20,7 @@ function TapeText({ text, logoMarks, light, pad }) {
     text
   );
   return (
-    <span className={`flex items-center whitespace-nowrap ${pad} text-xs font-medium uppercase tracking-widest`}>
+    <span className={`flex items-center whitespace-nowrap ${pad} text-[16px] font-bold leading-[24px]`}>
       {inner}
       {logoMarks && (
         /* plain img on purpose: next/image wraps each mark in extra layers and
@@ -30,10 +30,10 @@ function TapeText({ text, logoMarks, light, pad }) {
           src={light ? "/brand/logo-white.png" : "/brand/logo-black.png"}
           alt=""
           aria-hidden
-          width={72}
-          height={32}
+          width={20}
+          height={20}
           decoding="async"
-          className="ml-8 inline-block h-8 w-auto object-contain"
+          className="ml-8 inline-block h-5 w-auto object-contain"
         />
       )}
     </span>
@@ -55,7 +55,7 @@ export default function MarqueeTape({ slides, dark = true, logoMarks = false, sh
     : "border-y border-neutral-200 bg-white text-neutral-900";
 
   return (
-    <div className={`overflow-hidden ${skin} py-1.5`}>
+    <div className={`hc-bar-font flex h-10 items-center overflow-hidden ${skin}`}>
       <div className="animate-marquee items-center" style={{ animationDuration: `${loopSecs}s` }}>
         {[0, 1].map((dup) => (
           <div key={dup} className="flex shrink-0 items-center" aria-hidden={dup > 0}>

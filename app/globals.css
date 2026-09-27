@@ -174,3 +174,10 @@ html.lenis, html.lenis body { height: auto; }
 
 /* sharp-square site rule: no round corners anywhere */
 *, *::before, *::after { border-radius:0!important; }
+
+/* Brand typeface, scoped to the three chrome bars only (notification bar,
+   navbar, running bar) so it matches the reference site without touching the
+   rest of the storefront, which stays on Inter. */
+.hc-bar-font, .hc-bar-font * {
+  font-family: var(--font-mainlux), Arial, sans-serif;
+}

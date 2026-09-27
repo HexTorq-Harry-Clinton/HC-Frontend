@@ -145,14 +145,14 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
     <span
       key={currentIndex}
       ref={textRef}
-      className="rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest"
+      className="rb-anim whitespace-nowrap text-[14px] font-normal leading-[21px] tracking-[0.3px]"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   ) : (
     <span
       key={currentIndex}
       ref={textRef}
-      className="rb-anim whitespace-nowrap text-xs font-medium uppercase tracking-widest"
+      className="rb-anim whitespace-nowrap text-[14px] font-normal leading-[21px] tracking-[0.3px]"
     >
       {raw}
     </span>
@@ -160,13 +160,13 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
 
   return (
     <div
-      className={`flex items-center justify-between overflow-hidden px-3 py-1.5 ${skin}`}
+      className={`hc-bar-font flex h-5 items-center justify-between overflow-hidden px-10 ${skin}`}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
     >
       {flankLeft}
       {arrows && (
-        <button type="button" onClick={showPrev} aria-label="Previous announcement" className={`px-2 ${arrowCls}`}>
+        <button type="button" onClick={showPrev} aria-label="Previous announcement" className={`px-2.5 py-1 text-[18px] leading-[18px] ${arrowCls}`}>
           &#10094;
         </button>
       )}
@@ -174,7 +174,7 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
         {textNode}
       </div>
       {arrows && (
-        <button type="button" onClick={showNext} aria-label="Next announcement" className={`px-2 ${arrowCls}`}>
+        <button type="button" onClick={showNext} aria-label="Next announcement" className={`px-2.5 py-1 text-[18px] leading-[18px] ${arrowCls}`}>
           &#10095;
         </button>
       )}
