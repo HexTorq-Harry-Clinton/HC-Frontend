@@ -50,9 +50,11 @@ export default function MarqueeTape({ slides, dark = true, logoMarks = false, sh
     list.reduce((s, it) => s + (Number(it.secs) || 0), 0) * COPIES * SPEED_DIVISOR,
     20
   );
+  // Reference: the running bar is a plain white strip with no rules above or
+  // below — the hero edge supplies the separation.
   const skin = dark
     ? "bg-neutral-950 text-white"
-    : "border-y border-neutral-200 bg-white text-neutral-900";
+    : "bg-white text-neutral-900";
 
   return (
     <div className={`hc-bar-font flex h-10 items-center overflow-hidden ${skin}`}>

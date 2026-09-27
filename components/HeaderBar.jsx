@@ -119,10 +119,10 @@ export default function HeaderBar({ categories }) {
             <Image
               src="/brand/logo-black.png"
               alt="Harry Clinton"
-              width={40}
-              height={40}
+              width={25}
+              height={25}
               priority
-              style={{ height: "40px", width: "auto", objectFit: "contain" }}
+              style={{ height: "25px", width: "auto", objectFit: "contain" }}
             />
           </Link>
         </div>

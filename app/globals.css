@@ -185,3 +185,11 @@ html.lenis, html.lenis body { height: auto; }
 .hc-bar-font, .hc-bar-font * {
   font-family: var(--font-mainlux), Arial, sans-serif;
 }
+
+/* Brand display face, for the overlay headings that sit on top of imagery
+   (HC Spotlight / Style By HC) to match the reference site. */
+.hc-display-font { font-family: var(--font-mainlux), Arial, sans-serif; }
+
+/* Second documented exception to the no-round-corners guard: the reference
+   draws its carousel dots as true circles. */
+.hc-dot { border-radius: 50% !important; }

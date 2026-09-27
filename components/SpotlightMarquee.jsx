@@ -1,23 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
 
-// HC Spotlight homepage rows: TWO slow marquees — row 1 drifts left→right,
-// row 2 drifts right→left — and live page-scroll velocity bends both tapes
-// (scroll down flings them, release eases back to cruise). Pauses offscreen.
-// Images only (videos play on the /hc-spotlight detail page); click any card
-// to open the full gallery.
-const BASE_PX = 0.5; // cruise speed, px per frame (~30px/s)
-const SCROLL_K = 0.12; // scroll-velocity coupling
-const MAX_KICK = 9; // clamp scroll fling, px per frame
+// HC Spotlight — mirrors the reference site:
+//   * horizontal slider, 700x500 slides, object-fit cover, 2 visible at a time
+//   * the "HC Spotlight" heading sits ON TOP of the imagery, flush to the
+//     bottom-left of the track, 48px/700 white with a soft drop shadow
+//   * a row of 8px round dots underneath, active one goes white
+// Images only (videos play on the /hc-spotlight detail page); clicking any
+// slide opens the full gallery.
+const SLIDE_W = 700;
+const SLIDE_H = 500;
+const TITLE_CLASS =
+  `hc-display-font absolute bottom-0 left-0 z-[5] px-6 py-2 text-[48px] font-bold leading-[1.5] text-white`;
+const TITLE_W = SLIDE_W; // reference heading box spans one full slide
+const TITLE_SHADOW = { textShadow: "rgba(0, 0, 0, 0.6) 0px 2px 8px" };
 
 export default function SpotlightMarquee({ title = "HC Spotlight" }) {
-  const [rows, setRows] = useState([[], []]);
-  const sectionRef = useRef(null);
-  const trackA = useRef(null);
-  const trackB = useRef(null);
+  const [cards, setCards] = useState([]);
+  const [page, setPage] = useState(0);
+  const trackRef = useRef(null);
 
   useEffect(() => {
     let live = true;
@@ -33,7 +37,7 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
         const titleById = Object.fromEntries(
           entries.map((e) => [String(e.spotlight_entry_id), e.title || ""])
         );
-        const cards = (Array.isArray(mediaRaw) ? mediaRaw : [])
+        const list = (Array.isArray(mediaRaw) ? mediaRaw : [])
           .filter(
             (m) =>
               (m.isactive === 1 || m.isactive === true) &&
@@ -50,19 +54,8 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
           }))
           .filter((c) => c.src);
         if (!live) return;
-        if (cards.length === 0) {
-          setRows([[], []]);
-          return;
-        }
-        // Warm the browser image cache so back-nav never re-downloads.
-        precacheMedia(cards.map((c) => c.src));
-        // Alternate into two rows so both tapes stay balanced.
-        const a = [];
-        const b = [];
-        cards.forEach((c, i) => (i % 2 === 0 ? a : b).push(c));
-        if (b.length === 0) b.push(...a);
-        if (a.length === 0) a.push(...b);
-        setRows([a, b]);
+        precacheMedia(list.map((c) => c.src));
+        setCards(list);
       } catch {
         /* section hides when unreachable */
       }
@@ -72,105 +65,76 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
     };
   }, []);
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section || rows[0].length === 0) return undefined;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
-    let raf = 0;
-    let visible = true;
-    let posA = 0;
-    let posB = 0;
-    let lastY = window.scrollY;
-    let kick = 0;
-    const io = new IntersectionObserver(([e]) => {
-      visible = e.isIntersecting;
-    });
-    io.observe(section);
-    const frame = () => {
-      raf = requestAnimationFrame(frame);
-      if (!visible) {
-        lastY = window.scrollY;
-        return;
-      }
-      const y = window.scrollY;
-      const target = (y - lastY) * SCROLL_K;
-      lastY = y;
-      kick += (Math.max(-MAX_KICK, Math.min(MAX_KICK, target)) - kick) * 0.12;
-      posA += BASE_PX + kick;
-      posB += BASE_PX + kick;
-      const elA = trackA.current;
-      const elB = trackB.current;
-      if (elA) {
-        const w = elA.scrollWidth / 2 || 1;
-        elA.style.transform = `translate3d(${((posA % w) + w) % w - w}px, 0, 0)`;
-      }
-      if (elB) {
-        const w = elB.scrollWidth / 2 || 1;
-        elB.style.transform = `translate3d(${-(posB % w)}px, 0, 0)`;
-      }
-    };
-    raf = requestAnimationFrame(frame);
-    return () => {
-      cancelAnimationFrame(raf);
-      io.disconnect();
-    };
-  }, [rows]);
+  // Track which dot is active as the user scrolls the strip.
+  const onScroll = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const per = SLIDE_W + 16; // slide + gap
+    setPage(Math.round(el.scrollLeft / per));
+  }, []);
 
-  if (rows[0].length === 0) return null;
+  const goTo = useCallback((i) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * (SLIDE_W + 16), behavior: "smooth" });
+  }, []);
 
-  const renderTape = (cards, ref) => (
-    <div className="overflow-hidden">
-      <div ref={ref} className="flex w-max will-change-transform">
-        {[0, 1].map((dup) => (
-          <div key={dup} className="flex shrink-0 items-stretch gap-4 pr-4" aria-hidden={dup > 0}>
-            {cards.map((c) => (
-              <Link
-                key={`${dup}-${c.id}`}
-                href="/hc-spotlight"
-                tabIndex={dup > 0 ? -1 : 0}
-                className="group w-[22rem] shrink-0 overflow-hidden  bg-neutral-950 md:w-[26rem]"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={c.src}
-                  alt={c.caption || "HC Spotlight"}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-64 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 md:h-80"
-                />
-                {c.caption && (
-                  <p className="truncate px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
-                    {c.caption}
-                  </p>
-                )}
-              </Link>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  if (cards.length === 0) return null;
 
   return (
-    <section ref={sectionRef} className="overflow-hidden bg-white py-16">
-      <div className="mx-auto mb-8 flex max-w-7xl items-end justify-between px-4 sm:px-6 lg:px-8">
-        <div>
-          <p className="eyebrow text-gold-deep">Showcase</p>
-          <h2 className="mt-1 font-display text-3xl font-bold tracking-tight text-neutral-900 md:text-4xl">
-            {title}
-          </h2>
-        </div>
-        <Link
-          href="/hc-spotlight"
-          className="link-sweep text-xs font-semibold uppercase tracking-[0.25em] text-neutral-900"
+    <section className="overflow-hidden bg-white">
+      {/* 1440x500 image band; the heading is overlaid on the first slide */}
+      <div className="relative w-full" style={{ height: SLIDE_H }}>
+        <div
+          ref={trackRef}
+          onScroll={onScroll}
+          className="flex h-full snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden"
+          style={{ scrollbarWidth: "none" }}
         >
-          Explore
-        </Link>
+          {cards.map((c, i) => (
+            <Link
+              key={c.id}
+              href="/hc-spotlight"
+              className="relative block shrink-0 snap-start overflow-hidden bg-neutral-950"
+              style={{ width: SLIDE_W, height: SLIDE_H }}
+              aria-label={c.caption || "HC Spotlight"}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={c.src}
+                alt={c.caption || "HC Spotlight"}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover"
+              />
+            </Link>
+          ))}
+        </div>
+
+        {/* Heading sits on top of the imagery, bottom-left — as on the reference */}
+        <h2
+          className={TITLE_CLASS}
+          style={{ ...TITLE_SHADOW, width: TITLE_W }}
+        >
+          {title}
+        </h2>
       </div>
-      <div className="space-y-4">
-        {renderTape(rows[0], trackA)}
-        {renderTape(rows[1], trackB)}
-      </div>
+
+      {cards.length > 1 && (
+        <div className="flex h-5 items-center justify-center gap-2">
+          {cards.map((c, i) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => goTo(i)}
+              aria-label={`Go to spotlight ${i + 1}`}
+              aria-current={i === page}
+              className="hc-dot h-2 w-2 transition-colors duration-300"
+              style={{ backgroundColor: i === page ? "#ffffff" : "#bbbbbb" }}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

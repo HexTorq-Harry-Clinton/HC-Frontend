@@ -71,5 +71,7 @@ export default function OfferBar() {
     };
   }, []);
 
-  return <MarqueeTape slides={slides} logoMarks={false} showLogoPerItem pad="px-12" />;
+  // The reference site draws this strip white with dark text. MarqueeTape
+  // defaults to dark=true, so pass the light skin explicitly.
+  return <MarqueeTape slides={slides} dark={false} logoMarks={false} showLogoPerItem pad="px-12" />;
 }
