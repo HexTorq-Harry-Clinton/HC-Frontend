@@ -6,9 +6,15 @@ import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 // splash synchronously for returning visitors without a flash frame.
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-// Opening splash: brand video plays once per session, then reveals the store.
-// Dismiss ONLY via the Skip button, Esc key, or video end — taps elsewhere
-// on the screen must NOT skip it. Frontend-only asset by design.
+// Hard cap on the intro. The brand clip is longer than this, so the splash
+// always clears after SPLASH_MS; the video's own onEnded still dismisses
+// sooner should the clip ever be cut shorter. Whichever fires first wins.
+const SPLASH_MS = 3000;
+
+// Opening splash: brand video plays, then reveals the store after at most
+// SPLASH_MS (3s). Dismissed by that cap, the Skip button, Esc, or the video
+// ending. Taps elsewhere on the screen must NOT skip it.
+// Frontend-only asset by design.
 export default function SplashScreen() {
   // Start VISIBLE so the server HTML already covers the homepage — no
   // homepage flash before the splash. Returning visitors are hidden
@@ -55,6 +61,12 @@ export default function SplashScreen() {
         /* no smooth scroller */
       }
     };
+  }, [show, dismiss]);
+
+  useEffect(() => {
+    if (!show) return undefined;
+    const t = window.setTimeout(dismiss, SPLASH_MS);
+    return () => window.clearTimeout(t);
   }, [show, dismiss]);
 
   if (!show) return null;
