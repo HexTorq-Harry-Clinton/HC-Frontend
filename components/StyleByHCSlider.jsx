@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { apiCached, precacheMedia, resolveUploadUrl } from "@/lib/api";
-import EditorialSlider from "./EditorialSlider";
+import TwoRowMarquee from "./TwoRowMarquee";
 
 // Style By HC — the second editorial block, sitting under HC Spotlight. Uses
-// the same reference slider as Spotlight (700x500 slides, heading overlaid on
-// the imagery, round dots underneath), but is fed by the Style Collections
-// tables instead of Spotlight.
+// the SAME two-row slider as Spotlight (shared TwoRowMarquee component, so the
+// two blocks can't drift apart), but is fed by the Style Collections tables
+// instead of Spotlight.
 const isLive = (r) =>
   (r.isactive === 1 || r.isactive === true || r.isactive === undefined || r.isactive === null) &&
   r.isdeleted !== 1 && r.isdeleted !== true;
@@ -54,5 +54,5 @@ export function StyleByHC({ title = "Style By HC" }) {
     };
   }, []);
 
-  return <EditorialSlider cards={cards} title={title} href="/style-by-hc" />;
+  return <TwoRowMarquee cards={cards} title={title} href="/style-by-hc" eyebrow="Collections" />;
 }
