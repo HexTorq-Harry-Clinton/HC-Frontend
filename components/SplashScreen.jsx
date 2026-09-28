@@ -1,25 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 // Runs pre-paint on the client (no-op on the server): lets us hide the
 // splash synchronously for returning visitors without a flash frame.
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-// Hard cap on the intro. The brand clip is longer than this, so the splash
-// always clears after SPLASH_MS; the video's own onEnded still dismisses
-// sooner should the clip ever be cut shorter. Whichever fires first wins.
+// The intro must last SPLASH_MS, but the brand clip is longer. Rather than
+// re-encode the asset, play it faster: playbackRate = duration / 3s, so the
+// clip lands on its own final frame at the 3s mark and onEnded fires for
+// real. SPLASH_MS is also a hard fallback, so a stalled or undecodable video
+// can never trap the visitor on the splash.
 const SPLASH_MS = 3000;
 
-// Opening splash: brand video plays, then reveals the store after at most
-// SPLASH_MS (3s). Dismissed by that cap, the Skip button, Esc, or the video
-// ending. Taps elsewhere on the screen must NOT skip it.
-// Frontend-only asset by design.
+// Opening splash: brand video plays at a raised rate so the intro lasts
+// SPLASH_MS (3s), then reveals the store. Dismissed by the video ending, that
+// hard cap, the Skip button, or Esc. Taps elsewhere on the screen must NOT
+// skip it. Frontend-only asset by design.
 export default function SplashScreen() {
   // Start VISIBLE so the server HTML already covers the homepage — no
   // homepage flash before the splash. Returning visitors are hidden
   // synchronously pre-paint below, so they never see a flicker either.
   const [show, setShow] = useState(true);
+  const videoRef = useRef(null);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useIsomorphicLayoutEffect(() => {
@@ -63,9 +66,34 @@ export default function SplashScreen() {
     };
   }, [show, dismiss]);
 
+  // Raise the playback rate so the clip finishes in SPLASH_MS. The video is
+  // server-rendered with preload="auto", so metadata can already be ready
+  // before React hydrates — apply immediately AND on the event, otherwise the
+  // rate silently stays at 1.
   useEffect(() => {
     if (!show) return undefined;
-    const t = window.setTimeout(dismiss, SPLASH_MS);
+    const v = videoRef.current;
+    if (!v) return undefined;
+    const speedUp = () => {
+      if (Number.isFinite(v.duration) && v.duration > 0) {
+        // 10s clip -> 3.33x, so it lands on its own final frame at 3s.
+        v.preservedPitch = false; // keep the original pitch if ever unmuted
+        v.defaultPlaybackRate = v.duration / (SPLASH_MS / 1000);
+        v.playbackRate = v.defaultPlaybackRate;
+      }
+    };
+    speedUp();
+    v.addEventListener("loadedmetadata", speedUp);
+    return () => v.removeEventListener("loadedmetadata", speedUp);
+  }, [show]);
+
+  // Stall guard only. The video's own onEnded is the normal exit (it lands at
+  // SPLASH_MS thanks to the raised playback rate); this backstop is a little
+  // longer so a healthy clip always ends on its own final frame, while a
+  // stalled, blocked or undecodable video still can't trap the visitor.
+  useEffect(() => {
+    if (!show) return undefined;
+    const t = window.setTimeout(dismiss, SPLASH_MS + 600);
     return () => window.clearTimeout(t);
   }, [show, dismiss]);
 
@@ -78,6 +106,7 @@ export default function SplashScreen() {
       aria-label="Harry Clinton intro"
     >
       <video
+        ref={videoRef}
         src="/brand/hc-splash.mp4"
         className="h-full w-full object-cover"
         autoPlay
