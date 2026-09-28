@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 
 // Top-reveal mega-menu (previous-UI style, no sidebar): CATEGORIES (live)
 // + COLLECTIONS + SERVICES + Vision tile drop down from under the header.
-// Hamburger lines draw in on mount, morph to H while open — H beside the
-// C appointment button spells the HC brand; links stagger in.
+// Hamburger lines draw in on mount and morph to a black X while open;
+// links stagger in.
 const COLLECTIONS = [
   { label: "Tuxedo", to: "/tuxedo" },
   { label: "Extreme Poppins", to: "/extreme-poppins" },
@@ -135,13 +135,12 @@ export default function Hamburger({ categories }) {
         .hamburger span:nth-child(3) { animation-delay: 0.16s; }
         @keyframes lineIn { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
         .hamburger:not(.active):hover span:nth-child(2) { width: 12px; }
-        /* open state morphs the 3 lines into an H: outer lines stand up as
-           the two stems, the middle line becomes the crossbar — H + the C
-           appointment button beside it spells HC. */
-        .hamburger.active span { background: #a8823f; }
-        .hamburger.active span:nth-child(1) { transform: translate(-6px, 6px) rotate(90deg); }
-        .hamburger.active span:nth-child(2) { width: 14px; }
-        .hamburger.active span:nth-child(3) { transform: translate(6px, -6px) rotate(90deg); }
+        /* open state: the 3 lines collapse into a plain black X close icon.
+           No gold H morph — the button stays a neutral black control. */
+        .hamburger.active span { background: #111; }
+        .hamburger.active span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { width: 0; opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
         .topmenu {
           position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 70;
           max-height: 0; opacity: 0; transform: translateY(-14px); overflow: hidden;
