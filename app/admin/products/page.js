@@ -391,7 +391,7 @@ function ProductWorkspace({ product, onBack }) {
   const [msg, setMsg] = useState("");
   const [refresh, setRefresh] = useState(0);
 
-  const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", stock_qty: "" });
+  const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
   const [editingVariant, setEditingVariant] = useState(null);
   // Workspace create/update ALWAYS live in popups — never inline.
   const [showVariantForm, setShowVariantForm] = useState(false);
@@ -422,7 +422,7 @@ function ProductWorkspace({ product, onBack }) {
   const closeVariantForm = () => {
     setShowVariantForm(false);
     setEditingVariant(null);
-    setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", stock_qty: "" });
+    setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
   };
   const [vMediaByVariant, setVMediaByVariant] = useState({}); // {variant_id: [media, ...]}
   const [mAlt, setMAlt] = useState("");
@@ -628,6 +628,8 @@ function ProductWorkspace({ product, onBack }) {
       size_id: vForm.size_id || null,
       cloth_type_id: vForm.cloth_type_id || null,
       price: Number(vForm.price) || 0,
+      discount_type: vForm.discount_type && vForm.discount_type !== "none" ? vForm.discount_type : null,
+      discount_value: vForm.discount_type && vForm.discount_type !== "none" ? (Number(vForm.discount_value) || 0) : null,
       stock_qty: Number(vForm.stock_qty) || 0,
     };
     try {
@@ -647,7 +649,7 @@ function ProductWorkspace({ product, onBack }) {
         setMsg("Variant added.");
       }
       await syncVariantColor(variantId, vForm.color);
-      setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", stock_qty: "" });
+      setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
       setEditingVariant(null);
       setShowVariantForm(false);
       reload();
@@ -663,6 +665,7 @@ function ProductWorkspace({ product, onBack }) {
       size_id: v.size_id || "", cloth_type_id: v.cloth_type_id || "",
       color: colorForVariant(v.product_variant_id),
       price: v.price ?? "", stock_qty: v.stock_qty ?? "",
+      discount_type: v.discount_type || "none", discount_value: v.discount_value ?? "",
     });
     setShowVariantForm(true);
   };
@@ -965,7 +968,7 @@ function ProductWorkspace({ product, onBack }) {
             <thead>
               <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
                 <th className="px-4 py-3">SKU</th><th className="px-4 py-3">Name</th><th className="px-4 py-3">Size</th>
-                 <th className="px-4 py-3">Cloth Type</th><th className="px-4 py-3">Color</th><th className="px-4 py-3">Price</th><th className="px-4 py-3">Stock</th>
+                 <th className="px-4 py-3">Cloth Type</th><th className="px-4 py-3">Color</th><th className="px-4 py-3">Price</th><th className="px-4 py-3">Discount</th><th className="px-4 py-3">Stock</th>
                 <th className="px-4 py-3">Image (per variant)</th><th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -980,6 +983,7 @@ function ProductWorkspace({ product, onBack }) {
                     <td className="px-4 py-3">{clothName(v.cloth_type_id)}</td>
                     <td className="px-4 py-3">{colorForVariant(v.product_variant_id) || "—"}</td>
                     <td className="px-4 py-3">{inr(v.price)}</td>
+                    <td className="px-4 py-3">{v.discount_type && v.discount_type !== "none" && v.discount_value ? `${v.discount_type === "percentage" ? `${v.discount_value}%` : `₹${v.discount_value}`}` : "—"}</td>
                     <td className="px-4 py-3">{v.stock_qty}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap items-center gap-2">
@@ -1066,7 +1070,7 @@ function ProductWorkspace({ product, onBack }) {
         <button
           type="button"
           onClick={() => {
-             setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", stock_qty: "" });
+             setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
             setEditingVariant(null);
             setShowVariantForm(true);
           }}
@@ -1116,8 +1120,14 @@ function ProductWorkspace({ product, onBack }) {
                </datalist>
               <div className="relative">
                 <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500">₹</span>
-                <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price" className={`${input} pl-7`} />
+                <input value={vForm.price} onChange={(e) => setVForm((f) => ({ ...f, price: e.target.value }))} inputMode="decimal" placeholder="Price (MRP)" className={`${input} pl-7`} />
               </div>
+              <select value={vForm.discount_type} onChange={(e) => setVForm((f) => ({ ...f, discount_type: e.target.value }))} className={input}>
+                <option value="none">No discount</option>
+                <option value="amount">Discount — flat ₹</option>
+                <option value="percentage">Discount — %</option>
+              </select>
+              <input value={vForm.discount_value} onChange={(e) => setVForm((f) => ({ ...f, discount_value: e.target.value }))} inputMode="decimal" placeholder={vForm.discount_type === "percentage" ? "Off %" : "Off ₹"} disabled={!vForm.discount_type || vForm.discount_type === "none"} className={input} />
               <input value={vForm.stock_qty} onChange={(e) => setVForm((f) => ({ ...f, stock_qty: e.target.value }))} inputMode="numeric" placeholder="Stock" className={input} />
             </div>
             <div className="mt-4 flex justify-end gap-2">

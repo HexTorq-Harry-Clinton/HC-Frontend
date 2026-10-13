@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { inr, resolveUploadUrl } from "@/lib/api";
+import { minVariantPrice, resolveVariantPrice } from "@/lib/pricing";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useCart } from "./CartProvider";
 import WishlistHeart from "./WishlistHeart";
@@ -75,7 +76,6 @@ export default function ProductDetail({ product }) {
 
   // Dynamic titles, prices, and sizes based on chosen colorway
   const displayTitle = activeColorObj?.title || product.name;
-  const basePrice = activeColorObj?.price ?? product.price;
 
   // Sizes setup for the active colorway
   const activeVariants =
@@ -83,20 +83,35 @@ export default function ProductDetail({ product }) {
       ? activeColorObj.variants
       : (product.variants || []);
 
+  const activeBest = minVariantPrice(activeVariants, activeColorObj?.price ?? product.price);
+  const basePrice = activeBest ? activeBest.finalPrice : (activeColorObj?.price ?? product.price);
+  const baseMrp = activeBest ? activeBest.mrp : basePrice;
+
   const baseSizes =
     activeVariants.length > 0
-      ? activeVariants.map((v, idx) => ({
-          key: v.product_variant_id || v.size_id || `${v.label || v.variant_name || "size"}-${idx}`,
-          label: v.label || v.size_id || v.variant_name || "M",
-          price: v.price || basePrice,
-          available: v.available !== false,
-          variant: v,
-        }))
-      : [{ key: "default", label: "M", price: basePrice, available: true, variant: null }];
+      ? activeVariants.map((v, idx) => {
+          const priced = resolveVariantPrice(v, baseMrp || basePrice);
+          return {
+            key: v.product_variant_id || v.size_id || `${v.label || v.variant_name || "size"}-${idx}`,
+            label: v.label || v.size_id || v.variant_name || "M",
+            price: priced.finalPrice,
+            mrp: priced.mrp,
+            hasDiscount: priced.hasDiscount,
+            discountPct: priced.discountPct,
+            discountType: priced.discountType,
+            discountValue: priced.discountValue,
+            available: v.available !== false,
+            variant: v,
+          };
+        })
+      : [{ key: "default", label: "M", price: basePrice, mrp: baseMrp, hasDiscount: false, discountPct: 0, available: true, variant: null }];
 
   const [size, setSize] = useState(baseSizes.length === 1 ? baseSizes[0].key : "");
   const selected = baseSizes.find((s) => s.key === size) || (baseSizes.length === 1 ? baseSizes[0] : null);
   const displayPrice = selected?.price ?? basePrice;
+  const displayMrp = selected?.mrp ?? baseMrp ?? displayPrice;
+  const displayHasDiscount = Boolean(selected?.hasDiscount) && displayMrp > displayPrice;
+  const displayDiscountPct = selected?.discountPct || 0;
   const displaySku = selected?.variant?.sku || activeVariants[0]?.sku || product.sku || "";
   // Displayed product prices are GST-inclusive. This is only an informational
   // split; the amount must not be added again in cart or checkout.
@@ -176,6 +191,7 @@ export default function ProductDetail({ product }) {
         product_id: activeId,
         product_variant_id: selected?.variant?.product_variant_id || null,
         unit_price: displayPrice,
+        mrp: displayMrp,
       },
       qty
     );
@@ -297,8 +313,16 @@ export default function ProductDetail({ product }) {
              {product.description && (
               <p className="mt-2 text-[15px] text-neutral-600 font-normal leading-relaxed">{product.description}</p>
             )}
-             <div className="mt-3 flex items-center gap-2">
+             <div className="mt-3 flex flex-wrap items-center gap-2">
                <h3 className="text-[22px] font-bold tracking-tight text-neutral-900">{inr(displayPrice)}</h3>
+                {displayHasDiscount && (
+                  <>
+                    <span className="text-[15px] font-medium text-neutral-400 line-through">{inr(displayMrp)}</span>
+                    <span className="bg-green-700 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
+                      {displayDiscountPct > 0 ? `${displayDiscountPct}% off` : "Sale"}
+                    </span>
+                  </>
+                )}
                <details className="relative">
                  <summary
                    aria-label="View GST price split"

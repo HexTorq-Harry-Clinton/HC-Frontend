@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { apiCached, resolveUploadUrl } from "@/lib/api";
+import { minVariantPrice, withVariantPricing } from "@/lib/pricing";
 import ProductDetail from "./ProductDetail";
 import { PLACEHOLDER_IMAGE } from "./ProductCard";
 import { generatedColor } from "@/lib/colors";
@@ -99,8 +100,10 @@ export default function ProductDetailLoader({ id }) {
             const sizeRow = sizesList.find((s) => s.size_id === v.size_id);
             const clothRow = clothList.find((c) => c.cloth_type_id === v.cloth_type_id);
             const ownMedia = variantMedia.filter((m) => m.product_variant_id === v.product_variant_id);
+            const priced = withVariantPricing(v, Number(p.base_price) || 0);
             return {
               ...v,
+              ...priced,
               key: v.product_variant_id || v.size_id || `${v.variant_name || "size"}-${idx}`,
               label: sizeRow?.size_name || v.variant_name || "M",
               sizeName: sizeRow?.size_name || "",
@@ -224,7 +227,7 @@ export default function ProductDetailLoader({ id }) {
             slug: p.product_slug,
             productId: p.product_id,
             title: p.product_name,
-            price,
+            price: minVariantPrice(variantsForColor(colName), price)?.finalPrice ?? price,
             images: variantGalleryForColor(colName).length > 0 ? variantGalleryForColor(colName) : gallery,
             variants: variantsForColor(colName),
           };

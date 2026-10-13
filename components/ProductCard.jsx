@@ -74,7 +74,19 @@ export default function ProductCard({ product, index = 0 }) {
       />
       <Link href={href} className="block pt-3 text-center">
         <p className="link-sweep inline text-base font-medium">{product.name}</p>
-        <p className="mt-1 text-base font-bold">{inr(product.price)}</p>
+        <p className="mt-1 flex items-center justify-center gap-2 text-base font-bold">
+          <span>{inr(product.price)}</span>
+          {product.hasDiscount && Number(product.originalPrice) > Number(product.price) && (
+            <>
+              <span className="text-sm font-medium text-neutral-400 line-through">{inr(product.originalPrice)}</span>
+              {product.discountPct > 0 && (
+                <span className="bg-green-700 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                  {product.discountPct}% off
+                </span>
+              )}
+            </>
+          )}
+        </p>
       </Link>
     </motion.div>
   );
