@@ -42,6 +42,7 @@ export default function ProductCard({ product, index = 0 }) {
           {/* Backend upload URLs may resolve to private infrastructure; keep
               them as native images instead of sending them through Next's
               server-side optimizer. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={product.image || PLACEHOLDER_IMAGE}
             alt={product.name}
@@ -72,8 +73,8 @@ export default function ProductCard({ product, index = 0 }) {
         }`}
       />
       <Link href={href} className="block pt-3 text-center">
-        <p className="link-sweep inline text-sm font-medium">{product.name}</p>
-        <p className="mt-1 text-sm font-bold">{inr(product.price)}</p>
+        <p className="link-sweep inline text-base font-medium">{product.name}</p>
+        <p className="mt-1 text-base font-bold">{inr(product.price)}</p>
       </Link>
     </motion.div>
   );

@@ -213,7 +213,7 @@ export default async function OccasionPage({ page }) {
            clothTypes={data.clothTypes}
            colors={data.colors}
            showFilters={false}
-           columns={4}
+           columns={3}
            showToolbar={false}
            compact
           emptyTitle={`No ${heroTitle} pieces yet`}

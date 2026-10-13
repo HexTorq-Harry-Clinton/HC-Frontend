@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { isOccasionSlug } from "@/lib/catalog";
 
 // Top-reveal mega-menu (previous-UI style, no sidebar): CATEGORIES (live)
 // + COLLECTIONS + SERVICES + Vision tile drop down from under the header.
@@ -35,12 +35,14 @@ const FALLBACK_CATEGORIES = [
 export default function Hamburger({ categories, onActiveChange }) {
   const [isActive, setIsActive] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const menuRef = useRef(null);
+  const isSubcategoryPage = isOccasionSlug(pathname);
 
-  const setMenuState = (next) => {
+  const setMenuState = useCallback((next) => {
     setIsActive(next);
     onActiveChange?.(next);
-  };
+  }, [onActiveChange]);
 
   useEffect(() => {
     const onDown = (e) => {
@@ -61,7 +63,7 @@ export default function Hamburger({ categories, onActiveChange }) {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [setMenuState]);
 
   const cats = categories?.length > 0 ? categories : FALLBACK_CATEGORIES;
   const go = (to) => {
@@ -90,27 +92,31 @@ export default function Hamburger({ categories, onActiveChange }) {
         <span></span>
       </div>
       <div ref={menuRef} className={`topmenu ${isActive ? "show" : ""}`}>
-        <div className="Hdropdown grid-4col">
-          <div>
-            <strong>CATEGORIES</strong>
-            <ul>
-              {cats.map((c) => (
-                <li key={c.to}>
-                  <button onClick={() => go(c.to)}>{c.label}</button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <strong>COLLECTIONS</strong>
-            <ul>
-              {COLLECTIONS.map((c) => (
-                <li key={c.to}>
-                  <button onClick={() => go(c.to)}>{c.label}</button>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className={`Hdropdown grid-4col${isSubcategoryPage ? " Hdropdown--subcategory" : ""}`}>
+          {!isSubcategoryPage && (
+            <div>
+              <strong>CATEGORIES</strong>
+              <ul>
+                {cats.map((c) => (
+                  <li key={c.to}>
+                    <button onClick={() => go(c.to)}>{c.label}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {!isSubcategoryPage && (
+            <div>
+              <strong>COLLECTIONS</strong>
+              <ul>
+                {COLLECTIONS.map((c) => (
+                  <li key={c.to}>
+                    <button onClick={() => go(c.to)}>{c.label}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div>
             <strong>SERVICES</strong>
             <ul>
@@ -219,6 +225,9 @@ export default function Hamburger({ categories, onActiveChange }) {
           gap: 20px;
           padding: 25px 60px;
           margin-left: 30px;
+        }
+        .Hdropdown--subcategory {
+          grid-template-columns: minmax(220px, 1fr) minmax(420px, 2.3fr);
         }
         .Hdropdown strong { 
           font-family: var(--font-mainlux), 'MAINLUX', sans-serif;
