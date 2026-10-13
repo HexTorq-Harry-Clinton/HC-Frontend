@@ -29,6 +29,13 @@ export default function ProductDetail({ product }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState("");
+  const estimatedDate = new Date();
+  estimatedDate.setDate(estimatedDate.getDate() + 15);
+  const deliveryDate = new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(estimatedDate);
 
   // Determine current active color variant & its gallery
   const activeColorObj =
@@ -181,12 +188,12 @@ export default function ProductDetail({ product }) {
                    playsInline
                  />
                ) : (
-                 <img
-                   key={`${selectedColor}-${activeImg}-${currentGallery[activeImg] || currentGallery[0]}`}
-                   src={currentGallery[activeImg] || currentGallery[0]}
-                   alt={`${displayTitle} in ${selectedColor || "atelier colorway"}`}
-                    className="absolute inset-0 h-full w-full bg-white object-contain"
-                 />
+                  <img
+                    key={`${selectedColor}-${activeImg}-${currentGallery[activeImg] || currentGallery[0]}`}
+                    src={currentGallery[activeImg] || currentGallery[0]}
+                    alt={`${displayTitle} in ${selectedColor || "atelier colorway"}`}
+                    className="absolute inset-0 h-full w-full cursor-zoom-in bg-white object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
                )}
                {activeMediaMeta?.media_role && (
                  <span className="absolute bottom-3 left-3 bg-neutral-950/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-sm">
@@ -427,37 +434,36 @@ export default function ProductDetail({ product }) {
             {sizeError && <p className="mt-2 text-[12px] text-red-600 font-bold">{sizeError}</p>}
 
             {/* Add to Bag / Bag Controls */}
+            <div className="mt-6 border border-neutral-200 bg-neutral-50 px-4 py-3 text-center text-sm text-neutral-700">
+              <span className="font-semibold text-neutral-950">Estimated delivery date:</span>{" "}
+              <span suppressHydrationWarning>{deliveryDate}</span>
+            </div>
             {bagLine ? (
               <>
-                <div className="mt-6 flex items-center gap-3">
-                  <button
-                    onClick={() =>
-                      cart?.updateQty(bagLine.key || bagLine.id, Math.max(1, (bagLine.qty || 1) - 1))
-                    }
-                    disabled={(bagLine.qty || 1) <= 1}
-                    className="border border-neutral-300 px-3.5 py-1 text-[15px] disabled:opacity-40 font-bold hover:bg-neutral-100"
-                    aria-label="Decrease quantity"
-                  >
-                    −
-                  </button>
-                  <span className="w-8 text-center font-bold text-[15px]">{bagLine.qty || 1}</span>
-                  <button
-                    onClick={() => cart?.updateQty(bagLine.key || bagLine.id, (bagLine.qty || 1) + 1)}
-                    className="border border-neutral-300 px-3.5 py-1 text-[15px] font-bold hover:bg-neutral-100"
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
-                  <span className="text-[12px] uppercase tracking-widest text-green-700 font-bold flex items-center gap-1.5 ml-2">
-                    <span className="w-2 h-2 rounded-full bg-green-600 inline-block animate-pulse" />
-                    In your bag ({selectedColor || "Original"})
-                  </span>
-                </div>
-
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex items-stretch gap-3">
+                  <div className="flex shrink-0 items-center border border-neutral-300" role="group" aria-label="Quantity">
+                    <button
+                      onClick={() =>
+                        cart?.updateQty(bagLine.key || bagLine.id, Math.max(1, (bagLine.qty || 1) - 1))
+                      }
+                      disabled={(bagLine.qty || 1) <= 1}
+                      className="px-3 text-[15px] font-bold transition hover:bg-neutral-100 disabled:opacity-40"
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span className="w-7 text-center text-[15px] font-bold" aria-live="polite">{bagLine.qty || 1}</span>
+                    <button
+                      onClick={() => cart?.updateQty(bagLine.key || bagLine.id, (bagLine.qty || 1) + 1)}
+                      className="px-3 text-[15px] font-bold transition hover:bg-neutral-100"
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
                   <button
                     onClick={() => router.push("/cart")}
-                    className="flex-1 bg-green-700 py-3.5 text-[15px] font-bold uppercase tracking-wider text-white transition hover:bg-green-800 cursor-pointer shadow-md"
+                    className="min-w-0 flex-1 cursor-pointer bg-green-700 px-2 py-3.5 text-[12px] font-bold uppercase tracking-wider text-white shadow-md transition hover:bg-green-800 sm:text-[15px]"
                   >
                     Already Added — View Bag
                   </button>
@@ -468,36 +474,36 @@ export default function ProductDetail({ product }) {
                       price: displayPrice,
                       image: currentGallery[0],
                     }}
-                    className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-[#c6a15b]"
+                    className="shrink-0 border border-neutral-300 px-4 py-3 text-lg transition hover:border-[#c6a15b] sm:px-5"
                   />
                 </div>
+                <p className="mt-3 flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-widest text-green-700">
+                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-green-600" />
+                  In your bag ({selectedColor || "Original"})
+                </p>
               </>
             ) : (
-              <>
-                <div className="mt-6 flex items-center gap-3" role="group" aria-label="Quantity">
+              <div className="mt-6 flex items-stretch gap-3">
+                <div className="flex shrink-0 items-center border border-neutral-300" role="group" aria-label="Quantity">
                   <button
                     onClick={() => setQty((q) => Math.max(1, q - 1))}
                     aria-label="Decrease quantity"
-                    className="border border-neutral-300 px-3.5 py-1 text-[15px] font-bold hover:bg-neutral-100"
+                    className="px-3 text-[15px] font-bold transition hover:bg-neutral-100"
                   >
                     −
                   </button>
-                  <span className="w-8 text-center font-bold text-[15px]" aria-live="polite">
-                    {qty}
-                  </span>
+                  <span className="w-7 text-center text-[15px] font-bold" aria-live="polite">{qty}</span>
                   <button
                     onClick={() => setQty((q) => q + 1)}
                     aria-label="Increase quantity"
-                    className="border border-neutral-300 px-3.5 py-1 text-[15px] font-bold hover:bg-neutral-100"
+                    className="px-3 text-[15px] font-bold transition hover:bg-neutral-100"
                   >
                     +
                   </button>
                 </div>
-
-                <div className="mt-6 flex gap-3">
                   <button
                     onClick={addToBag}
-                    className={`flex-1 py-3.5 text-[15px] font-bold uppercase tracking-wider text-white transition cursor-pointer shadow-md ${
+                    className={`min-w-0 flex-1 cursor-pointer px-2 py-3.5 text-[12px] font-bold uppercase tracking-wider text-white shadow-md transition sm:text-[15px] ${
                       added ? "bg-green-700" : "bg-neutral-950 hover:bg-[#c6a15b] hover:text-neutral-950"
                     }`}
                   >
@@ -510,10 +516,9 @@ export default function ProductDetail({ product }) {
                       price: displayPrice,
                       image: currentGallery[0],
                     }}
-                    className="border border-neutral-300 px-5 py-3 text-lg transition hover:border-[#c6a15b]"
+                    className="shrink-0 border border-neutral-300 px-4 py-3 text-lg transition hover:border-[#c6a15b] sm:px-5"
                   />
-                </div>
-              </>
+              </div>
             )}
 
             <button onClick={() => router.back()} className="link-sweep mt-4 text-[12px] font-bold uppercase tracking-wider block">
