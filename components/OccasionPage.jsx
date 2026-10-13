@@ -146,7 +146,7 @@ export default async function OccasionPage({ page }) {
       `}</style>
 
       {/* ===== PRODUCT GRID ===== */}
-      <div className="mx-auto max-w-7xl px-2 py-4" id="category-grid">
+      <div className="w-full px-0 py-4" id="category-grid">
         <CategoryView
           products={data.products}
            sizes={data.sizes}
