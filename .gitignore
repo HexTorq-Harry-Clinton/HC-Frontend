@@ -50,6 +50,7 @@ test-results/
 !public/brand/**
 !public/slides/**
 !public/category-pages/**
+!public/about-us/**
 !public/fonts/
 !public/fonts/*.ttf
 
