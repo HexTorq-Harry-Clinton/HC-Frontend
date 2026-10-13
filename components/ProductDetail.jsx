@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { inr, resolveUploadUrl } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -30,6 +30,20 @@ export default function ProductDetail({ product }) {
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState("");
   const [showSizeChart, setShowSizeChart] = useState(false);
+
+  useEffect(() => {
+    if (!showSizeChart) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setShowSizeChart(false);
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [showSizeChart]);
   const estimatedDate = new Date();
   estimatedDate.setDate(estimatedDate.getDate() + 15);
   const deliveryDate = new Intl.DateTimeFormat("en-IN", {
@@ -565,14 +579,14 @@ export default function ProductDetail({ product }) {
 
       {showSizeChart && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm sm:p-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black/75 p-3 backdrop-blur-sm sm:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="size-chart-title"
           onClick={() => setShowSizeChart(false)}
         >
           <div
-            className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto bg-[#f8f6ef] p-3 shadow-2xl sm:p-6"
+            className="relative max-h-[92dvh] w-full max-w-3xl touch-pan-y overflow-y-auto overscroll-contain bg-[#f8f6ef] p-3 shadow-2xl sm:p-6"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="sticky top-0 z-10 mb-3 flex items-center justify-between border-b border-neutral-300 bg-[#f8f6ef]/95 pb-3 backdrop-blur-sm">
