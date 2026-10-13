@@ -5,6 +5,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import AuthListener from "@/components/AuthListener";
 import { CartProvider } from "@/components/CartProvider";
 import GlobalLoader from "@/components/GlobalLoader";
+import AgentationToolbar from "@/components/AgentationToolbar";
 
 // Exclusive site-wide typeface: MAINLUX (regular, semibold/bold, and italic)
 const mainlux = localFont({
@@ -40,6 +41,7 @@ export default function RootLayout({ children }) {
           <AuthListener />
           <CartProvider>{children}</CartProvider>
         </SmoothScroll>
+        <AgentationToolbar />
       </body>
     </html>
   );
