@@ -29,6 +29,7 @@ export default function ProductDetail({ product }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [sizeError, setSizeError] = useState("");
+  const [showSizeChart, setShowSizeChart] = useState(false);
   const estimatedDate = new Date();
   estimatedDate.setDate(estimatedDate.getDate() + 15);
   const deliveryDate = new Intl.DateTimeFormat("en-IN", {
@@ -82,6 +83,7 @@ export default function ProductDetail({ product }) {
   const [size, setSize] = useState(baseSizes.length === 1 ? baseSizes[0].key : "");
   const selected = baseSizes.find((s) => s.key === size) || (baseSizes.length === 1 ? baseSizes[0] : null);
   const displayPrice = selected?.price ?? basePrice;
+  const displaySku = selected?.variant?.sku || activeVariants[0]?.sku || product.sku || "";
   // Displayed product prices are GST-inclusive. This is only an informational
   // split; the amount must not be added again in cart or checkout.
   const gstAmount = Math.round((displayPrice - displayPrice / 1.05) * 100) / 100;
@@ -272,8 +274,13 @@ export default function ProductDetail({ product }) {
 
           {/* Right: Product Info, Colorway Swatches, Sizes, Bag Action */}
            <Reveal>
-            <h1 className="font-display text-[32px] font-bold leading-tight text-neutral-950">{displayTitle}</h1>
-            {product.description && (
+             <h1 className="font-display text-[32px] font-bold leading-tight text-neutral-950">{displayTitle}</h1>
+             {displaySku && (
+               <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                 SKU: <span className="text-neutral-700">{displaySku}</span>
+               </p>
+             )}
+             {product.description && (
               <p className="mt-2 text-[15px] text-neutral-600 font-normal leading-relaxed">{product.description}</p>
             )}
              <div className="mt-3 flex items-center gap-2">
@@ -303,54 +310,6 @@ export default function ProductDetail({ product }) {
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }}
                 />
               </>
-            )}
-
-            {product.details && Object.entries({
-              "Fabric details": product.details.fabric_details,
-              "Trims used": product.details.trims_used,
-              "Special detailing": product.details.special_detailing,
-              Lining: product.details.lining_details,
-              "Product fit": product.details.product_fit,
-              "Model fit": product.details.model_fit,
-              "Woven / Knitted": product.details.construction_type,
-              "Sleeve type": product.details.sleeve_type,
-              "Sleeve pattern": product.details.sleeve_pattern,
-              "Sleeve length": product.details.sleeve_length,
-              "Wash care": product.details.wash_care,
-            }).some(([, value]) => value) && (
-              <div className="mt-6 border-y border-neutral-200">
-                {Object.entries({
-                  "Fabric details": product.details.fabric_details,
-                  "Trims used": product.details.trims_used,
-                  "Special detailing": product.details.special_detailing,
-                  Lining: product.details.lining_details,
-                  "Product fit": product.details.product_fit,
-                  "Model fit": product.details.model_fit,
-                  "Woven / Knitted": product.details.construction_type,
-                  "Sleeve type": product.details.sleeve_type,
-                  "Sleeve pattern": product.details.sleeve_pattern,
-                  "Sleeve length": product.details.sleeve_length,
-                  "Wash care": product.details.wash_care,
-                }).filter(([, value]) => value).map(([label, value]) => (
-                  <details key={label} className="border-b border-neutral-200 py-3 last:border-b-0">
-                    <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900">{label}</summary>
-                    <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-neutral-600">{value}</p>
-                  </details>
-                ))}
-              </div>
-            )}
-
-            {product.sizeChart?.length > 0 && (
-              <details className="mt-6 border-y border-neutral-200 py-3">
-                <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900">Measurements / Size Guide</summary>
-                <div className="mt-3 overflow-x-auto">
-                  <p className="mb-2 text-[11px] uppercase tracking-widest text-neutral-500">All measurements in {product.sizeChart[0]?.unit === "cm" ? "centimetres" : "inches"}</p>
-                  <table className="w-full min-w-[620px] text-left text-xs text-neutral-600">
-                    <thead><tr className="border-b border-neutral-200 uppercase tracking-wide">{["Size", "Chest", "Waist", "Hip", "Shoulder", "Sleeve"].map((label) => <th key={label} className="px-2 py-2">{label}</th>)}</tr></thead>
-                    <tbody>{product.sizeChart.map((row) => <tr key={row.product_size_measurement_id || row.size_id} className="border-b border-neutral-100"><td className="px-2 py-2 font-semibold text-neutral-900">{row.size_name}</td>{["chest", "waist", "hip", "shoulder", "sleeve_length"].map((field) => <td key={field} className="px-2 py-2">{row[field] ?? "—"}</td>)}</tr>)}</tbody>
-                  </table>
-                </div>
-              </details>
             )}
 
             {/* Luxury Color Swatch Selector — updates images on click */}
@@ -397,17 +356,26 @@ export default function ProductDetail({ product }) {
             )}
 
             {/* Size Selector */}
-            {baseSizes.length > 1 && (
+            {baseSizes.length > 0 && (
               <div className="mt-6 pt-5 border-t border-neutral-200">
-                <div className="flex items-center justify-between mb-3">
+                <div className="mb-3 flex items-center justify-between gap-3">
                   <h5 className="text-[12px] font-bold uppercase tracking-[0.2em] text-neutral-900 m-0">
                     Select Size
                   </h5>
-                  {selected && (
-                    <span className="text-[12px] font-bold text-neutral-600">
-                      Selected: <strong className="text-neutral-950">{selected.label}</strong>
-                    </span>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {selected && (
+                      <span className="hidden text-[12px] font-bold text-neutral-600 sm:inline">
+                        Selected: <strong className="text-neutral-950">{selected.label}</strong>
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowSizeChart(true)}
+                      className="border-b border-neutral-900 text-[11px] font-bold uppercase tracking-wider text-neutral-900 transition hover:border-[#c6a15b] hover:text-[#9b783b]"
+                    >
+                      Size Chart
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {baseSizes.map((s) => (
@@ -431,6 +399,19 @@ export default function ProductDetail({ product }) {
                 </div>
               </div>
             )}
+            <div className="mt-4 flex flex-col gap-3 border border-[#c6a15b]/50 bg-[#c6a15b]/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="m-0 text-[13px] leading-relaxed text-neutral-700">
+                <strong className="text-neutral-950">Custom Sizing Available:</strong>{" "}
+                For size customisation or a made-to-measure fit, please contact us.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push("/book-appointment")}
+                className="shrink-0 border border-neutral-950 bg-neutral-950 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white transition hover:border-[#c6a15b] hover:bg-[#c6a15b] hover:text-neutral-950"
+              >
+                Book an Appointment
+              </button>
+            </div>
             {sizeError && <p className="mt-2 text-[12px] text-red-600 font-bold">{sizeError}</p>}
 
             {/* Add to Bag / Bag Controls */}
@@ -525,6 +506,41 @@ export default function ProductDetail({ product }) {
               ← Continue Shopping
             </button>
 
+            {product.details && Object.entries({
+              "Fabric details": product.details.fabric_details,
+              "Trims used": product.details.trims_used,
+              "Special detailing": product.details.special_detailing,
+              Lining: product.details.lining_details,
+              "Product fit": product.details.product_fit,
+              "Model fit": product.details.model_fit,
+              "Woven / Knitted": product.details.construction_type,
+              "Sleeve type": product.details.sleeve_type,
+              "Sleeve pattern": product.details.sleeve_pattern,
+              "Sleeve length": product.details.sleeve_length,
+              "Wash care": product.details.wash_care,
+            }).some(([, value]) => value) && (
+              <dl className="mt-8 border-y border-neutral-200">
+                {Object.entries({
+                  "Fabric details": product.details.fabric_details,
+                  "Trims used": product.details.trims_used,
+                  "Special detailing": product.details.special_detailing,
+                  Lining: product.details.lining_details,
+                  "Product fit": product.details.product_fit,
+                  "Model fit": product.details.model_fit,
+                  "Woven / Knitted": product.details.construction_type,
+                  "Sleeve type": product.details.sleeve_type,
+                  "Sleeve pattern": product.details.sleeve_pattern,
+                  "Sleeve length": product.details.sleeve_length,
+                  "Wash care": product.details.wash_care,
+                }).filter(([, value]) => value).map(([label, value]) => (
+                  <div key={label} className="grid grid-cols-[minmax(110px,0.42fr)_minmax(0,1fr)] items-start gap-4 border-b border-neutral-200 py-3 last:border-b-0">
+                    <dt className="text-[12px] font-bold uppercase tracking-widest text-neutral-900">{label}</dt>
+                    <dd className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-neutral-600">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+
             <div className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
               <details className="group py-4">
                 <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900 marker:text-[#c6a15b]">
@@ -546,6 +562,51 @@ export default function ProductDetail({ product }) {
           </Reveal>
         </div>
       </div>
+
+      {showSizeChart && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="size-chart-title"
+          onClick={() => setShowSizeChart(false)}
+        >
+          <div
+            className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto bg-[#f8f6ef] p-3 shadow-2xl sm:p-6"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 mb-3 flex items-center justify-between border-b border-neutral-300 bg-[#f8f6ef]/95 pb-3 backdrop-blur-sm">
+              <h2 id="size-chart-title" className="font-display text-xl font-bold text-neutral-950 sm:text-2xl">Size Chart</h2>
+              <button
+                type="button"
+                onClick={() => setShowSizeChart(false)}
+                className="flex h-10 w-10 items-center justify-center border border-neutral-400 text-2xl leading-none text-neutral-900 transition hover:bg-neutral-950 hover:text-white"
+                aria-label="Close size chart"
+              >
+                ×
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/harry-clinton-size-chart.svg"
+              alt="Harry Clinton menswear measurement guide and size conversion chart"
+              className="h-auto w-full border border-neutral-300 bg-white"
+            />
+            {product.sizeChart?.length > 0 && (
+              <div className="mt-6 bg-white p-4">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-neutral-900">Product-specific measurements</h3>
+                <p className="mt-1 text-xs text-neutral-500">All measurements in {product.sizeChart[0]?.unit === "cm" ? "centimetres" : "inches"}</p>
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full min-w-[620px] text-left text-xs text-neutral-600">
+                    <thead><tr className="border-b border-neutral-300 uppercase tracking-wide">{["Size", "Chest", "Waist", "Hip", "Shoulder", "Sleeve"].map((label) => <th key={label} className="px-2 py-2">{label}</th>)}</tr></thead>
+                    <tbody>{product.sizeChart.map((row) => <tr key={row.product_size_measurement_id || row.size_id} className="border-b border-neutral-100"><td className="px-2 py-2 font-semibold text-neutral-900">{row.size_name}</td>{["chest", "waist", "hip", "shoulder", "sleeve_length"].map((field) => <td key={field} className="px-2 py-2">{row[field] ?? "—"}</td>)}</tr>)}</tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {product.related?.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-14">

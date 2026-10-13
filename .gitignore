@@ -25,8 +25,8 @@ test-results/
 .DS_Store
 *.pem
 
-# media NEVER lives in this repo — all images/video/fonts come from the
-# backend (/Uploads) or remote CDN at runtime, never bundled or committed.
+# Ignore loose media by default. Assets intentionally placed under /public
+# are storefront dependencies and must be committed so Vercel can serve them.
 *.png
 *.jpg
 *.jpeg
@@ -45,14 +45,8 @@ test-results/
 *.woff2
 !app/favicon.ico
 
-# EXCEPTION: brand splash video + logos live in the frontend by design
-# (opening splash + header/footer wordmarks). Everything else stays backend-only.
-!public/brand/**
-!public/slides/**
-!public/category-pages/**
-!public/about-us/**
-!public/fonts/
-!public/fonts/*.ttf
+# Everything under /public is a deployable static asset.
+!public/**
 
 # EXCEPTION: MAINLUX brand typeface, required at BUILD time by next/font/local
 # (app/layout.js) for the notification bar / navbar / running bar. Unlike runtime

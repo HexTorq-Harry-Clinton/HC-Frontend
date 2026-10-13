@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1400" viewBox="0 0 900 1400" role="img" aria-labelledby="title desc">
+  <title id="title">Harry Clinton Menswear Measurement Guide and Size Chart</title>
+  <desc id="desc">Instructions for measuring neck, shoulder, chest, waist, sleeve length and hip, followed by size conversions from XS 36 to 5XL 52.</desc>
+  <rect width="900" height="1400" fill="#f8f6ef"/>
+  <rect x="34" y="34" width="832" height="1332" fill="#fff" stroke="#1b1b1b" stroke-width="2"/>
+
+  <text x="450" y="102" text-anchor="middle" font-family="Georgia, serif" font-size="40" letter-spacing="8" fill="#111">HARRY CLINTON</text>
+  <text x="450" y="137" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" letter-spacing="5" fill="#8a6b32">BESPOKE MENSWEAR</text>
+  <line x1="110" y1="174" x2="790" y2="174" stroke="#b9a274"/>
+  <text x="450" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" letter-spacing="4" fill="#111">MEASUREMENT GUIDE</text>
+  <text x="450" y="253" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#555">Use a soft measuring tape and keep it level without pulling too tightly.</text>
+
+  <g fill="none" stroke="#222" stroke-width="3">
+    <circle cx="450" cy="346" r="39"/>
+    <path d="M414 387 Q385 406 373 467 L350 641 Q348 665 366 681"/>
+    <path d="M486 387 Q515 406 527 467 L550 641 Q552 665 534 681"/>
+    <path d="M414 387 Q450 412 486 387"/>
+    <path d="M391 417 Q450 447 509 417"/>
+    <path d="M388 436 L397 668 Q402 720 419 764"/>
+    <path d="M512 436 L503 668 Q498 720 481 764"/>
+    <path d="M397 668 Q450 695 503 668"/>
+    <path d="M419 764 L410 1000 Q410 1030 430 1030"/>
+    <path d="M481 764 L490 1000 Q490 1030 470 1030"/>
+    <path d="M430 1030 L450 775 L470 1030"/>
+  </g>
+  <g fill="none" stroke="#b28a43" stroke-width="2" stroke-dasharray="7 5">
+    <ellipse cx="450" cy="388" rx="37" ry="10"/>
+    <line x1="386" y1="430" x2="514" y2="430"/>
+    <ellipse cx="450" cy="486" rx="74" ry="15"/>
+    <ellipse cx="450" cy="584" rx="65" ry="13"/>
+    <ellipse cx="450" cy="675" rx="55" ry="12"/>
+    <line x1="520" y1="433" x2="548" y2="650"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" fill="#111">
+    <text x="100" y="340" font-size="21" font-weight="700">NECK / COLLAR</text>
+    <text x="100" y="366" font-size="14" fill="#555">Measure around the base of the neck.</text>
+    <line x1="300" y1="350" x2="412" y2="385" stroke="#777"/>
+
+    <text x="100" y="458" font-size="21" font-weight="700">SHOULDER</text>
+    <text x="100" y="484" font-size="14" fill="#555">Measure from shoulder bone to shoulder bone.</text>
+    <line x1="322" y1="466" x2="390" y2="430" stroke="#777"/>
+
+    <text x="100" y="575" font-size="21" font-weight="700">CHEST</text>
+    <text x="100" y="601" font-size="14" fill="#555">Measure around the fullest part of the chest.</text>
+    <line x1="318" y1="583" x2="376" y2="486" stroke="#777"/>
+
+    <text x="600" y="340" font-size="21" font-weight="700">WAIST</text>
+    <text x="600" y="366" font-size="14" fill="#555">Measure around your natural waist.</text>
+    <line x1="600" y1="350" x2="515" y2="584" stroke="#777"/>
+
+    <text x="600" y="492" font-size="21" font-weight="700">SLEEVE LENGTH</text>
+    <text x="600" y="518" font-size="14" fill="#555">Measure from shoulder to wrist.</text>
+    <line x1="600" y1="500" x2="542" y2="548" stroke="#777"/>
+
+    <text x="600" y="648" font-size="21" font-weight="700">HIP / SEAT</text>
+    <text x="600" y="674" font-size="14" fill="#555">Measure around the fullest part of the seat.</text>
+    <line x1="600" y1="656" x2="505" y2="675" stroke="#777"/>
+  </g>
+
+  <line x1="90" y1="1070" x2="810" y2="1070" stroke="#b9a274"/>
+  <text x="450" y="1120" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" letter-spacing="3" fill="#111">MENSWEAR SIZE CONVERSION</text>
+  <text x="450" y="1150" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#555">Garment sizes shown in inches</text>
+
+  <g font-family="Arial, sans-serif" font-size="16" text-anchor="middle">
+    <rect x="85" y="1182" width="730" height="112" fill="#fff" stroke="#222"/>
+    <rect x="85" y="1182" width="730" height="52" fill="#171717"/>
+    <g fill="#fff" font-weight="700">
+      <text x="125" y="1215">XS</text><text x="205" y="1215">S</text><text x="285" y="1215">M</text>
+      <text x="365" y="1215">L</text><text x="445" y="1215">XL</text><text x="525" y="1215">XXL</text>
+      <text x="605" y="1215">3XL</text><text x="685" y="1215">4XL</text><text x="765" y="1215">5XL</text>
+    </g>
+    <g fill="#222" font-weight="700">
+      <text x="125" y="1270">36</text><text x="205" y="1270">38</text><text x="285" y="1270">40</text>
+      <text x="365" y="1270">42</text><text x="445" y="1270">44</text><text x="525" y="1270">46</text>
+      <text x="605" y="1270">48</text><text x="685" y="1270">50</text><text x="765" y="1270">52</text>
+    </g>
+    <g stroke="#bbb">
+      <line x1="165" y1="1182" x2="165" y2="1294"/><line x1="245" y1="1182" x2="245" y2="1294"/>
+      <line x1="325" y1="1182" x2="325" y2="1294"/><line x1="405" y1="1182" x2="405" y2="1294"/>
+      <line x1="485" y1="1182" x2="485" y2="1294"/><line x1="565" y1="1182" x2="565" y2="1294"/>
+      <line x1="645" y1="1182" x2="645" y2="1294"/><line x1="725" y1="1182" x2="725" y2="1294"/>
+    </g>
+  </g>
+  <text x="450" y="1330" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#555">For made-to-measure assistance, book an appointment with Harry Clinton.</text>
+</svg>
