@@ -68,6 +68,19 @@ const INITIAL_REVIEWS = [
   },
 ];
 
+function uniqueReviews(items) {
+  const seen = new Set();
+  return items.filter((review) => {
+    const text = String(review.review_text || "").trim().toLowerCase().replace(/\s+/g, " ");
+    // The same imported review can arrive with different IDs. Its normalized
+    // text is the stable duplicate key, so it is shown only once.
+    const key = text;
+    if (!text || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // Google Review destination link — set when the Google Business review URL is ready.
 // When empty or under development, clicking the button shows the "Upcoming Update" modal.
 const GOOGLE_REVIEW_URL = "";
@@ -117,7 +130,7 @@ export default function HomeTestimonials() {
               date: "Verified Google Review",
             }));
           if (approved.length > 0) {
-            setReviews([...approved, ...INITIAL_REVIEWS]);
+            setReviews(uniqueReviews([...approved, ...INITIAL_REVIEWS]));
           }
         }
       } catch {

@@ -22,6 +22,12 @@ const DEFAULT_SUPPORT = [
   { label: "Track Order", link: "/track-order" },
 ];
 
+function externalUrl(value, fallback) {
+  const candidate = String(value || fallback || "").trim();
+  if (!candidate) return fallback;
+  return /^https?:\/\//i.test(candidate) ? candidate : `https://${candidate.replace(/^\/\//, "")}`;
+}
+
 export default function Footer() {
   const [showModal, setShowModal] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -57,9 +63,9 @@ export default function Footer() {
     supportContacts.find((c) => c.contact_type === "phone" || c.contact_type === "Phone")?.contact_value || "";
 
   const blurb = "Empowering innovation with quality and trust. Join us in our journey towards excellence.";
-  const facebookUrl = cfg.footer_facebook_url || "https://www.facebook.com/harry.clinton.829484";
-  const instagramUrl = cfg.footer_instagram_url || "https://www.instagram.com/harryclinton_official/";
-  const youtubeUrl = cfg.footer_youtube_url || "https://www.youtube.com/@HarryClintonHC";
+  const facebookUrl = externalUrl(cfg.footer_facebook_url, "https://www.facebook.com/harry.clinton.829484");
+  const instagramUrl = externalUrl(cfg.footer_instagram_url, "https://www.instagram.com/harryclinton_official");
+  const youtubeUrl = externalUrl(cfg.footer_youtube_url, "https://www.youtube.com/@HarryClintonHC");
   const quickLinks = DEFAULT_QUICK;
   const supportLinks = DEFAULT_SUPPORT;
   const newsletterTitle = "Stay Updated";
