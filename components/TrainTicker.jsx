@@ -10,7 +10,8 @@ import { sanitizeHtml } from "@/lib/sanitize";
 // when the full ride (enter + DB hold + exit) completes.
 // Props:
 // - slides: [{ text, ms }] (text may be plain or HTML, sanitized on render)
-// - dark: black strip (notification bar) vs white strip (running bar)
+// - dark: dark strip vs white strip (running bar)
+// - tone: optional dark-strip colour treatment (for example, "green")
 // - arrows: show prev/next buttons (default true)
 // - flankLeft / flankRight: static nodes pinned at the strip edges
 const ENTER_EASE = "cubic-bezier(0.16, 0.8, 0.24, 1)";
@@ -18,7 +19,7 @@ const EXIT_EASE = "cubic-bezier(0.55, 0.06, 0.75, 0.4)";
 
 export const TRAIN_DEFAULT_MS = 4000;
 
-export default function TrainTicker({ slides, dark = true, arrows = true, flankLeft = null, flankRight = null }) {
+export default function TrainTicker({ slides, dark = true, tone = "default", arrows = true, flankLeft = null, flankRight = null }) {
   const list = useMemo(
     () => (Array.isArray(slides) && slides.length > 0 ? slides : []),
     [slides]
@@ -137,7 +138,7 @@ export default function TrainTicker({ slides, dark = true, arrows = true, flankL
   const raw = list[currentIndex]?.text || "";
   const html = /<[a-z][\s\S]*>/i.test(raw) ? sanitizeHtml(raw) : null;
   const skin = dark
-    ? "bg-[#080003] text-white"
+    ? tone === "green" ? "bg-[#166534] text-white" : "bg-[#080003] text-white"
     : "border-y border-neutral-200 bg-white text-neutral-900";
   const btnCls = dark
     ? "ticker-nav-btn text-white/70 hover:text-[#c6a15b] hover:bg-white/10"

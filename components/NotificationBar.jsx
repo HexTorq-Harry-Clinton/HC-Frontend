@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { apiCached } from "@/lib/api";
 import TrainTicker, { TRAIN_DEFAULT_MS } from "./TrainTicker";
 
-// TOP black strip (notification bar) — single table, no parent.
+// TOP green strip (notification bar) — single table, no parent.
 // Train motion (NOT the running-bar marquee): one item at a time rolls in
 // from the right, holds, rolls out left. Queue: isactive = 1 AND
 // isdeleted = 0, ORDER BY orderpriority ASC. The schema carries no per-item
@@ -47,5 +47,5 @@ export default function NotificationBar() {
   }, [pathname]);
 
   if (pathname !== "/") return null;
-  return <TrainTicker slides={slides} dark arrows />;
+  return <TrainTicker slides={slides} dark tone="green" arrows />;
 }
