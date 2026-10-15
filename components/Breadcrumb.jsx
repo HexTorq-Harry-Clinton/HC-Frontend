@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { apiCached } from "@/lib/api";
 
 // Breadcrumb: same structure/labels as the previous UI —
 // home icon + Home, auto path segments with label map, last non-link.
@@ -76,6 +78,40 @@ function labelFor(segment) {
 
 export default function Breadcrumb({ trail, dark = false }) {
   const pathname = usePathname();
+  // { path, title }: render-phase reset keeps the label in sync with
+  // navigation without a synchronous setState inside the effect below.
+  const [resolved, setResolved] = useState({ path: pathname, title: null });
+  if (resolved.path !== pathname) setResolved({ path: pathname, title: null });
+  const storyTitle = resolved.title;
+
+  // Mediator story pages (/hc-spotlight/<id>, /style-by-hc/<id>) carry a raw
+  // entry id in the URL — resolve it to the admin-given story title.
+  useEffect(() => {
+    if (trail) return;
+    const parts = (pathname || "").split("/").filter(Boolean);
+    if (parts.length !== 2) return;
+    const config =
+      parts[0] === "hc-spotlight"
+        ? { endpoint: "/Spotlight-Entries", idKey: "spotlight_entry_id", titleKey: "title" }
+        : parts[0] === "style-by-hc"
+          ? { endpoint: "/Style-Collections", idKey: "style_collection_id", titleKey: "collection_name" }
+          : null;
+    if (!config || parts[1].length < 8) return;
+    let live = true;
+    apiCached(config.endpoint)
+      .then((rows) => {
+        if (!live) return;
+        const match = (Array.isArray(rows) ? rows : []).find(
+          (r) => String(r[config.idKey]) === parts[1]
+        );
+        if (match?.[config.titleKey]) setResolved({ path: pathname, title: match[config.titleKey] });
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [pathname, trail]);
+
   if (!trail && pathname === "/") return null;
   const pathSegments = pathname
     .split("/")
@@ -83,7 +119,7 @@ export default function Breadcrumb({ trail, dark = false }) {
   const segments = trail
     ? trail.map((t) => ({ label: t.label, to: t.href }))
     : pathSegments.map((segment, index) => ({
-        label: labelFor(decodeURIComponent(segment)),
+        label: index === pathSegments.length - 1 && storyTitle ? storyTitle : labelFor(decodeURIComponent(segment)),
         to: `/${pathSegments.slice(0, index + 1).join("/")}`,
       }));
   if (!trail && pathSegments.length && BREADCRUMB_PARENTS[pathSegments[0]]) {
