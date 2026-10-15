@@ -40,6 +40,7 @@ export function StyleByHC({ title = "Style By HC" }) {
             id: m.style_collection_media_id,
             src: resolveUploadUrl(m.media_url),
             caption: nameById[String(m.style_collection_id)] || m.alt_text || "",
+            href: m.style_collection_id ? `/style-by-hc/${m.style_collection_id}` : "/style-by-hc",
           }))
           .filter((c) => c.src);
         if (!live) return;

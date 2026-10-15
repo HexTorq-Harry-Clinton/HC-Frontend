@@ -89,7 +89,7 @@ export default function TwoRowMarquee({ cards = [], title, href = "/", eyebrow =
             {tapeCards.map((c) => (
               <Link
                 key={`${dup}-${c.id}`}
-                href={href}
+                href={c.href || href}
                 tabIndex={dup > 0 ? -1 : 0}
                 className="group w-[22rem] shrink-0 overflow-hidden bg-neutral-950 md:w-[26rem]"
               >

@@ -14,6 +14,7 @@ export default function ShowcaseCarousel({
   mediaEndpoint,
   mediaFk,
   fallbackLink,
+  detailBase = null,
   intervalMs = 1800,
   backward = false,
   hasBorder = true,
@@ -59,19 +60,35 @@ export default function ShowcaseCarousel({
         const entries = Array.isArray(entriesRes) ? entriesRes : [];
         const rawMedia = Array.isArray(mediaRes) ? mediaRes : [];
         const media = rawMedia.filter((m) => !isPlaceholderUrl(m.media_url || m.image_url));
+        const entryById = Object.fromEntries(
+          entries.map((e) => [String(e.spotlight_entry_id || e.style_collection_id || ""), e])
+        );
+        const mediatorLink = (entry) => {
+          if (!entry || !detailBase) return null;
+          const id = entry.spotlight_entry_id || entry.style_collection_id;
+          if (!id) return null;
+          // Product-linked entries open the mediator story page; its
+          // VIEW DETAILS button continues to the real product page.
+          // Editorial-only entries keep their configured redirect link.
+          if (entry.product_id) return `${detailBase}/${id}`;
+          return entry.redirect_link || null;
+        };
         const mapped =
           media.length > 0
-            ? media.map((m) => ({
-                img: resolveUploadUrl(m.media_url || m.image_url),
-                text: m.alt_text || title,
-                link: m.redirect_link || null,
-              }))
+            ? media.map((m) => {
+                const entry = entryById[String(m[mediaFk] || "")];
+                return {
+                  img: resolveUploadUrl(m.media_url || m.image_url),
+                  text: m.alt_text || entry?.title || entry?.collection_name || title,
+                  link: mediatorLink(entry) || m.redirect_link || entry?.redirect_link || null,
+                };
+              })
             : entries
                 .filter((e) => !isPlaceholderUrl(e.image_url || e.media_url))
                 .map((e) => ({
                   img: resolveUploadUrl(e.image_url || e.media_url),
                   text: e.title || title,
-                  link: e.redirect_link || null,
+                  link: mediatorLink(e) || e.redirect_link || null,
                 }));
         const valid = mapped.filter((m) => m.img && !isPlaceholderUrl(m.img));
         setItems(valid.length > 0 ? valid : fallbackItems);

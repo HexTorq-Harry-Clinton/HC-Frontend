@@ -36,6 +36,7 @@ export function Spotlight() {
       mediaEndpoint="/Spotlight-Media"
       mediaFk="spotlight_entry_id"
       fallbackLink="/hc-spotlight"
+      detailBase="/hc-spotlight"
       intervalMs={1800}
       hasBorder={true}
       topBorder={true}
@@ -54,6 +55,7 @@ export function StyleByHC() {
       mediaEndpoint="/Style-Collection-Media"
       mediaFk="style_collection_id"
       fallbackLink="/style-by-hc"
+      detailBase="/style-by-hc"
       intervalMs={2000}
       backward={true}
       hasBorder={true}

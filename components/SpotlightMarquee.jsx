@@ -38,6 +38,7 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
             id: m.spotlight_media_id,
             src: resolveUploadUrl(m.media_url),
             caption: titleById[String(m.spotlight_entry_id)] || m.alt_text || "",
+            href: m.spotlight_entry_id ? `/hc-spotlight/${m.spotlight_entry_id}` : "/hc-spotlight",
           }))
           .filter((c) => c.src);
         if (!live) return;
