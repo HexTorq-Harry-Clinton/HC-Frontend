@@ -83,7 +83,7 @@ function uniqueReviews(items) {
 
 // Google Review destination link — set when the Google Business review URL is ready.
 // When empty or under development, clicking the button shows the "Upcoming Update" modal.
-const GOOGLE_REVIEW_URL = "";
+const GOOGLE_REVIEW_URL = "https://www.google.com/search?hl=en-in&q=Harry+Clinton&kgmid=/g/11zx0sb80y#lrd=0x3a5267d549516795:0x91d09e9dd7864313,3,,,,";
 
 export default function HomeTestimonials() {
   const [reviews, setReviews] = useState(INITIAL_REVIEWS);
@@ -156,7 +156,7 @@ export default function HomeTestimonials() {
 
   return (
     <section className="w-full bg-[#faf9f6] py-16 md:py-24 border-y border-neutral-200/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-0">
         <Reveal>
           {/* Header Block: Clean, Simple, Single Section */}
           <div className="text-center max-w-2xl mx-auto mb-10">

@@ -103,7 +103,7 @@ export default function HomeFaqs() {
 
   return (
     <section className="hc-home-faqs w-full bg-white my-12">
-      <div className="mx-auto w-full px-3">
+      <div className="mx-auto w-full px-0">
         <h2 className="mb-6 text-center font-display !text-[24px] md:!text-[32px] !leading-tight font-bold text-neutral-950">
           {title}
         </h2>

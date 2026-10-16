@@ -80,7 +80,7 @@ export default function FeaturedProducts() {
   if (isLoading) {
     return (
       <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-0">
           <div className="w-48 h-8 bg-gray-200 animate-pulse mb-8 mx-auto"></div>
           <div className={`grid grid-cols-2 gap-4 md:gap-6 ${COLS_CLS[cfg.cols] || "md:grid-cols-4"}`}>
             {[...Array(cfg.count)].map((_, i) => (
@@ -98,7 +98,7 @@ export default function FeaturedProducts() {
 
   return (
     <section className="py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-0">
         <SectionHeading
           title={cfg.title}
           sub={cfg.sub}

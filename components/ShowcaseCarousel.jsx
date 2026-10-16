@@ -248,7 +248,7 @@ export default function ShowcaseCarousel({
           -ms-overflow-style: none;
           border-bottom: ${hasBorder ? "10px solid white" : "none"};
            border-top: ${hasBorder && topBorder ? "10px solid white" : "none"};
-          border-left: ${hasBorder ? "10px solid white" : "none"};
+          border-left: none;
           border-right: none;
           height: 100%;
         }

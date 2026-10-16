@@ -117,7 +117,7 @@ export default function TwoRowMarquee({ cards = [], title, href = "/", eyebrow =
   return (
     <section ref={sectionRef} className="overflow-hidden bg-white py-16">
       dgfhjkl
-      <div className="mx-auto mb-8 flex max-w-7xl items-end justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mb-8 flex w-full items-end justify-between px-0">
         <div>
           <p className="eyebrow text-gold-deep">{eyebrow}</p>
            <h2 className="mt-1 font-display text-[18px] font-bold tracking-tight text-neutral-900 md:text-[22px]">

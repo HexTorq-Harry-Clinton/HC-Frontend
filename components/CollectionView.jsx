@@ -160,7 +160,7 @@ export function CollectionCard({ product, showView = true }) {
           <div className="collection-card__overlay">
             <span className="collection-card__subtitle">{subtitle}</span>
           </div>
-          {showView && <span className="collection-card__view" aria-hidden>→</span>}
+          {showView && <span className="collection-card__view">View Product <span aria-hidden>→</span></span>}
         </div>
       </Link>
       <WishlistHeart

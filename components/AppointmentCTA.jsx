@@ -7,7 +7,7 @@ import Reveal from "@/components/Reveal";
 export default function AppointmentCTA() {
   return (
     <section className="w-full bg-[#fbfaf7] py-16 md:py-24 border-y border-neutral-200/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-0">
         <Reveal>
           <div className="relative bg-neutral-950 text-white overflow-hidden shadow-2xl border border-[#c6a15b]/25">
             <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
