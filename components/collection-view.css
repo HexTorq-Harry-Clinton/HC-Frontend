@@ -68,6 +68,18 @@
 .collection-result-count { margin: 22px 0; color: #777; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
 
 .collection-results { display: grid; grid-template-columns: minmax(220px, 25%) minmax(0, 1fr); gap: 30px; }
+.collection-results--full { display: block; }
+.collection-search-wrap { display: flex; align-items: flex-end; gap: 14px; }
+.collection-filter-btn { position: relative; display: inline-flex; flex: 0 0 auto; align-items: center; gap: 8px; padding: 9px 18px; color: #fff; background: #111; border: 1px solid #111; font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; cursor: pointer; transition: background 180ms ease, color 180ms ease; }
+.collection-filter-btn:hover { background: #c6a15b; border-color: #c6a15b; color: #111; }
+.collection-filter-dot { width: 8px; height: 8px; border-radius: 50%; background: #c6a15b; }
+.collection-filter-overlay { position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(8, 7, 7, 0.7); overflow-y: auto; }
+.collection-filter-panel { width: min(480px, 100%); max-height: 88vh; overflow-y: auto; background: #fff; padding: 24px; box-shadow: 0 1.5rem 3rem rgba(0,0,0,.3); }
+.collection-filter-panel label { display: block; margin-bottom: 16px; }
+.collection-filter-panel strong { display: block; margin-bottom: 7px; font-size: 15px; font-weight: 600; }
+.collection-filter-panel select, .collection-filter-panel input { width: 100%; padding: 8px 12px; border: 1px solid #dee2e6; background: #fff; font-size: 15px; }
+.collection-filter-apply { width: 100%; margin-top: 8px; padding: 13px; color: #fff; background: #111; border: 1px solid #111; font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; cursor: pointer; transition: background 180ms ease, color 180ms ease; }
+.collection-filter-apply:hover { background: #c6a15b; border-color: #c6a15b; color: #111; }
 .collection-filters {
   position: sticky;
   top: 84px;

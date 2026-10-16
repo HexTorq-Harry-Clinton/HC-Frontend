@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { generatedColor } from "@/lib/colors";
 import WishlistHeart from "./WishlistHeart";
 import { useCart } from "./CartProvider";
@@ -10,7 +10,22 @@ import "./collection-view.css";
 // Collection catalog markup mirrors the reference CollectionPage template.
 export default function CollectionView({ meta, products, sizes = [], clothTypes = [], colors = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ size: "", clothType: "", color: "", minPrice: "", maxPrice: "" });
+
+  useEffect(() => {
+    if (!showFilters) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setShowFilters(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [showFilters]);
 
   const priceRange = useMemo(() => {
     if (!products.length) return { min: 0, max: 0 };
@@ -65,60 +80,26 @@ export default function CollectionView({ meta, products, sizes = [], clothTypes 
             <span className="collection-kicker">Curated by House of Cavani</span>
             <h2>{meta.title}</h2>
           </div>
-          <label className="collection-search">
-            <i className="bi bi-search" aria-hidden="true" />
-            <span className="collection-visually-hidden">Search this collection</span>
-            <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search collection" />
-          </label>
+          <div className="collection-search-wrap">
+            <label className="collection-search">
+              <i className="bi bi-search" aria-hidden="true" />
+              <span className="collection-visually-hidden">Search this collection</span>
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search collection" />
+            </label>
+            <button type="button" onClick={() => setShowFilters(true)} className="collection-filter-btn">
+              <i className="bi bi-sliders" aria-hidden="true" /> Filters
+              {(filters.size || filters.clothType || filters.color || filters.minPrice || filters.maxPrice) && (
+                <span className="collection-filter-dot" aria-label="Filters active" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="collection-result-count">
           {collectionProducts.length} {collectionProducts.length === 1 ? "piece" : "pieces"}
         </div>
 
-        <div className="collection-results">
-          <aside className="collection-filters">
-            <div className="collection-filters__heading">
-              <h5>Filters</h5>
-              <button type="button" onClick={reset}>Reset</button>
-            </div>
-            {sizes.length > 0 && (
-              <label>
-                <strong>Size</strong>
-                <select value={filters.size} onChange={setFilter("size")}>
-                  <option value="">All sizes</option>
-                  {sizes.map((size) => <option key={size} value={size}>{size}</option>)}
-                </select>
-              </label>
-            )}
-            {clothTypes.length > 0 && (
-              <label>
-                <strong>Fabric</strong>
-                <select value={filters.clothType} onChange={setFilter("clothType")}>
-                  <option value="">All fabrics</option>
-                  {clothTypes.map((cloth) => <option key={cloth} value={cloth}>{cloth}</option>)}
-                </select>
-              </label>
-            )}
-            {colors.length > 0 && (
-              <label>
-                <strong>Color</strong>
-                <select value={filters.color} onChange={setFilter("color")}>
-                  <option value="">All colors</option>
-                  {colors.map((color) => <option key={color} value={color}>{color}</option>)}
-                </select>
-              </label>
-            )}
-            <label>
-              <strong>Price Range</strong>
-              <span className="collection-price-inputs">
-                <input type="number" placeholder="Min" value={filters.minPrice} onChange={setFilter("minPrice")} />
-                <input type="number" placeholder="Max" value={filters.maxPrice} onChange={setFilter("maxPrice")} />
-              </span>
-            </label>
-            <p className="collection-price-range">Range: ₹{priceRange.min.toLocaleString("en-IN")} - ₹{priceRange.max.toLocaleString("en-IN")}</p>
-          </aside>
-
+        <div className="collection-results collection-results--full">
           <div className="collection-products">
             {collectionProducts.length > 0 ? (
               <div className="collection-grid">
@@ -129,6 +110,61 @@ export default function CollectionView({ meta, products, sizes = [], clothTypes 
             )}
           </div>
         </div>
+
+        {showFilters && (
+          <div
+            className="collection-filter-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Collection filters"
+            onClick={() => setShowFilters(false)}
+          >
+            <div className="collection-filter-panel" onClick={(event) => event.stopPropagation()}>
+              <div className="collection-filters__heading">
+                <h5>Filters</h5>
+                <button type="button" onClick={reset}>Reset</button>
+              </div>
+              {sizes.length > 0 && (
+                <label>
+                  <strong>Size</strong>
+                  <select value={filters.size} onChange={setFilter("size")}>
+                    <option value="">All sizes</option>
+                    {sizes.map((size) => <option key={size} value={size}>{size}</option>)}
+                  </select>
+                </label>
+              )}
+              {clothTypes.length > 0 && (
+                <label>
+                  <strong>Fabric</strong>
+                  <select value={filters.clothType} onChange={setFilter("clothType")}>
+                    <option value="">All fabrics</option>
+                    {clothTypes.map((cloth) => <option key={cloth} value={cloth}>{cloth}</option>)}
+                  </select>
+                </label>
+              )}
+              {colors.length > 0 && (
+                <label>
+                  <strong>Color</strong>
+                  <select value={filters.color} onChange={setFilter("color")}>
+                    <option value="">All colors</option>
+                    {colors.map((color) => <option key={color} value={color}>{color}</option>)}
+                  </select>
+                </label>
+              )}
+              <label>
+                <strong>Price Range</strong>
+                <span className="collection-price-inputs">
+                  <input type="number" placeholder="Min" value={filters.minPrice} onChange={setFilter("minPrice")} />
+                  <input type="number" placeholder="Max" value={filters.maxPrice} onChange={setFilter("maxPrice")} />
+                </span>
+              </label>
+              <p className="collection-price-range">Range: ₹{priceRange.min.toLocaleString("en-IN")} - ₹{priceRange.max.toLocaleString("en-IN")}</p>
+              <button type="button" onClick={() => setShowFilters(false)} className="collection-filter-apply">
+                Show {collectionProducts.length} {collectionProducts.length === 1 ? "piece" : "pieces"}
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );
