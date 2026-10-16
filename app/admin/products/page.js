@@ -391,7 +391,7 @@ function ProductWorkspace({ product, onBack }) {
   const [msg, setMsg] = useState("");
   const [refresh, setRefresh] = useState(0);
 
-  const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
+  const [vForm, setVForm] = useState({ sku: "", variant_name: "", size_id: "", sizes: [], cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
   const [editingVariant, setEditingVariant] = useState(null);
   // Workspace create/update ALWAYS live in popups — never inline.
   const [showVariantForm, setShowVariantForm] = useState(false);
@@ -422,7 +422,7 @@ function ProductWorkspace({ product, onBack }) {
   const closeVariantForm = () => {
     setShowVariantForm(false);
     setEditingVariant(null);
-    setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
+    setVForm({ sku: "", variant_name: "", size_id: "", sizes: [], cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
   };
   const [vMediaByVariant, setVMediaByVariant] = useState({}); // {variant_id: [media, ...]}
   const [mAlt, setMAlt] = useState("");
@@ -621,35 +621,56 @@ function ProductWorkspace({ product, onBack }) {
       setMsg("SKU is required.");
       return;
     }
-    const payload = {
+    // Bulk mode (add only): one variant per ticked size, same price/stock/
+    // color/cloth, SKU auto-suffixed per size. Sizes share the color's media.
+    const bulkSizes = !editingVariant && Array.isArray(vForm.sizes) && vForm.sizes.length > 1 ? vForm.sizes : null;
+    const sizeNameFor = (id) => sizes.find((s) => String(s.size_id) === String(id))?.size_name || "";
+    const buildPayload = (sizeId, sku) => ({
       product_id: pid,
-      sku: vForm.sku,
-      variant_name: vForm.variant_name || null,
-      size_id: vForm.size_id || null,
+      sku,
+      variant_name: vForm.variant_name
+        ? (bulkSizes ? `${vForm.variant_name} ${sizeNameFor(sizeId)}`.trim() : vForm.variant_name)
+        : null,
+      size_id: sizeId || null,
       cloth_type_id: vForm.cloth_type_id || null,
       price: Number(vForm.price) || 0,
       discount_type: vForm.discount_type && vForm.discount_type !== "none" ? vForm.discount_type : null,
       discount_value: vForm.discount_type && vForm.discount_type !== "none" ? (Number(vForm.discount_value) || 0) : null,
       stock_qty: Number(vForm.stock_qty) || 0,
-    };
+    });
     try {
       let variantId = editingVariant;
       if (editingVariant) {
         await apiFetch("/Products-Variants", {
           method: "PUT",
-          body: { product_variant_id: editingVariant, ...payload, luu: "ADMIN_PORTAL" },
+          body: { product_variant_id: editingVariant, ...buildPayload(vForm.size_id, vForm.sku), luu: "ADMIN_PORTAL" },
         });
         setMsg("Variant updated.");
+      } else if (bulkSizes) {
+        const baseSku = vForm.sku.replace(/-(S|M|L|XL|XXL|[0-9]+)$/i, "");
+        const createdIds = [];
+        for (const sizeId of bulkSizes) {
+          const sku = `${baseSku}-${sizeNameFor(sizeId)}`.replace(/\s+/g, "");
+          const created = await apiFetch("/Products-Variants", {
+            method: "POST",
+            body: { ...buildPayload(sizeId, sku), rcu: "ADMIN_PORTAL" },
+          });
+          const id = unwrap(created)?.product_variant_id || created?.data?.product_variant_id;
+          if (id) createdIds.push(id);
+        }
+        for (const id of createdIds) await syncVariantColor(id, vForm.color);
+        setMsg(`${createdIds.length} size variants added.`);
+        variantId = null;
       } else {
         const created = await apiFetch("/Products-Variants", {
           method: "POST",
-          body: { ...payload, rcu: "ADMIN_PORTAL" },
+          body: { ...buildPayload(vForm.size_id || (Array.isArray(vForm.sizes) ? vForm.sizes[0] : null), vForm.sku), rcu: "ADMIN_PORTAL" },
         });
         variantId = unwrap(created)?.product_variant_id || created?.data?.product_variant_id;
         setMsg("Variant added.");
       }
-      await syncVariantColor(variantId, vForm.color);
-      setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
+      if (variantId) await syncVariantColor(variantId, vForm.color);
+      setVForm({ sku: "", variant_name: "", size_id: "", sizes: [], cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
       setEditingVariant(null);
       setShowVariantForm(false);
       reload();
@@ -662,7 +683,7 @@ function ProductWorkspace({ product, onBack }) {
     setEditingVariant(v.product_variant_id);
     setVForm({
       sku: v.sku || "", variant_name: v.variant_name || "",
-      size_id: v.size_id || "", cloth_type_id: v.cloth_type_id || "",
+      size_id: v.size_id || "", sizes: [], cloth_type_id: v.cloth_type_id || "",
       color: colorForVariant(v.product_variant_id),
       price: v.price ?? "", stock_qty: v.stock_qty ?? "",
       discount_type: v.discount_type || "none", discount_value: v.discount_value ?? "",
@@ -684,7 +705,7 @@ function ProductWorkspace({ product, onBack }) {
     }).catch(() => null);
     if (editingVariant === v.product_variant_id) {
       setEditingVariant(null);
-      setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", price: "", stock_qty: "" });
+      setVForm({ sku: "", variant_name: "", size_id: "", sizes: [], cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
     }
     reload();
   };
@@ -780,25 +801,36 @@ function ProductWorkspace({ product, onBack }) {
     if (!vPreview?.file || !vPreview.variantId) return;
     const file = vPreview.file;
     const variantId = vPreview.variantId;
+    // Media belongs to the COLOR, not the size: the same images serve every
+    // size of this colorway (only SKU + stock differ per size). Fan the
+    // upload out to all sibling variants sharing this color.
+    const color = colorForVariant(variantId);
+    const targets = color
+      ? variants.filter((v) => colorForVariant(v.product_variant_id).toLowerCase() === color.toLowerCase())
+      : variants.filter((v) => v.product_variant_id === variantId);
+    const targetIds = [...new Set(targets.map((v) => v.product_variant_id))];
     setVUploadingId(variantId);
     setMsg("");
     try {
       const url = await upload(file);
-      await apiFetch("/Products-Media", {
-        method: "POST",
-        body: {
-          product_id: pid,
-          product_variant_id: variantId,
-          media_type: detectMediaType(file),
-          media_url: url,
-          media_role: vRole,
-          alt_text: `${product.product_name} - ${variantId}`,
-          rcu: "ADMIN_PORTAL",
-        },
-      });
+      const mediaType = detectMediaType(file);
+      await Promise.all(targetIds.map((id) =>
+        apiFetch("/Products-Media", {
+          method: "POST",
+          body: {
+            product_id: pid,
+            product_variant_id: id,
+            media_type: mediaType,
+            media_url: url,
+            media_role: vRole,
+            alt_text: `${product.product_name} - ${color || id}`,
+            rcu: "ADMIN_PORTAL",
+          },
+        })
+      ));
       clearVariantPreview();
       setVRole("front");
-      setMsg("Variant image uploaded.");
+      setMsg(targetIds.length > 1 ? `Image shared across ${targetIds.length} sizes of ${color}.` : "Variant image uploaded.");
       reload();
     } catch (err) {
       setMsg(friendlyError(err, "Variant upload failed."));
@@ -1070,7 +1102,7 @@ function ProductWorkspace({ product, onBack }) {
         <button
           type="button"
           onClick={() => {
-             setVForm({ sku: "", variant_name: "", size_id: "", cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
+             setVForm({ sku: "", variant_name: "", size_id: "", sizes: [], cloth_type_id: "", color: "", price: "", discount_type: "none", discount_value: "", stock_qty: "" });
             setEditingVariant(null);
             setShowVariantForm(true);
           }}
@@ -1093,12 +1125,35 @@ function ProductWorkspace({ product, onBack }) {
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               <input value={vForm.sku} onChange={(e) => setVForm((f) => ({ ...f, sku: e.target.value }))} required placeholder="SKU" className={input} />
               <input value={vForm.variant_name} onChange={(e) => setVForm((f) => ({ ...f, variant_name: e.target.value }))} placeholder="Variant Name" className={input} />
-              <select value={vForm.size_id} onChange={(e) => setVForm((f) => ({ ...f, size_id: e.target.value }))} className={input}>
-                <option value="">Size — none —</option>
-                {sizes.map((s) => (
-                  <option key={s.size_id} value={s.size_id}>{s.size_name}</option>
-                ))}
-              </select>
+              {editingVariant ? (
+                <select value={vForm.size_id} onChange={(e) => setVForm((f) => ({ ...f, size_id: e.target.value }))} className={input}>
+                  <option value="">Size — none —</option>
+                  {sizes.map((s) => (
+                    <option key={s.size_id} value={s.size_id}>{s.size_name}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className={`${input} max-h-28 overflow-y-auto`}>
+                  <p className="mb-1 text-xs font-bold uppercase tracking-wider text-neutral-500">Sizes — tick all to create</p>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {sizes.map((s) => (
+                      <label key={s.size_id} className="inline-flex cursor-pointer items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={(vForm.sizes || []).includes(s.size_id)}
+                          onChange={(e) => setVForm((f) => ({
+                            ...f,
+                            sizes: e.target.checked
+                              ? [...(f.sizes || []), s.size_id]
+                              : (f.sizes || []).filter((id) => id !== s.size_id),
+                          }))}
+                        />
+                        {s.size_name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
                <select value={vForm.cloth_type_id} onChange={(e) => setVForm((f) => ({ ...f, cloth_type_id: e.target.value }))} className={input}>
                 <option value="">Cloth Type — none —</option>
                 {clothTypes.map((c) => (
