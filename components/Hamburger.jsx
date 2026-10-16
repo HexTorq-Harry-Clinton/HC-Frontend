@@ -16,11 +16,11 @@ const COLLECTIONS = [
 ];
 
 const SERVICES = [
-  { label: "Services", to: "/services" },
+  // { label: "Services", to: "/services" },
   { label: "Embroidery", to: "/embroidery" },
   { label: "Alterations", to: "/alterations" },
   { label: "Personal Styling", to: "/personal-styling" },
-  { label: "Custom Tailoring", to: "/custom-tailoring" },
+  // { label: "Custom Tailoring", to: "/custom-tailoring" },
 ];
 
 const FALLBACK_CATEGORIES = [
