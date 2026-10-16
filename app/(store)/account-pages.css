@@ -6,6 +6,12 @@
   font-family: "MAINLUX", Arial, sans-serif;
 }
 .account-page h2 { margin: 0 0 24px; font-size: 32px; font-weight: 400; }
+.account-page > h2 { padding-bottom: 16px; border-bottom: 2px solid #212529; }
+/* Addresses: bold, bigger field labels + card titles */
+.addresses-page .account-form .field > span { color: #212529; font-size: 17px; font-weight: 700; }
+.addresses-page .account-form legend { font-size: 17px !important; font-weight: 700; }
+.addresses-page .account-form .form-check-label { font-weight: 700; }
+.addresses-page .account-list-card p.font-semibold { color: #212529; font-size: 18px; font-weight: 700; }
 .account-page h5 { font-size: 20px; font-weight: 500; }
 .account-page .account-alert { margin-bottom: 24px; padding: 12px; font-size: 15px; }
 .account-page .account-alert-error { background: #f8d7da; color: #842029; }
