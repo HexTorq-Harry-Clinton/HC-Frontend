@@ -122,7 +122,9 @@ export default function Hamburger({ categories, onActiveChange }) {
           </div>
           <div className="Hdropdown-image-box">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/vision_title.jpeg" alt="The Vision" className="Hdropdown-image" />
+            {isActive && (
+              <img src="/brand/vision_title.jpeg" alt="" aria-hidden="true" loading="lazy" decoding="async" className="Hdropdown-image" />
+            )}
             <div className="Hdropdown-overlay">
               <h4>The Vision</h4>
               <button onClick={() => go("/the-vision")}>Explore</button>

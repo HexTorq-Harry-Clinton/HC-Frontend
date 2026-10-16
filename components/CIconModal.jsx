@@ -19,6 +19,61 @@ export default function CIconModal({ isOpen, onClose }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [dateSlots, setDateSlots] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
+  const today = new Date();
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const dayKey = (y, m, d) => `${y}-${pad2(m + 1)}-${pad2(d)}`;
+  // API slot_date is ISO ("2026-02-05T00:00:00.000Z") — date part only.
+  const slotDayKey = (slot) => String(slot.slot_date || "").slice(0, 10);
+  const availDays = new Set(dateSlots.map(slotDayKey).filter(Boolean));
+  const slotForDay = (key) => dateSlots.find((s) => slotDayKey(s) === key);
+
+  const jumpToFirstSlot = (slots) => {
+    const first = (slots || []).map(slotDayKey).filter(Boolean).sort()[0];
+    if (first) {
+      const [y, m] = first.split("-").map(Number);
+      setCalYear(y);
+      setCalMonth(m - 1);
+    }
+  };
+
+  const shiftMonth = (delta) => {
+    const next = new Date(calYear, calMonth + delta, 1);
+    const now = new Date();
+    if (delta < 0 && (next.getFullYear() < now.getFullYear() || (next.getFullYear() === now.getFullYear() && next.getMonth() < now.getMonth()))) return;
+    setCalYear(next.getFullYear());
+    setCalMonth(next.getMonth());
+  };
+
+  const monthCells = () => {
+    const firstWeekday = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < firstWeekday; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    return cells;
+  };
+
+  const formatSlotTime = (iso) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    let h = d.getUTCHours();
+    const m = pad2(d.getUTCMinutes());
+    const suffix = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h}:${m} ${suffix}`;
+  };
+
+  const timesForDate = timeSlots.filter(
+    (t) =>
+      String(t.appointment_date_slot_id) === String(formData.dateSlotId) &&
+      t.isavailable !== false &&
+      t.isbooked !== true &&
+      t.isactive !== false &&
+      t.isdeleted !== true
+  );
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -48,7 +103,9 @@ export default function CIconModal({ isOpen, onClose }) {
         if (!live) return;
         const dates = Array.isArray(dateRes) ? dateRes : dateRes?.data || [];
         const times = Array.isArray(timeRes) ? timeRes : timeRes?.data || [];
-        setDateSlots(dates.filter((d) => d.isavailable !== false && d.isactive !== false));
+        const liveDates = dates.filter((d) => d.isavailable !== false && d.isactive !== false && d.isdeleted !== true);
+        setDateSlots(liveDates);
+        jumpToFirstSlot(liveDates);
         setTimeSlots(times.filter((t) => t.isavailable !== false && t.isactive !== false));
       } catch (err) {
         if (live) setError(err.message || "Failed to load appointment slots.");
@@ -81,6 +138,10 @@ export default function CIconModal({ isOpen, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!formData.dateSlotId) {
+      setError("Please choose an appointment date from the calendar.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       await apiFetch("/Custom-Appointments", {
@@ -217,32 +278,57 @@ export default function CIconModal({ isOpen, onClose }) {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="dateSlotId" className="form-label">
+                  <div className="form-group appointment-calendar-group">
+                    <span className="form-label" id="appointment-date-label">
                       Appointment Date
-                    </label>
-                    <select
-                      className="form-control"
-                      id="dateSlotId"
-                      name="dateSlotId"
-                      value={formData.dateSlotId}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Select a date</option>
-                      {dateSlots.map((slot) => (
-                        <option key={slot.appointment_date_slot_id} value={slot.appointment_date_slot_id}>
-                          {slot.slot_date
-                            ? new Date(slot.slot_date).toLocaleDateString("en-IN", {
-                                weekday: "short",
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })
-                            : slot.appointment_date_slot_id}
-                        </option>
-                      ))}
-                    </select>
+                    </span>
+                    <div className="appointment-calendar" role="group" aria-labelledby="appointment-date-label">
+                      <div className="appointment-calendar-nav">
+                        <button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month" className="appointment-calendar-arrow">‹</button>
+                        <span className="appointment-calendar-month">
+                          {new Date(calYear, calMonth, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+                        </span>
+                        <button type="button" onClick={() => shiftMonth(1)} aria-label="Next month" className="appointment-calendar-arrow">›</button>
+                      </div>
+                      <div className="appointment-calendar-grid">
+                        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                          <span key={i} className="appointment-calendar-dow">{d}</span>
+                        ))}
+                        {monthCells().map((day, i) => {
+                          if (!day) return <span key={`x-${i}`} />;
+                          const key = dayKey(calYear, calMonth, day);
+                          const slot = slotForDay(key);
+                          const isSelected = slot && String(slot.appointment_date_slot_id) === String(formData.dateSlotId);
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              disabled={!slot}
+                              onClick={() => {
+                                setFormData((f) => ({ ...f, dateSlotId: slot.appointment_date_slot_id, timeSlotId: "" }));
+                                setError("");
+                              }}
+                              aria-label={`${day} ${new Date(calYear, calMonth, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}${slot ? "" : " (unavailable)"}`}
+                              aria-pressed={Boolean(isSelected)}
+                              className={`appointment-calendar-day${isSelected ? " appointment-calendar-day-selected" : ""}`}
+                            >
+                              {day}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {formData.dateSlotId ? (
+                        <p className="appointment-calendar-chosen">
+                          {(() => {
+                            const s = dateSlots.find((x) => String(x.appointment_date_slot_id) === String(formData.dateSlotId));
+                            if (!s) return "";
+                            return new Date(`${slotDayKey(s)}T00:00:00`).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                          })()}
+                        </p>
+                      ) : (
+                        <p className="appointment-calendar-hint">Only highlighted dates are available — pick one.</p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="form-group">
@@ -256,14 +342,18 @@ export default function CIconModal({ isOpen, onClose }) {
                       value={formData.timeSlotId}
                       onChange={handleChange}
                       required
+                      disabled={!formData.dateSlotId}
                     >
-                      <option value="">Select a time</option>
-                      {timeSlots.map((slot) => (
+                      <option value="">{formData.dateSlotId ? "Select a time" : "Pick a date first"}</option>
+                      {timesForDate.map((slot) => (
                         <option key={slot.appointment_time_slot_id} value={slot.appointment_time_slot_id}>
-                          {slot.slot_start_time || ""} - {slot.slot_end_time || ""}
+                          {formatSlotTime(slot.slot_start_time)}{slot.slot_end_time ? ` - ${formatSlotTime(slot.slot_end_time)}` : ""}
                         </option>
                       ))}
                     </select>
+                    {formData.dateSlotId && timesForDate.length === 0 && (
+                      <p className="appointment-calendar-hint">No time slots left for this date — please pick another day.</p>
+                    )}
                   </div>
 
                   <button
@@ -454,6 +544,112 @@ export default function CIconModal({ isOpen, onClose }) {
           box-shadow: 4px 4px 0 rgba(23, 20, 17, 0.12);
         }
 
+        .appointment-calendar-group {
+          grid-column: 1 / -1;
+        }
+
+        .appointment-calendar {
+          border: 1px solid #bdb4a7;
+          background: #fffdf9;
+          box-shadow: inset 3px 3px 0 rgba(23, 20, 17, 0.035);
+          padding: 0.9rem 1rem 1rem;
+        }
+
+        .appointment-calendar-nav {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 0.6rem;
+        }
+
+        .appointment-calendar-month {
+          font-size: 0.8rem;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #171411;
+        }
+
+        .appointment-calendar-arrow {
+          width: 34px;
+          height: 34px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+          line-height: 1;
+          color: #171411;
+          background: transparent;
+          border: 1px solid #bdb4a7;
+          cursor: pointer;
+          transition: background 160ms ease;
+        }
+
+        .appointment-calendar-arrow:hover {
+          background: #efe8da;
+        }
+
+        .appointment-calendar-grid {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+          gap: 4px;
+        }
+
+        .appointment-calendar-dow {
+          text-align: center;
+          font-size: 0.65rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          color: #999087;
+          padding: 4px 0;
+        }
+
+        .appointment-calendar-day {
+          aspect-ratio: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.85rem;
+          color: #c9c2b8;
+          background: transparent;
+          border: 1px solid transparent;
+          border-radius: 50%;
+          cursor: default;
+          padding: 0;
+        }
+
+        .appointment-calendar-day:not(:disabled) {
+          color: #171411;
+          font-weight: 700;
+          background: #efe6d2;
+          border-color: #a8823f;
+          cursor: pointer;
+          transition: background 160ms ease, color 160ms ease;
+        }
+
+        .appointment-calendar-day:not(:disabled):hover {
+          background: #e3d3ae;
+        }
+
+        .appointment-calendar-day-selected {
+          background: #171411 !important;
+          border-color: #171411 !important;
+          color: #f6f1e8 !important;
+        }
+
+        .appointment-calendar-chosen {
+          margin: 0.7rem 0 0;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #171411;
+        }
+
+        .appointment-calendar-hint {
+          margin: 0.7rem 0 0;
+          font-size: 0.78rem;
+          color: #625c55;
+        }
+
         .alert-danger {
           grid-column: 1 / -1;
           padding: 0.75rem 1rem;
@@ -581,6 +777,29 @@ export default function CIconModal({ isOpen, onClose }) {
           .appointment-modal-backdrop,
           .appointmentForm .modal-content {
             animation: none;
+          }
+        }
+
+        /* iOS/iPadOS: the 3D tilt + perspective misplaces the native
+           date-picker callout so it overlaps the fields below. Drop the
+           tilt on touch devices and keep inputs at 16px to stop iOS
+           auto-zoom from shifting the popup. */
+        @media (pointer: coarse) {
+          .appointment-modal-backdrop {
+            perspective: none;
+          }
+
+          .appointmentForm .modal-content {
+            transform: none;
+          }
+
+          .appointmentForm .form-control {
+            font-size: 16px;
+          }
+
+          .appointmentForm input[type="date"].form-control {
+            position: relative;
+            min-height: 50px;
           }
         }
       `}</style>
