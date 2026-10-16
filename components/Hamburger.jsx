@@ -120,8 +120,8 @@ export default function Hamburger({ categories, onActiveChange }) {
               ))}
             </ul>
           </div>
+          {/* Vision tile temporarily hidden — empty slot kept as placeholder
           <div className="Hdropdown-image-box">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             {isActive && (
               <img src="/brand/vision_title.jpeg" alt="" aria-hidden="true" loading="lazy" decoding="async" className="Hdropdown-image" />
             )}
@@ -130,6 +130,8 @@ export default function Hamburger({ categories, onActiveChange }) {
               <button onClick={() => go("/the-vision")}>Explore</button>
             </div>
           </div>
+          */}
+          <div className="Hdropdown-image-box Hdropdown-image-box--empty" aria-hidden="true" />
         </div>
       </div>
       <style jsx>{`
