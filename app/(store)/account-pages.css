@@ -6,7 +6,7 @@
   font-family: "MAINLUX", Arial, sans-serif;
 }
 .account-page h2 { margin: 0 0 24px; font-size: 32px; font-weight: 400; }
-.account-page > h2 { padding-bottom: 16px; border-bottom: 2px solid #212529; }
+.account-page > h2 { padding-bottom: 16px; border-bottom: 2px solid #212529; text-align: center; }
 /* Addresses: bold, bigger field labels + card titles */
 .addresses-page .account-form .field > span { color: #212529; font-size: 17px; font-weight: 700; }
 .addresses-page .account-form legend { font-size: 17px !important; font-weight: 700; }

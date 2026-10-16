@@ -9,9 +9,11 @@ const emptyAddress = {
   address_label: "Home",
   house_no_floor: "",
   building_block: "",
+  street_area: "",
   area_name: "",
   full_name: "",
   mobile_number: "",
+  alt_phone: "",
   emailid: "",
   city: "",
   state: "",
@@ -68,15 +70,22 @@ export default function AddressesPage() {
     setMessage({ text: "", isError: false });
     try {
       const uid = currentUid();
+      const streetArea = form.street_area.trim();
+      const landmarkBase = form.landmark.trim();
+      const altPhone = form.alt_phone.trim();
       const payload = {
         ...form,
+        // New frontend fields fold into legacy backend columns (no schema change).
+        area_name: streetArea,
+        landmark: altPhone ? `${landmarkBase} | Alternate phone: ${altPhone}` : landmarkBase,
         // Keep legacy columns populated for older order/admin records.
-        house_street: `${form.house_no_floor}, ${form.building_block}`.trim(),
-        landmark: form.area_name,
+        house_street: `${form.house_no_floor}, ${form.building_block}, ${streetArea}`.trim(),
         emailid: form.emailid.trim(),
         user_id: uid,
         isdefault: form.isdefault ? 1 : 0,
       };
+      delete payload.street_area;
+      delete payload.alt_phone;
       if (editingId) {
         await apiFetch("/Addresses", {
           method: "PUT", body: { address_id: editingId, ...payload, luu: "website" },
@@ -99,19 +108,22 @@ export default function AddressesPage() {
   };
 
   const handleEdit = (a) => {
+    const [savedLandmark, savedAlt] = String(a.landmark || "").split(" | Alternate phone: ");
     setForm({
       address_label: a.address_label || "Home",
       house_no_floor: a.house_no_floor || a.house_street || "",
       building_block: a.building_block || "",
-      area_name: a.area_name || a.landmark || "",
+      street_area: a.area_name || "",
+      area_name: a.area_name || "",
       full_name: a.full_name || "",
       mobile_number: a.mobile_number || "",
+      alt_phone: (savedAlt || "").trim(),
       emailid: a.emailid || a.email_id || a.email || "",
       house_street: a.house_street || "",
       city: a.city || "",
       state: a.state || "",
       pincode: a.pincode || "",
-      landmark: a.landmark || "",
+      landmark: (savedLandmark || "").trim(),
       isdefault: a.isdefault === 1 || a.isdefault === true,
     });
     setEditingId(a.address_id);
@@ -173,8 +185,12 @@ export default function AddressesPage() {
                 <input type="text" value={form.building_block} onChange={set("building_block")} required className={inputCls} placeholder="Building name, block or tower" />
               </label>
               <label className="field">
-                <span>Landmark &amp; area name</span>
-                <input type="text" value={form.area_name} onChange={set("area_name")} required className={inputCls} placeholder="Nearby landmark and locality" />
+                <span>Street and area name</span>
+                <input type="text" value={form.street_area} onChange={set("street_area")} required className={inputCls} placeholder="Street and area name" />
+              </label>
+              <label className="field">
+                <span>Landmark</span>
+                <input type="text" value={form.landmark} onChange={set("landmark")} required className={inputCls} placeholder="Nearby landmark and locality" />
               </label>
             </fieldset>
             <fieldset>
@@ -189,8 +205,8 @@ export default function AddressesPage() {
                   <input type="tel" value={form.mobile_number} onChange={set("mobile_number")} required className={inputCls} />
                 </label>
                 <label className="field">
-                  <span>Email (optional)</span>
-                  <input type="email" value={form.emailid} onChange={set("emailid")} className={inputCls} />
+                  <span>Email</span>
+                  <input type="email" value={form.emailid} onChange={set("emailid")} required className={inputCls} />
                 </label>
               </div>
             </fieldset>
@@ -210,8 +226,8 @@ export default function AddressesPage() {
                 <input type="text" value={form.pincode} onChange={set("pincode")} required className={inputCls} />
               </label>
               <label className="field">
-                <span>Landmark</span>
-                <input type="text" value={form.landmark} onChange={set("landmark")} className={inputCls} />
+                <span>Alternate phone number</span>
+                <input type="tel" value={form.alt_phone} onChange={set("alt_phone")} className={inputCls} placeholder="Alternate phone number (optional)" />
               </label>
             </div>
             <div className="form-check mb-3">
@@ -248,7 +264,8 @@ export default function AddressesPage() {
               <p className="font-semibold">{a.address_label || "Address"}</p>
               <p>{a.house_no_floor || a.house_street}</p>
               {a.building_block && <p>{a.building_block}</p>}
-              <p>{a.area_name || a.landmark}</p>
+              {a.area_name && <p>{a.area_name}</p>}
+              {a.landmark && a.landmark !== a.area_name && <p>{a.landmark}</p>}
               <p>{a.city}, {a.state} {a.pincode}</p>
                       <p>{a.mobile_number}</p>
                       {a.emailid && <p>{a.emailid}</p>}
