@@ -99,6 +99,7 @@
 .collection-price-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .collection-price-range { margin: 4px 0 0; color: #6c757d; font-size: 12px; }
 
+.collection-products { max-width: 80rem; margin: 0 auto; padding: 0 12px; }
 .collection-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 48px 20px; }
 .collection-grid--four { grid-template-columns: repeat(4,minmax(0,1fr)); }
 .category-view--compact .collection-grid { gap: 10px; }
