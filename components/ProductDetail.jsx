@@ -242,7 +242,7 @@ export default function ProductDetail({ product }) {
       <div className="mx-auto w-full px-0 py-0 md:py-8">
         <div className="grid items-start gap-0 md:grid-cols-2 md:gap-10">
           {/* LEFT: smooth-scroll gallery stack, pure images */}
-          <div className="scroll-smooth">
+          <div className="scroll-smooth space-y-2 py-2 md:space-y-3 md:py-3">
             {currentGallery.map((src, i) => (
               <div key={`${selectedColor}-${src}-${i}`} className="relative w-full overflow-hidden bg-neutral-100">
                 {isVideoSrc(src) ? (
@@ -267,28 +267,6 @@ export default function ProductDetail({ product }) {
               </div>
             ))}
 
-            {/* Description + specs under the gallery */}
-            <div className="px-4 py-8">
-              {product.fullDescription && product.fullDescription !== product.description && (
-                <>
-                  <h5 className="text-[12px] font-bold uppercase tracking-[0.2em] text-neutral-900">Description</h5>
-                  <div
-                    className="mt-2 text-[15px] leading-relaxed text-neutral-600"
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }}
-                  />
-                </>
-              )}
-              {specRows.length > 0 && (
-                <dl className="mt-6 border-y border-neutral-200">
-                  {specRows.map(([label, value]) => (
-                    <div key={label} className="grid grid-cols-[minmax(110px,0.42fr)_minmax(0,1fr)] items-start gap-4 border-b border-neutral-200 py-3 last:border-b-0">
-                      <dt className="text-[12px] font-bold uppercase tracking-widest text-neutral-900">{label}</dt>
-                      <dd className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-neutral-600">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-            </div>
           </div>
 
           {/* RIGHT: sticky buy panel */}
@@ -311,7 +289,7 @@ export default function ProductDetail({ product }) {
               {/* Price row: MRP + final + % badge + tax note */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {displayHasDiscount && (
-                  <span className="text-[16px] font-medium text-neutral-400 line-through">{inr(displayMrp)}</span>
+                  <span className="text-[16px] font-medium text-neutral-400 line-through">{inr(displayCompare)}</span>
                 )}
                 <h3 className="text-[24px] font-bold tracking-tight text-neutral-900">{inr(displayPrice)}</h3>
                 {displayHasDiscount && (
@@ -448,6 +426,14 @@ export default function ProductDetail({ product }) {
                       >
                         +
                       </button>
+                      <button
+                        onClick={() => cart?.removeFromCart(bagLine.key || bagLine.id)}
+                        className="border-l border-neutral-300 px-3 text-[15px] text-red-600 transition hover:bg-red-50"
+                        aria-label="Remove from cart"
+                        title="Remove from cart"
+                      >
+                        🗑
+                      </button>
                     </div>
                     <button
                       onClick={() => router.push("/cart")}
@@ -499,31 +485,50 @@ export default function ProductDetail({ product }) {
                 {pinError && <p className="mt-2 text-[12px] font-bold text-red-600">{pinError}</p>}
                 {pinResult && <p className="mt-2 text-[13px] font-semibold text-green-700">{pinResult}</p>}
               </div>
-
-              <button onClick={() => router.back()} className="link-sweep mt-4 block text-[12px] font-bold uppercase tracking-wider">
-                ← Continue Shopping
-              </button>
-
-              <div className="mt-6 divide-y divide-neutral-200 border-y border-neutral-200">
-                <details className="group py-4">
-                  <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900 marker:text-[#c6a15b]">
-                    Shipping & Returns
-                  </summary>
-                  <p className="mt-2 text-[15px] font-normal leading-relaxed text-neutral-600">
-                    Dispatched in 5–7 working days. Complimentary bespoke fitting adjustments included. Easy 7-day returns on unworn pieces.
-                  </p>
-                </details>
-                <details className="group py-4">
-                  <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900 marker:text-[#c6a15b]">
-                    Atelier Care
-                  </summary>
-                  <p className="mt-2 text-[15px] font-normal leading-relaxed text-neutral-600">
-                    Dry clean only. Store on a broad contoured wooden hanger in the breathable garment sleeve provided.
-                  </p>
-                </details>
-              </div>
             </Reveal>
           </div>
+        </div>
+      </div>
+
+      {/* Description + specs, directly above Shipping & Returns */}
+      <div className="mx-auto w-full max-w-7xl px-4 py-10">
+        {product.fullDescription && product.fullDescription !== product.description && (
+          <>
+            <h5 className="text-[12px] font-bold uppercase tracking-[0.2em] text-neutral-900">Description</h5>
+            <div
+              className="mt-2 max-w-4xl text-[15px] leading-relaxed text-neutral-600"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }}
+            />
+          </>
+        )}
+        {specRows.length > 0 && (
+          <dl className="mt-6 border-y border-neutral-200">
+            {specRows.map(([label, value]) => (
+              <div key={label} className="grid grid-cols-[minmax(110px,0.42fr)_minmax(0,1fr)] items-start gap-4 border-b border-neutral-200 py-3 last:border-b-0">
+                <dt className="text-[12px] font-bold uppercase tracking-widest text-neutral-900">{label}</dt>
+                <dd className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-neutral-600">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <div className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
+          <details className="group py-4">
+            <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900 marker:text-[#c6a15b]">
+              Shipping & Returns
+            </summary>
+            <p className="mt-2 max-w-4xl text-[15px] font-normal leading-relaxed text-neutral-600">
+              Dispatched in 5–7 working days. Complimentary bespoke fitting adjustments included. Easy 7-day returns on unworn pieces.
+            </p>
+          </details>
+          <details className="group py-4">
+            <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900 marker:text-[#c6a15b]">
+              Atelier Care
+            </summary>
+            <p className="mt-2 max-w-4xl text-[15px] font-normal leading-relaxed text-neutral-600">
+              Dry clean only. Store on a broad contoured wooden hanger in the breathable garment sleeve provided.
+            </p>
+          </details>
         </div>
       </div>
 
