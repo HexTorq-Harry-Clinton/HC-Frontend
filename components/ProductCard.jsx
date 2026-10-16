@@ -76,16 +76,21 @@ export default function ProductCard({ product, index = 0 }) {
         <p className="link-sweep inline text-base font-medium">{product.name}</p>
         <p className="mt-1 flex items-center justify-center gap-2 text-base font-bold">
           <span>{inr(product.price)}</span>
-          {product.hasDiscount && Number(product.originalPrice) > Number(product.price) && (
-            <>
-              <span className="text-sm font-medium text-neutral-400 line-through">{inr(product.originalPrice)}</span>
-              {product.discountPct > 0 && (
-                <span className="bg-green-700 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                  {product.discountPct}% off
-                </span>
-              )}
-            </>
-          )}
+          {(() => {
+            const compare = Number(product.originalPrice) > Number(product.price) ? Number(product.originalPrice) : null;
+            if (!compare) return null;
+            const pct = Math.round(((compare - Number(product.price)) / compare) * 100);
+            return (
+              <>
+                <span className="text-sm font-medium text-neutral-400 line-through">{inr(compare)}</span>
+                {pct > 0 && (
+                  <span className="bg-green-700 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                    {pct}% off
+                  </span>
+                )}
+              </>
+            );
+          })()}
         </p>
       </Link>
     </motion.div>

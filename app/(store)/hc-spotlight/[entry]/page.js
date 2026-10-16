@@ -39,7 +39,7 @@ export default async function HCSpotlightDetailPage({ params }) {
       rating={rating}
       featuredReview={pickFeaturedReview(reviews)}
       related={related}
-      relatedHeading="Try it yourself"
+      relatedHeading="Explore more styles"
     />
   );
 }

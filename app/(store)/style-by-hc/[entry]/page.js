@@ -39,7 +39,7 @@ export default async function StyleByHCDetailPage({ params }) {
       rating={rating}
       featuredReview={pickFeaturedReview(reviews)}
       related={related}
-      relatedHeading="Complete the look"
+      relatedHeading="Explore more styles"
     />
   );
 }
