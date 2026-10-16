@@ -34,6 +34,11 @@ export default function ProductDetail({ product }) {
   const [pin, setPin] = useState("");
   const [pinResult, setPinResult] = useState("");
   const [pinError, setPinError] = useState("");
+  const [infoTab, setInfoTab] = useState("Description");
+  const [showShare, setShowShare] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const INFO_TABS = ["Description", "Details & Composition", "Shipping & Returns", "Atelier Care"];
 
   useEffect(() => {
     if (!showSizeChart) return undefined;
@@ -210,6 +215,60 @@ export default function ProductDetail({ product }) {
     router.push("/checkout");
   };
 
+  const shareText = `${displayTitle} - ${inr(displayPrice)}${product.description ? `\n${product.description}` : ""}`;
+  const shareUrl = () => (typeof window !== "undefined" ? window.location.href : "");
+
+  const sharePhotoFile = async () => {
+    try {
+      const src = currentGallery[0];
+      if (!src || src.startsWith("data:")) return null;
+      const res = await fetch(src);
+      const blob = await res.blob();
+      const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+      return new File([blob], `${activeSlug || "product"}.${ext}`, { type: blob.type });
+    } catch {
+      return null;
+    }
+  };
+
+  const nativeShare = async () => {
+    const url = shareUrl();
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        const file = await sharePhotoFile();
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: displayTitle, text: shareText, url, files: [file] });
+        } else {
+          await navigator.share({ title: displayTitle, text: shareText, url });
+        }
+        return true;
+      }
+    } catch (err) {
+      if (err?.name === "AbortError") return true;
+    }
+    return false;
+  };
+
+  const handleShareClick = async () => {
+    const shared = await nativeShare();
+    if (!shared) setShowShare((s) => !s);
+  };
+
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl()}`);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = `${shareText}\n${shareUrl()}`;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const checkPin = () => {
     const value = pin.trim();
     if (!/^[1-9][0-9]{5}$/.test(value)) {
@@ -274,10 +333,58 @@ export default function ProductDetail({ product }) {
             <Reveal>
               <div className="flex items-start justify-between gap-3">
                 <h1 className="font-display text-[28px] font-bold leading-tight text-neutral-950 md:text-[32px]">{displayTitle}</h1>
-                <WishlistHeart
-                  product={{ id: activeId, name: displayTitle, price: displayPrice, image: currentGallery[0] }}
-                  className="mt-1 shrink-0 border border-neutral-300 px-3.5 py-2.5 text-lg transition hover:border-[#c6a15b]"
-                />
+                <div className="mt-1 flex shrink-0 items-center gap-1">
+                  <WishlistHeart
+                    product={{ id: activeId, name: displayTitle, price: displayPrice, image: currentGallery[0] }}
+                    className="shrink-0 px-2 py-2 text-xl transition hover:text-[#c6a15b]"
+                  />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={handleShareClick}
+                      aria-label="Share this product"
+                      title="Share"
+                      className="px-2 py-2 text-xl transition hover:text-[#c6a15b]"
+                    >
+                      ⇪
+                    </button>
+                    {showShare && (
+                      <div className="absolute right-0 top-full z-30 mt-2 w-52 border border-neutral-200 bg-white p-2 shadow-xl">
+                        <a
+                          href={`https://wa.me/?text=${encodeURIComponent(`${shareText}\n${shareUrl()}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-3 py-2.5 text-[12px] font-bold uppercase tracking-wider text-neutral-900 transition hover:bg-neutral-100"
+                        >
+                          WhatsApp
+                        </a>
+                        <a
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl())}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-3 py-2.5 text-[12px] font-bold uppercase tracking-wider text-neutral-900 transition hover:bg-neutral-100"
+                        >
+                          Facebook
+                        </a>
+                        <a
+                          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${shareText}\n${shareUrl()}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-3 py-2.5 text-[12px] font-bold uppercase tracking-wider text-neutral-900 transition hover:bg-neutral-100"
+                        >
+                          X
+                        </a>
+                        <button
+                          type="button"
+                          onClick={copyShareLink}
+                          className="block w-full px-3 py-2.5 text-left text-[12px] font-bold uppercase tracking-wider text-neutral-900 transition hover:bg-neutral-100"
+                        >
+                          {copied ? "Copied ✓" : "Copy Link"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <p className="mt-1 text-[12px] uppercase tracking-[0.18em] text-neutral-500">
                 {product.description || product.subtitle || "Harry Clinton"}
@@ -477,50 +584,74 @@ export default function ProductDetail({ product }) {
                 {pinError && <p className="mt-2 text-[12px] font-bold text-red-600">{pinError}</p>}
                 {pinResult && <p className="mt-2 text-[13px] font-semibold text-green-700">{pinResult}</p>}
               </div>
+
+              <button
+                type="button"
+                onClick={() => router.push("/Policies")}
+                className="mt-3 flex w-full items-center justify-center gap-2 border border-green-700 bg-green-50 px-4 py-3 text-[12px] font-bold uppercase tracking-wider text-green-800 transition hover:bg-green-100"
+              >
+                <span aria-hidden>⇄</span> Free Exchange within 7 Days
+              </button>
             </Reveal>
           </div>
         </div>
       </div>
 
-      {/* Description + specs, directly above Shipping & Returns */}
+      {/* Info tabs: Description | Details & Composition | Shipping & Returns | Atelier Care */}
       <div className="mx-auto w-full max-w-7xl px-4 py-10">
-        {product.fullDescription && product.fullDescription !== product.description && (
-          <>
-            <h5 className="text-[12px] font-bold uppercase tracking-[0.2em] text-neutral-900">Description</h5>
-            <div
-              className="mt-2 max-w-4xl text-[15px] leading-relaxed text-neutral-600"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }}
-            />
-          </>
-        )}
-        {specRows.length > 0 && (
-          <dl className="mt-6 border-y border-neutral-200">
-            {specRows.map(([label, value]) => (
-              <div key={label} className="grid grid-cols-[minmax(110px,0.42fr)_minmax(0,1fr)] items-start gap-4 border-b border-neutral-200 py-3 last:border-b-0">
-                <dt className="text-[12px] font-bold uppercase tracking-widest text-neutral-900">{label}</dt>
-                <dd className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-neutral-600">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-
-        <div className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
-          <details className="group py-4">
-            <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900 marker:text-[#c6a15b]">
-              Shipping & Returns
-            </summary>
-            <p className="mt-2 max-w-4xl text-[15px] font-normal leading-relaxed text-neutral-600">
-              Dispatched in 5–7 working days. Complimentary bespoke fitting adjustments included. Easy 7-day returns on unworn pieces.
-            </p>
-          </details>
-          <details className="group py-4">
-            <summary className="cursor-pointer text-[12px] font-bold uppercase tracking-widest text-neutral-900 marker:text-[#c6a15b]">
-              Atelier Care
-            </summary>
-            <p className="mt-2 max-w-4xl text-[15px] font-normal leading-relaxed text-neutral-600">
-              Dry clean only. Store on a broad contoured wooden hanger in the breathable garment sleeve provided.
-            </p>
-          </details>
+        <div className="flex flex-wrap gap-2 border-b border-neutral-200">
+          {INFO_TABS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setInfoTab(t)}
+              aria-pressed={infoTab === t}
+              className={`-mb-px border-b-2 px-4 py-3 text-[12px] font-bold uppercase tracking-widest transition ${
+                infoTab === t
+                  ? "border-neutral-950 text-neutral-950"
+                  : "border-transparent text-neutral-400 hover:text-neutral-700"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <div className="py-6">
+          {infoTab === "Description" && (
+            product.fullDescription && product.fullDescription !== product.description ? (
+              <div
+                className="max-w-4xl text-[15px] leading-relaxed text-neutral-600"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }}
+              />
+            ) : (
+              <p className="max-w-4xl text-[15px] leading-relaxed text-neutral-600">{product.description || "No description yet."}</p>
+            )
+          )}
+          {infoTab === "Details & Composition" && (
+            specRows.length > 0 ? (
+              <dl className="border-y border-neutral-200">
+                {specRows.map(([label, value]) => (
+                  <div key={label} className="grid grid-cols-[minmax(110px,0.42fr)_minmax(0,1fr)] items-start gap-4 border-b border-neutral-200 py-3 last:border-b-0">
+                    <dt className="text-[12px] font-bold uppercase tracking-widest text-neutral-900">{label}</dt>
+                    <dd className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-neutral-600">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="max-w-4xl text-[15px] leading-relaxed text-neutral-600">No composition details yet.</p>
+            )
+          )}
+          {infoTab === "Shipping & Returns" && (
+            <div className="max-w-4xl space-y-3 text-[15px] font-normal leading-relaxed text-neutral-600">
+              <p>Dispatched in 5–7 working days. Complimentary bespoke fitting adjustments included.</p>
+              <p>Easy 7-day returns and free exchange on unworn pieces. See our <button type="button" onClick={() => router.push("/Policies")} className="font-semibold text-neutral-950 underline underline-offset-2">Shipping & Returns policy</button> for full details.</p>
+            </div>
+          )}
+          {infoTab === "Atelier Care" && (
+            <div className="max-w-4xl space-y-3 text-[15px] font-normal leading-relaxed text-neutral-600">
+              <p>{product.details?.wash_care || "Dry clean only. Store on a broad contoured wooden hanger in the breathable garment sleeve provided."}</p>
+            </div>
+          )}
         </div>
       </div>
 
