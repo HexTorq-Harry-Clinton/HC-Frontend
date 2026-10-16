@@ -30,15 +30,6 @@ export default function CIconModal({ isOpen, onClose }) {
   const availDays = new Set(dateSlots.map(slotDayKey).filter(Boolean));
   const slotForDay = (key) => dateSlots.find((s) => slotDayKey(s) === key);
 
-  const jumpToFirstSlot = (slots) => {
-    const first = (slots || []).map(slotDayKey).filter(Boolean).sort()[0];
-    if (first) {
-      const [y, m] = first.split("-").map(Number);
-      setCalYear(y);
-      setCalMonth(m - 1);
-    }
-  };
-
   const shiftMonth = (delta) => {
     const next = new Date(calYear, calMonth + delta, 1);
     const now = new Date();
@@ -105,7 +96,12 @@ export default function CIconModal({ isOpen, onClose }) {
         const times = Array.isArray(timeRes) ? timeRes : timeRes?.data || [];
         const liveDates = dates.filter((d) => d.isavailable !== false && d.isactive !== false && d.isdeleted !== true);
         setDateSlots(liveDates);
-        jumpToFirstSlot(liveDates);
+        const firstDay = liveDates.map(slotDayKey).filter(Boolean).sort()[0];
+        if (firstDay) {
+          const [y, m] = firstDay.split("-").map(Number);
+          setCalYear(y);
+          setCalMonth(m - 1);
+        }
         setTimeSlots(times.filter((t) => t.isavailable !== false && t.isactive !== false));
       } catch (err) {
         if (live) setError(err.message || "Failed to load appointment slots.");

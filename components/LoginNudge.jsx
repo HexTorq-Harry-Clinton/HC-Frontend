@@ -5,6 +5,25 @@ import { usePathname } from "next/navigation";
 import LoginPopup from "./LoginPopup";
 
 // Guest nudge trigger: guests only, after scroll AND 30s, never on /login.
+// Dismissing (Continue as Guest) suppresses the popup for 24 hours.
+const GUEST_SNOOZE_KEY = "hc_guest_snooze_until";
+const GUEST_SNOOZE_MS = 24 * 60 * 60 * 1000;
+
+export function snoozeGuestNudge() {
+  try {
+    localStorage.setItem(GUEST_SNOOZE_KEY, String(Date.now() + GUEST_SNOOZE_MS));
+  } catch {
+    /* storage unavailable — popup simply shows again */
+  }
+}
+
+function guestSnoozed() {
+  try {
+    return Date.now() < Number(localStorage.getItem(GUEST_SNOOZE_KEY) || 0);
+  } catch {
+    return false;
+  }
+}
 // Same flow as the previous UI.
 export default function LoginNudge() {
   const pathname = usePathname();
@@ -13,8 +32,8 @@ export default function LoginNudge() {
   useEffect(() => {
     const token = localStorage.getItem("hc_token");
     const session = localStorage.getItem("hc_session");
-    if (token || session || pathname === "/login") {
-      // Logged in or already on login: never show.
+    if (token || session || pathname === "/login" || guestSnoozed()) {
+      // Logged in, on login, or snoozed within 24h: never show.
       return;
     }
     let scrolled = false;
@@ -41,5 +60,12 @@ export default function LoginNudge() {
 
   // Hidden while closed, on /login, or once logged in (re-checked on navigation).
   if (!show || pathname === "/login") return null;
-  return <LoginPopup onSkip={() => setShow(false)} />;
+  return (
+    <LoginPopup
+      onSkip={() => {
+        snoozeGuestNudge();
+        setShow(false);
+      }}
+    />
+  );
 }

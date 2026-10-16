@@ -219,9 +219,6 @@ export default function HomeTestimonials() {
                   />
                 </svg>
                 <span>Write a Review</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#f8f5ee] text-[#a8823f] border border-[#c6a15b]/30 px-1.5 py-0.5 ml-1">
-                  Upcoming
-                </span>
               </button>
             </div>
           </div>

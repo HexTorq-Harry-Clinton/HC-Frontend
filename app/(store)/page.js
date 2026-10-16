@@ -9,6 +9,7 @@ import FeaturedProducts from "@/components/FeaturedProducts";
 import CollectionsEditorial from "@/components/CollectionsEditorial";
 import AppointmentCTA from "@/components/AppointmentCTA";
 import HomeTestimonials from "@/components/HomeTestimonials";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 export const revalidate = 300;
 
@@ -31,6 +32,7 @@ export default function HomePage() {
       <AppointmentCTA />
       <HomeTestimonials />
       <HomeFaqs />
+      <WhatsAppFloat />
     </>
   );
 }

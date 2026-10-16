@@ -254,17 +254,21 @@ export default function Hamburger({ categories, onActiveChange }) {
           text-decoration: underline;
           text-decoration-color: currentColor;
         }
-        .Hdropdown-image-box { 
-          position: relative; 
+        .Hdropdown-image-box {
+          position: relative;
           width: 100%;
           height: 290px;
           bottom: 20px;
           left: 70px;
-          background: #101010; 
-          color: #fff; 
-          display: flex; 
-          align-items: flex-end; 
+          background: #101010;
+          color: #fff;
+          display: flex;
+          align-items: flex-end;
           overflow: hidden;
+        }
+        .Hdropdown-image-box--empty {
+          background: #fff;
+          box-shadow: none;
         }
         .Hdropdown-image {
           position: absolute;
