@@ -426,20 +426,12 @@ export default function ProductDetail({ product }) {
                       >
                         +
                       </button>
-                      <button
-                        onClick={() => cart?.removeFromCart(bagLine.key || bagLine.id)}
-                        className="border-l border-neutral-300 px-3 text-[15px] text-red-600 transition hover:bg-red-50"
-                        aria-label="Remove from cart"
-                        title="Remove from cart"
-                      >
-                        🗑
-                      </button>
                     </div>
                     <button
-                      onClick={() => router.push("/cart")}
-                      className="min-w-0 flex-1 bg-green-700 px-2 py-3.5 text-[13px] font-bold uppercase tracking-wider text-white shadow-md transition hover:bg-green-800"
+                      onClick={() => cart?.removeFromCart(bagLine.key || bagLine.id)}
+                      className="w-full cursor-pointer border border-neutral-950 bg-white py-3.5 text-[13px] font-bold uppercase tracking-wider text-neutral-950 shadow-sm transition hover:bg-red-50 hover:text-red-700"
                     >
-                      Already Added — View Bag
+                      Remove from Bag
                     </button>
                   </div>
                 ) : (
