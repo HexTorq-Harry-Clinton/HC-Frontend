@@ -16,13 +16,14 @@ export function WhatsAppGlyph({ className = "whatsapp-side-rail__icon" }) {
 
 export default function WhatsAppFloat() {
   return (
-    <a
+      <a
         href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
         className="whatsapp-side-rail"
       >
+        <span className="whatsapp-side-rail__ring" aria-hidden="true" />
         <span className="whatsapp-side-rail__circle">
           <WhatsAppGlyph />
         </span>
@@ -43,6 +44,8 @@ export default function WhatsAppFloat() {
             box-shadow: 0 2px 12px rgba(0, 0, 0, .2);
           }
           .whatsapp-side-rail__circle {
+            position: relative;
+            z-index: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -52,6 +55,15 @@ export default function WhatsAppFloat() {
             background: transparent;
             color: #fff;
           }
+          .whatsapp-side-rail__ring {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            border: 2px solid #25d366;
+            border-radius: 50% !important;
+            animation: whatsapp-ring 2s ease-out infinite;
+            pointer-events: none;
+          }
           .whatsapp-side-rail__icon {
             width: 17px;
             height: 17px;
@@ -59,6 +71,10 @@ export default function WhatsAppFloat() {
           @media (max-width: 640px) {
             .whatsapp-side-rail { right: 16px; bottom: 16px; }
             .whatsapp-side-rail__icon { width: 15px; height: 15px; }
+          }
+          @keyframes whatsapp-ring {
+            0% { transform: scale(1); opacity: .9; }
+            100% { transform: scale(1.65); opacity: 0; }
           }
         `}</style>
       </a>
