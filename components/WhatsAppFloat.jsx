@@ -2,7 +2,7 @@
 
 // Homepage-only floating WhatsApp button (bottom-right) with an infinite
 // attention ring. Opens a chat with the atelier number in a new tab.
-const PHONE = "917009409419";
+const PHONE = "917094094194";
 
 export default function WhatsAppFloat() {
   return (
@@ -31,8 +31,9 @@ export default function WhatsAppFloat() {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 58px;
-          height: 58px;
+          width: 29px;
+          height: 29px;
+          aspect-ratio: 1;
           border-radius: 50%;
           background: #25d366;
           color: #fff;
@@ -43,8 +44,8 @@ export default function WhatsAppFloat() {
           transform: scale(1.08);
         }
         .whatsapp-float__icon {
-          width: 30px;
-          height: 30px;
+          width: 15px;
+          height: 15px;
         }
         .whatsapp-float__ring {
           position: absolute;
