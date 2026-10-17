@@ -29,16 +29,16 @@ export default function WhatsAppFloat() {
         <style jsx>{`
           .whatsapp-side-rail {
             position: fixed;
-            right: 0;
+            right: 22px;
             bottom: 22px;
             z-index: 90;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 44px;
-            height: 58px;
-            border-radius: 14px 0 0 14px !important;
-            background: #fff;
+            width: 29px;
+            height: 29px;
+            border-radius: 50% !important;
+            background: #25d366;
             color: #fff;
             box-shadow: 0 2px 12px rgba(0, 0, 0, .2);
           }
@@ -46,10 +46,10 @@ export default function WhatsAppFloat() {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            width: 100%;
+            height: 100%;
             border-radius: 50% !important;
-            background: #25d366;
+            background: transparent;
             color: #fff;
           }
           .whatsapp-side-rail__icon {
@@ -57,8 +57,7 @@ export default function WhatsAppFloat() {
             height: 17px;
           }
           @media (max-width: 640px) {
-            .whatsapp-side-rail { width: 38px; height: 50px; bottom: 16px; }
-            .whatsapp-side-rail__circle { width: 26px; height: 26px; }
+            .whatsapp-side-rail { right: 16px; bottom: 16px; }
             .whatsapp-side-rail__icon { width: 15px; height: 15px; }
           }
         `}</style>
