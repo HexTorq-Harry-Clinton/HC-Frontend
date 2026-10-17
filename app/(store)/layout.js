@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import LoginNudge from "@/components/LoginNudge";
 import Breadcrumb from "@/components/Breadcrumb";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 // Storefront shell: ticker + header + footer around every shop page,
 // plus the guest login nudge (same flow as before).
@@ -14,6 +15,7 @@ export default function StoreLayout({ children }) {
       <Breadcrumb />
       <main>{children}</main>
       <Footer />
+      <WhatsAppFloat />
       <LoginNudge />
     </>
   );

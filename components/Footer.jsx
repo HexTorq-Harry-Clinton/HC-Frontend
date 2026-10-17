@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiCached, homeKV, subscribeNewsletter } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { WHATSAPP_URL, WhatsAppGlyph } from "./WhatsAppFloat";
 
 // Footer copy, links, and brand marks mirror the reference. Contact details
 // remain data-driven, and newsletter subscription keeps the existing API flow.
@@ -184,6 +185,9 @@ export default function Footer() {
                 </a>
                 <a href={youtubeUrl} className="text-white hover:text-[#c6a15b] transition-colors duration-200" target="_blank" rel="noreferrer" aria-label="YouTube">
                   <i className="bi bi-youtube fs-5"></i>
+                </a>
+                <a href={WHATSAPP_URL} className="text-[#25d366] hover:text-[#c6a15b] transition-colors duration-200" target="_blank" rel="noreferrer" aria-label="WhatsApp">
+                  <WhatsAppGlyph className="h-5 w-5" />
                 </a>
               </div>
             </div>
