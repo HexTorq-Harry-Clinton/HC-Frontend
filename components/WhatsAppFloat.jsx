@@ -34,7 +34,8 @@ export default function WhatsAppFloat() {
           width: 29px;
           height: 29px;
           aspect-ratio: 1;
-          border-radius: 50%;
+          border-radius: 50% !important;
+          overflow: visible;
           background: #25d366;
           color: #fff;
           box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
@@ -50,7 +51,7 @@ export default function WhatsAppFloat() {
         .whatsapp-float__ring {
           position: absolute;
           inset: 0;
-          border-radius: 50%;
+          border-radius: 50% !important;
           border: 2px solid #25d366;
           animation: whatsapp-ring 2s ease-out infinite;
           pointer-events: none;
