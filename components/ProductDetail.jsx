@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { inr, resolveUploadUrl } from "@/lib/api";
 import { minVariantPrice, resolveVariantPrice } from "@/lib/pricing";
@@ -37,6 +37,9 @@ export default function ProductDetail({ product }) {
   const [infoTab, setInfoTab] = useState("Description");
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [mobileGalleryIndex, setMobileGalleryIndex] = useState(0);
+  const [mobileInfoTab, setMobileInfoTab] = useState("");
+  const mobileGalleryRef = useRef(null);
 
   const INFO_TABS = ["Description", "Details & Composition", "Shipping & Returns", "Atelier Care"];
 
@@ -127,7 +130,7 @@ export default function ProductDetail({ product }) {
   const displayCompare = displayMrp > displayPrice ? displayMrp : compareAt > displayPrice ? compareAt : null;
   const displayHasDiscount = Boolean(displayCompare);
   const displayDiscountPct = selected?.discountPct || (displayCompare ? Math.round(((displayCompare - displayPrice) / displayCompare) * 100) : 0);
-  const displaySku = selected?.variant?.sku || activeVariants[0]?.sku || product.sku || product.slug || activeId || "";
+  const displaySku = selected?.variant?.sku || activeVariants[0]?.sku || product.sku || product.slug || product.id || "";
   // Displayed product prices are GST-inclusive. This is only an informational
   // split; the amount must not be added again in cart or checkout.
   const gstAmount = Math.round((displayPrice - displayPrice / 1.05) * 100) / 100;
@@ -298,6 +301,182 @@ export default function ProductDetail({ product }) {
 
   return (
     <>
+      {/* Mobile-only Lafaurie-style product experience. The desktop layout below
+          remains unchanged and is hidden only below the md breakpoint. */}
+      <section className="pd-mobile md:hidden" aria-label="Product details">
+        <div
+          ref={mobileGalleryRef}
+          onScroll={(event) => {
+            const width = event.currentTarget.clientWidth || 1;
+            setMobileGalleryIndex(Math.round(event.currentTarget.scrollLeft / width));
+          }}
+          className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-hide"
+          aria-label="Product images"
+        >
+          {currentGallery.map((src, i) => (
+            <div key={`mobile-${selectedColor}-${src}-${i}`} className="relative min-w-full snap-start bg-neutral-100">
+              {isVideoSrc(src) ? (
+                <video
+                  src={src}
+                  aria-label={`${displayTitle} video ${i + 1}`}
+                  className="aspect-[4/5] w-full bg-white object-cover"
+                  controls
+                  muted
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={src}
+                  alt={`${displayTitle} in ${selectedColor || "atelier colorway"} — view ${i + 1}`}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  className="aspect-[4/5] w-full bg-white object-cover"
+                />
+              )}
+              {i === 0 && (
+                <span className="absolute left-3 top-3 border border-neutral-950 bg-white/90 px-1.5 py-1 text-[9px] uppercase tracking-wider text-neutral-950">
+                  Harry Clinton
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => document.getElementById("pd-mobile-info")?.scrollIntoView({ behavior: "smooth" })}
+                className="absolute right-3 top-3 text-[10px] uppercase tracking-wider text-neutral-950 underline underline-offset-2"
+              >
+                View details
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-center gap-2 py-2 text-[10px] text-neutral-500" aria-live="polite">
+          <span>{mobileGalleryIndex + 1} / {currentGallery.length}</span>
+          <span className="flex gap-1" aria-hidden="true">
+            {currentGallery.map((src, i) => (
+              <span key={`${src}-${i}`} className={`h-1 w-1 rounded-full ${i === mobileGalleryIndex ? "bg-neutral-950" : "bg-neutral-300"}`} />
+            ))}
+          </span>
+        </div>
+
+        <div id="pd-mobile-info" className="px-4 pb-28 pt-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-[16px] font-normal uppercase leading-tight tracking-wide text-neutral-950">{displayTitle}</h1>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-neutral-500">
+                {displaySku ? `SKU: ${displaySku}` : "Harry Clinton"}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center">
+              <WishlistHeart
+                product={{ id: activeId, name: displayTitle, price: displayPrice, image: currentGallery[0] }}
+                className="px-1.5 py-1 text-lg"
+              />
+              <button type="button" onClick={handleShareClick} aria-label="Share this product" className="px-1.5 py-1 text-lg">
+                ⇪
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-baseline gap-2">
+            {displayHasDiscount && <span className="text-[13px] text-neutral-400 line-through">{inr(displayCompare)}</span>}
+            <span className="text-[17px] text-neutral-950">{inr(displayPrice)}</span>
+            {displayHasDiscount && <span className="text-[10px] font-bold uppercase text-green-700">{displayDiscountPct}% off</span>}
+          </div>
+          <p className="mt-1 text-[10px] uppercase tracking-wider text-neutral-500">GST included in price</p>
+          <p className="mt-3 text-[11px] leading-relaxed text-neutral-700">
+            {product.description || product.subtitle || "Crafted with Harry Clinton attention to detail and finish."}
+          </p>
+
+          {colorVariants.length > 0 && (
+            <div id="pd-sizes" className="mt-5 border-t border-neutral-200 pt-4">
+              <p className="mb-2 text-[10px] uppercase tracking-wider text-neutral-900">
+                Colour: <strong>{selectedColor || activeColorObj.name}</strong>
+              </p>
+              <div className="flex gap-1.5 overflow-x-auto pb-1">
+                {colorVariants.map((c) => {
+                  const isSelected = (selectedColor || activeColorObj.name || "").toLowerCase() === c.name.toLowerCase();
+                  const thumb = c.images?.[0];
+                  return (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => handleColorChange(c.name)}
+                      aria-label={`Select colour ${c.name}`}
+                      className={`h-12 w-12 shrink-0 overflow-hidden border ${isSelected ? "border-neutral-950 ring-1 ring-neutral-950" : "border-neutral-300 opacity-75"}`}
+                    >
+                      {thumb ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={thumb} alt={c.name} className="h-full w-full object-cover" />
+                      ) : <span className="block h-full w-full" style={{ backgroundColor: c.hex || "#333" }} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {baseSizes.length > 0 && (
+            <div className="mt-5 border-t border-neutral-200 pt-4">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="m-0 text-[10px] uppercase tracking-wider text-neutral-950">Select size{selected ? `: ${selected.label}` : ""}</p>
+                <button type="button" onClick={() => setShowSizeChart(true)} className="text-[10px] underline underline-offset-2">Size chart</button>
+              </div>
+              <div className="grid grid-cols-4 border-l border-t border-neutral-300">
+                {baseSizes.map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => { setSize(s.key); setSizeError(""); }}
+                    disabled={!s.available}
+                    className={`min-h-10 border-b border-r border-neutral-300 text-[10px] uppercase transition disabled:cursor-not-allowed disabled:opacity-35 ${size === s.key ? "bg-neutral-950 text-white" : "bg-white text-neutral-950"}`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              {sizeError && <p className="mt-2 text-[11px] font-bold text-red-600">{sizeError}</p>}
+              <p className="mt-3 text-[11px] leading-relaxed text-neutral-700">This product fits true to size. If you are between two sizes, we recommend sizing down.</p>
+            </div>
+          )}
+
+          <p className="mt-4 text-[10px] text-neutral-600">Express delivery by {deliveryDate}</p>
+          <div className="mt-3 space-y-1">
+            {[
+              "Free delivery on eligible orders",
+              "Complimentary appointment support",
+              "Secure payment options available",
+              "Easy returns and exchanges",
+            ].map((message) => (
+              <div key={message} className="flex min-h-7 items-center bg-neutral-100 px-2 text-[10px] text-neutral-700">{message}</div>
+            ))}
+          </div>
+
+          <div className="mt-5 border-t border-neutral-200">
+            {INFO_TABS.map((tab) => (
+              <div key={tab} className="border-b border-neutral-200">
+                <button
+                  type="button"
+                  onClick={() => setMobileInfoTab((current) => current === tab ? "" : tab)}
+                  aria-expanded={mobileInfoTab === tab}
+                  className="flex w-full items-center justify-between py-4 text-left text-[10px] uppercase tracking-wider text-neutral-950"
+                >
+                  <span>{tab}</span><span className="text-base leading-none">{mobileInfoTab === tab ? "−" : "+"}</span>
+                </button>
+                {mobileInfoTab === tab && (
+                  <div className="pb-4 text-[12px] leading-relaxed text-neutral-600">
+                    {tab === "Description" && (product.fullDescription && product.fullDescription !== product.description ? <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.fullDescription) }} /> : <p>{product.description || "No description yet."}</p>)}
+                    {tab === "Details & Composition" && (specRows.length > 0 ? <dl className="space-y-2">{specRows.map(([label, value]) => <div key={label}><dt className="font-bold uppercase text-neutral-950">{label}</dt><dd className="whitespace-pre-line">{value}</dd></div>)}</dl> : <p>No composition details yet.</p>)}
+                    {tab === "Shipping & Returns" && <div className="space-y-2"><p>Dispatched in 5–7 working days.</p><p>Easy 7-day returns and free exchange on unworn pieces. See our shipping and returns policy for full details.</p></div>}
+                    {tab === "Atelier Care" && <p>{product.details?.wash_care || "Dry clean only. Store on a broad contoured hanger in the breathable garment sleeve provided."}</p>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="hidden md:block">
       <div className="mx-auto w-full px-0 py-0 md:py-8">
         <div className="grid items-start gap-0 md:grid-cols-2 md:gap-10">
           {/* LEFT: smooth-scroll gallery stack, pure images */}
@@ -475,7 +654,7 @@ export default function ProductDetail({ product }) {
 
               {/* Sizes */}
               {baseSizes.length > 0 && (
-                <div id="pd-sizes" className="mt-6 border-t border-neutral-200 pt-5">
+                <div id="pd-sizes-desktop" className="mt-6 border-t border-neutral-200 pt-5">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <h5 className="m-0 text-[12px] font-bold uppercase tracking-[0.2em] text-neutral-900">
                       Select Size{selected ? `: ${selected.label}` : ""}
@@ -654,23 +833,24 @@ export default function ProductDetail({ product }) {
           )}
         </div>
       </div>
+      </div>
 
       {/* Mobile sticky buy bar */}
       {!bagLine && (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
-          <button
-            type="button"
-            onClick={() => document.getElementById("pd-sizes")?.scrollIntoView({ behavior: "smooth", block: "center" })}
-            className="min-w-0 flex-1 truncate border border-neutral-300 px-3 py-3 text-left text-[12px] font-bold uppercase tracking-wider text-neutral-900"
-          >
-            {selected ? `Size: ${selected.label}` : "Choose your size"}
-          </button>
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <button
             type="button"
             onClick={addToBag}
-            className="shrink-0 bg-neutral-950 px-6 py-3 text-[12px] font-bold uppercase tracking-wider text-white"
+            className="min-w-0 flex-1 rounded-full bg-neutral-950 px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-white"
           >
-            {added ? "Added ✓" : "Add to Bag"}
+            {added ? "Added ✓" : `Add to Cart · ${inr(displayPrice)}`}
+          </button>
+          <button
+            type="button"
+            onClick={buyNow}
+            className="min-w-0 flex-1 rounded-full border border-neutral-950 bg-white px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-neutral-950"
+          >
+            Buy Now
           </button>
         </div>
       )}
