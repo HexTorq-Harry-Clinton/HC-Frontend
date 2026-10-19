@@ -13,6 +13,7 @@ const RETURN_STATUSES = ["requested", "approved", "rejected", "received", "proce
 const labelize = (value) => String(value || "—").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 const money = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
 const dateTime = (value) => value ? new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—";
+const addressParts = (address) => [...new Set([address?.house_no_floor, address?.building_block, address?.house_street, address?.area_name].filter(Boolean))];
 const badgeClass = (value) => {
   const normalized = String(value || "").toLowerCase();
   if (["paid", "delivered", "processed", "approved"].includes(normalized)) return "bg-emerald-50 text-emerald-700 ring-emerald-200";
@@ -307,8 +308,8 @@ export default function AdminOrdersPage() {
                     {userName(o.user_id) && <span className="text-sm text-neutral-500">{userName(o.user_id)}</span>}
                   </span>
                    <span className="flex flex-wrap items-center justify-end gap-2">
-                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${badgeClass(status)}`}>{labelize(status)}</span>
-                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${badgeClass(payment?.payment_status || o.payment_status)}`}>{labelize(payment?.payment_status || o.payment_status || "Payment unknown")}</span>
+                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${badgeClass(status)}`}>Order: {labelize(status)}</span>
+                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${badgeClass(payment?.payment_status || o.payment_status)}`}>Payment: {labelize(payment?.payment_status || o.payment_status || "Unknown")}</span>
                      <span className="font-bold text-neutral-900">{money(o.total_amount ?? o.total ?? subtotal)}</span>
                   </span>
                 </button>
@@ -560,10 +561,7 @@ export default function AdminOrdersPage() {
                             <p className="font-semibold text-neutral-900">{address.full_name || "—"}</p>
                             {address.mobile_number && <p>Phone: {address.mobile_number}</p>}
                             {address.address_label && <p>Label: {address.address_label}</p>}
-                            {address.house_no_floor && <p>{address.house_no_floor}</p>}
-                            {address.building_block && <p>{address.building_block}</p>}
-                            {address.house_street && <p>{address.house_street}</p>}
-                            {address.area_name && <p>{address.area_name}</p>}
+                            {addressParts(address).map((part) => <p key={part}>{part}</p>)}
                             <p>
                               {[address.city, address.state].filter(Boolean).join(", ")}{address.pincode ? ` — ${address.pincode}` : ""}
                             </p>

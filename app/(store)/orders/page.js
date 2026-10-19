@@ -27,6 +27,10 @@ function labelize(value) {
   return String(value || "—").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function addressText(address) {
+  return [...new Set([address?.house_no_floor, address?.building_block, address?.house_street, address?.area_name].filter(Boolean))].join(", ");
+}
+
 function orderSortNumber(order) {
   const digits = String(order?.order_number || order?.order_id || "").replace(/\D/g, "");
   return Number(digits) || 0;
@@ -221,9 +225,9 @@ function OrdersInner() {
              <div className="order-body">
                {detailErrors[o.order_id] && <div className="mb-3 bg-orange-50 p-3 text-sm text-orange-800">Some order details could not be loaded. Please refresh to try again.</div>}
                <div className="order-status-row">
-                 <span className="order-status-badge">{latestStatus}</span>
+                 <span className="order-status-badge">Order: {latestStatus}</span>
                 <div className="order-status-actions">
-                  <span className="order-payment-badge">{o.payment_status}</span>
+                   <span className="order-payment-badge">Payment: {o.payment_status || "Unknown"}</span>
                   {isPending && (
                     <button
                       onClick={() => handleCancel(o)}
@@ -278,8 +282,8 @@ function OrdersInner() {
              </div>
              <div className="grid gap-3 px-4 pb-4 md:grid-cols-3">
                <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Payment summary</h6><p className="mt-2">Subtotal: ₹{Number(o.subtotal || 0).toLocaleString("en-IN")}</p><p>Shipping: ₹{Number(o.shipping_amount || 0).toLocaleString("en-IN")}</p><p>Tax: ₹{Number(o.tax_amount || 0).toLocaleString("en-IN")}</p><p className="mt-1 font-bold">Total: ₹{Number(totalPrice || 0).toLocaleString("en-IN")}</p></div>
-               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Delivery address</h6>{shippingAddress ? <p className="mt-2 leading-relaxed">{shippingAddress.full_name}<br />{[shippingAddress.house_no_floor, shippingAddress.building_block, shippingAddress.house_street, shippingAddress.area_name].filter(Boolean).join(", ")}<br />{[shippingAddress.city, shippingAddress.state].filter(Boolean).join(", ")} {shippingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Address details unavailable.</p>}</div>
-               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Billing address</h6>{billingAddress ? <p className="mt-2 leading-relaxed">{billingAddress.full_name}<br />{[billingAddress.house_no_floor, billingAddress.building_block, billingAddress.house_street, billingAddress.area_name].filter(Boolean).join(", ")}<br />{[billingAddress.city, billingAddress.state].filter(Boolean).join(", ")} {billingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Same as delivery address.</p>}</div>
+               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Delivery address</h6>{shippingAddress ? <p className="mt-2 leading-relaxed">{shippingAddress.full_name}<br />{addressText(shippingAddress)}<br />{[shippingAddress.city, shippingAddress.state].filter(Boolean).join(", ")} {shippingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Address details unavailable.</p>}</div>
+               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Billing address</h6>{billingAddress ? <p className="mt-2 leading-relaxed">{billingAddress.full_name}<br />{addressText(billingAddress)}<br />{[billingAddress.city, billingAddress.state].filter(Boolean).join(", ")} {billingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Same as delivery address.</p>}</div>
              </div>
             <div className="order-shipment-wrap">
               {shipment ? (
