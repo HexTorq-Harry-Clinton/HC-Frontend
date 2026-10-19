@@ -18,6 +18,15 @@ function formatDate(value) {
   }
 }
 
+function formatDateTime(value) {
+  if (!value) return "—";
+  try { return new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }); } catch { return "—"; }
+}
+
+function labelize(value) {
+  return String(value || "—").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function orderSortNumber(order) {
   const digits = String(order?.order_number || order?.order_id || "").replace(/\D/g, "");
   return Number(digits) || 0;
@@ -36,6 +45,8 @@ function OrdersInner() {
   const params = useSearchParams();
   const placed = params.get("placed");
   const [orders, setOrders] = useState([]);
+  const [detailByOrder, setDetailByOrder] = useState({});
+  const [detailErrors, setDetailErrors] = useState({});
   const [itemsByOrder, setItemsByOrder] = useState({});
   const [statusByOrder, setStatusByOrder] = useState({});
   const [shipments, setShipments] = useState([]);
@@ -52,105 +63,50 @@ function OrdersInner() {
   const fetchAll = useCallback(async () => {
     try {
       const sessionUserId = currentUserId();
-      const [profileRes, ordersRes, itemsRes, historyRes, shipmentsRes, eventsRes, couriersRes, returnsRes] =
-        await Promise.all([
-          apiFetch("/Profiles").then(unwrap).catch(() => []),
-          apiFetch("/Orders").then(unwrap).catch(() => []),
-          apiFetch("/Order-Items").then(unwrap).catch(() => []),
-          apiFetch("/Order-Status-History").then(unwrap).catch(() => []),
-          apiFetch("/Shipments").then(unwrap).catch(() => []),
-          apiFetch("/Shipment-Events").then(unwrap).catch(() => []),
-          apiFetch("/Courier-Partners").then(unwrap).catch(() => []),
-          apiFetch("/Returns").then(unwrap).catch(() => []),
-        ]);
-      const profiles = Array.isArray(profileRes) ? profileRes : [];
-      const matchedProfile = profiles.find(
-        (profile) => String(profile.user_id) === String(sessionUserId)
-      );
-      const uid = matchedProfile?.user_id || sessionUserId;
-      const allOrders = Array.isArray(ordersRes) ? ordersRes : [];
-      const mine = (uid
-        ? allOrders.filter((o) => String(o.user_id) === String(uid))
-        : []
-      ).sort(compareOrdersNewestFirst);
+      if (!sessionUserId) throw new Error("Please sign in to view your orders.");
+      const ordersRes = await apiFetch(`/Orders/user/${encodeURIComponent(sessionUserId)}`);
+      const mine = (Array.isArray(unwrap(ordersRes)) ? unwrap(ordersRes) : []).sort(compareOrdersNewestFirst);
       setOrders(mine);
-      const allItems = Array.isArray(itemsRes) ? itemsRes : [];
-      const map = {};
-      mine.forEach((o) => {
-        map[o.order_id] = allItems.filter((i) => i.order_id === o.order_id);
-      });
-      setItemsByOrder(map);
-      const history = Array.isArray(historyRes) ? historyRes : [];
-      const smap = {};
-      mine.forEach((o) => {
-        const h = history
-          .filter((x) => x.order_id === o.order_id)
-          .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-        smap[o.order_id] = h[0]?.orderstatus || o.orderstatus || o.order_status || "Pending";
-      });
-      setStatusByOrder(smap);
-      setShipments(Array.isArray(shipmentsRes) ? shipmentsRes : []);
-      setShipmentEvents(Array.isArray(eventsRes) ? eventsRes : []);
-      setCouriers(Array.isArray(couriersRes) ? couriersRes : []);
-      setReturns(Array.isArray(returnsRes) ? returnsRes : []);
+      const detailResults = await Promise.all(mine.map(async (order) => {
+        try {
+          const result = unwrap(await apiFetch(`/Orders/detail/${encodeURIComponent(order.order_id)}?user_id=${encodeURIComponent(sessionUserId)}`));
+          return [order.order_id, result];
+        } catch (detailError) {
+          return [order.order_id, { error: detailError?.message || "Order details could not be loaded." }];
+        }
+      }));
+      const details = Object.fromEntries(detailResults);
+      const errors = Object.fromEntries(detailResults.filter(([, detail]) => detail?.error).map(([id, detail]) => [id, detail.error]));
+      setDetailErrors(errors);
+      setDetailByOrder(details);
+      setItemsByOrder(Object.fromEntries(mine.map((order) => [order.order_id, details[order.order_id]?.items || []])));
+      setStatusByOrder(Object.fromEntries(mine.map((order) => {
+        const history = details[order.order_id]?.history || [];
+        const latest = [...history].sort((a, b) => new Date(b.orderstatustime || b.rcm || 0) - new Date(a.orderstatustime || a.rcm || 0))[0];
+        return [order.order_id, latest?.orderstatus || order.orderstatus || order.order_status || "Pending"];
+      })));
+      setShipments(mine.flatMap((order) => details[order.order_id]?.shipments || []));
+      setShipmentEvents(mine.flatMap((order) => details[order.order_id]?.events || []));
+      setCouriers(mine.flatMap((order) => details[order.order_id]?.couriers || []));
+      setReturns(mine.flatMap((order) => details[order.order_id]?.returns || []));
     } catch {
-      setError("Failed to load orders");
+      setError("We could not load your orders. Please sign in again or try again.");
     } finally {
       setLoading(false);
     }
   }, []);
 
   // Mount fetch (also reused by cancel/return flows) — intentional.
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleCancel = async (o) => {
     setCancellingId(o.order_id);
     setCancelError("");
     setCancelSuccess("");
     try {
-      let statuses = [];
-      try {
-        statuses = unwrap(await apiFetch("/Order-Status-Master"));
-        if (!Array.isArray(statuses)) statuses = [];
-      } catch {
-        statuses = [];
-      }
-      const cancelled = statuses.find((s) =>
-        s.status_name?.toLowerCase() === "cancelled" ||
-        s.status_code?.toLowerCase() === "cancelled" ||
-        s.iscancelled_status === true ||
-        s.iscancelled_status === 1
-      );
-      if (cancelled?.order_status_id) {
-        await apiFetch("/Order-Status-History", {
-          method: "POST",
-          body: {
-            order_id: o.order_id,
-            order_status_id: cancelled.order_status_id,
-            orderstatus: "Cancelled",
-            remarks: "Cancelled by customer",
-            rcu: "website",
-          },
-        });
-      } else {
-        await apiFetch("/Order-Cancellations", {
-          method: "POST",
-          body: {
-            order_id: o.order_id,
-            cancelled_by: "user",
-            cancelled_reason: "Cancelled by customer",
-            rcu: "website",
-          },
-        });
-      }
-      await apiFetch("/Orders", {
-        method: "PUT",
-        body: { order_id: o.order_id, orderstatus: "Cancelled", cancelled_at: new Date().toISOString(), luu: "website" },
-      });
+      await apiFetch(`/Orders/cancel/${encodeURIComponent(o.order_id)}`, { method: "POST", body: { user_id: currentUserId(), cancelled_by: "user", reason: "Cancelled by customer" } });
       setCancelSuccess("Order cancelled successfully.");
       fetchAll();
     } catch {
@@ -234,16 +190,22 @@ function OrdersInner() {
       {cancelSuccess && <div className="mb-3 bg-green-50 p-2 text-sm text-green-700">{cancelSuccess}</div>}
       {orders.map((o) => {
         const items = itemsByOrder[o.order_id] || [];
-        const latestStatus = statusByOrder[o.order_id] || "Pending";
-        const isPending = latestStatus.toLowerCase() === "pending";
+         const latestStatus = statusByOrder[o.order_id] || "Pending";
+         const detail = detailByOrder[o.order_id] || {};
+         const isPending = ["pending", "processing"].includes(latestStatus.toLowerCase());
         const isDelivered = ["delivered", "completed"].includes(latestStatus.toLowerCase());
         const shipment = shipments.find((s) => s.order_id === o.order_id);
         const events = shipmentEvents
           .filter((e) => e.shipment_id === shipment?.shipment_id)
           .sort((a, b) => new Date(b.event_timestamp || b.created_at || 0) - new Date(a.event_timestamp || a.created_at || 0));
-        const courier = couriers.find((c) => c.courier_partner_id === shipment?.courier_partner_id);
+         const courier = couriers.find((c) => c.courier_partner_id === shipment?.courier_partner_id);
         const totalItems = o.total_items || items.length;
-        const totalPrice = o.total_amount ?? o.total_price ?? o.total ?? 0;
+         const totalPrice = o.total_amount ?? o.total_price ?? o.total ?? 0;
+         const payment = detail.payments?.[0];
+         const shippingAddress = detail.addresses?.find((address) => String(address.address_type || "").toLowerCase().includes("ship")) || detail.addresses?.[0];
+         const billingAddress = detail.addresses?.find((address) => String(address.address_type || "").toLowerCase().includes("bill"));
+         const activity = [...(detail.history || []).map((event) => ({ ...event, label: event.orderstatus, at: event.orderstatustime || event.rcm, description: event.remarks })), ...(detail.events || []).map((event) => ({ ...event, label: event.event_status, at: event.event_timestamp || event.rcm, description: event.event_description }))]
+           .sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0));
         return (
           <div key={o.order_id} className="order-card">
             <div className="order-header">
@@ -256,9 +218,10 @@ function OrdersInner() {
                 <p className="text-sm">{formatDate(o.placed_at || o.order_date || o.created_at)}</p>
               </div>
             </div>
-            <div className="order-body">
-              <div className="order-status-row">
-                <span className="order-status-badge">{latestStatus}</span>
+             <div className="order-body">
+               {detailErrors[o.order_id] && <div className="mb-3 bg-orange-50 p-3 text-sm text-orange-800">Some order details could not be loaded. Please refresh to try again.</div>}
+               <div className="order-status-row">
+                 <span className="order-status-badge">{latestStatus}</span>
                 <div className="order-status-actions">
                   <span className="order-payment-badge">{o.payment_status}</span>
                   {isPending && (
@@ -270,7 +233,12 @@ function OrdersInner() {
                       {cancellingId === o.order_id ? "Cancelling..." : "Cancel Order"}
                     </button>
                   )}
-                </div>
+               </div>
+               <div className="mb-5 grid gap-3 sm:grid-cols-2">
+                 <div className="rounded bg-neutral-50 p-3 text-sm"><p className="text-xs uppercase tracking-wider text-neutral-500">Payment</p><p className="mt-1 font-semibold">{labelize(payment?.payment_status || o.payment_status || "Pending")}</p><p className="text-xs text-neutral-500">{labelize(payment?.payment_method_type || "Payment method unavailable")}</p></div>
+                 <div className="rounded bg-neutral-50 p-3 text-sm"><p className="text-xs uppercase tracking-wider text-neutral-500">Delivery</p><p className="mt-1 font-semibold">{shipment ? labelize(shipment.shipment_status) : "Preparing your order"}</p><p className="text-xs text-neutral-500">{shipment?.tracking_number || "Tracking will appear after dispatch"}</p></div>
+               </div>
+               <div className="mb-5 rounded border border-neutral-200 p-4"><h6 className="font-semibold">Order timeline</h6>{activity.length ? <ol className="mt-3 space-y-3 border-l border-neutral-200 pl-4">{activity.slice(0, 6).map((event, index) => <li key={`${event.order_status_history_id || event.shipment_event_id || event.label}-${index}`} className="relative"><span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-neutral-950 ring-1 ring-neutral-300" /><p className="text-sm font-semibold">{labelize(event.label)}</p><p className="text-xs text-neutral-500">{formatDateTime(event.at)}</p>{event.description && <p className="mt-1 text-xs text-neutral-600">{event.description}</p>}</li>)}</ol> : <p className="mt-2 text-sm text-neutral-500">Your timeline will update as the order progresses.</p>}</div>
               </div>
               {items.length > 0 ? (
                 items.map((item) => {
@@ -304,10 +272,15 @@ function OrdersInner() {
               )}
             </div>
             <hr className="order-divider" />
-            <div className="order-total-row">
+             <div className="order-total-row">
               <span>Total Items: {totalItems}</span>
               <span className="text-lg font-bold">Total: ₹{Number(totalPrice || 0).toLocaleString("en-IN")}</span>
-            </div>
+             </div>
+             <div className="grid gap-3 px-4 pb-4 md:grid-cols-3">
+               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Payment summary</h6><p className="mt-2">Subtotal: ₹{Number(o.subtotal || 0).toLocaleString("en-IN")}</p><p>Shipping: ₹{Number(o.shipping_amount || 0).toLocaleString("en-IN")}</p><p>Tax: ₹{Number(o.tax_amount || 0).toLocaleString("en-IN")}</p><p className="mt-1 font-bold">Total: ₹{Number(totalPrice || 0).toLocaleString("en-IN")}</p></div>
+               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Delivery address</h6>{shippingAddress ? <p className="mt-2 leading-relaxed">{shippingAddress.full_name}<br />{[shippingAddress.house_no_floor, shippingAddress.building_block, shippingAddress.house_street, shippingAddress.area_name].filter(Boolean).join(", ")}<br />{[shippingAddress.city, shippingAddress.state].filter(Boolean).join(", ")} {shippingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Address details unavailable.</p>}</div>
+               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Billing address</h6>{billingAddress ? <p className="mt-2 leading-relaxed">{billingAddress.full_name}<br />{[billingAddress.house_no_floor, billingAddress.building_block, billingAddress.house_street, billingAddress.area_name].filter(Boolean).join(", ")}<br />{[billingAddress.city, billingAddress.state].filter(Boolean).join(", ")} {billingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Same as delivery address.</p>}</div>
+             </div>
             <div className="order-shipment-wrap">
               {shipment ? (
                 <div className="order-shipment">

@@ -25,12 +25,14 @@ export function ToastProvider({ children }) {
 
   const api = {
     success: (text) => push("success", text),
+    warning: (text) => push("warning", text),
     error: (text) => push("error", text),
     info: (text) => push("info", text),
   };
 
   const ICON = {
     success: "bi bi-check-circle-fill",
+    warning: "bi bi-exclamation-triangle-fill",
     error: "bi bi-x-circle-fill",
     info: "bi bi-info-circle-fill",
   };
@@ -43,12 +45,14 @@ export function ToastProvider({ children }) {
           <div
             key={t.id}
             role="status"
-            className={`flex items-center gap-3  border-l-[3px] bg-[#1b1a1f] p-3.5 text-[13.5px] text-[#f2f0ea] shadow-2xl ring-1 ring-white/10 backdrop-blur ${
-              t.type === "success"
-                ? "border-[#1e7a3c]"
-                : t.type === "error"
-                  ? "border-[#b3261e]"
-                  : "border-[#6c85ad]"
+              className={`flex items-center gap-3  border-l-[3px] bg-[#1b1a1f] p-3.5 text-[13.5px] text-[#f2f0ea] shadow-2xl ring-1 ring-white/10 backdrop-blur ${
+               t.type === "success"
+                 ? "border-[#1e7a3c]"
+                 : t.type === "error"
+                   ? "border-[#b3261e]"
+                   : t.type === "warning"
+                     ? "border-[#c87516]"
+                     : "border-[#6c85ad]"
             }`}
           >
             <span
@@ -57,7 +61,9 @@ export function ToastProvider({ children }) {
                   ? "text-[#4fd47a]"
                   : t.type === "error"
                     ? "text-[#f0776f]"
-                    : "text-[#8fb0e0]"
+                    : t.type === "warning"
+                      ? "text-[#f2a33a]"
+                      : "text-[#8fb0e0]"
               }
             >
               <i className={ICON[t.type] || ICON.info} />

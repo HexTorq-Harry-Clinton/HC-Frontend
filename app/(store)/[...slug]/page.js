@@ -14,6 +14,7 @@ import CollectionView from "@/components/CollectionView";
 import ServicePage from "@/components/ServicePage";
 import ServicesHub from "@/components/ServicesHub";
 import ComingSoonView from "@/components/ComingSoonView";
+import TrackOrderView from "@/components/TrackOrderView";
 import FAQsView from "@/components/FAQsView";
 import TheVisionLanding from "@/components/TheVisionLanding";
 import AboutUsView from "@/components/AboutUsView";
@@ -89,7 +90,7 @@ export default async function SlugPage({ params }) {
     return <ComingSoonView />;
   }
   if (key === "track-order") {
-    return <ComingSoonView title="Track Order Coming Soon" message="Our order tracking experience is being built for you. Please check back soon" />;
+    return <TrackOrderView />;
   }
   if (key === "aboutUs") {
     return <AboutUsView />;
