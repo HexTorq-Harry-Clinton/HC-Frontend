@@ -148,7 +148,8 @@ export default function AdminModulePage({ module: slug, lock }) {
       .then(unwrap)
       .then((list) => {
         if (live) {
-          setRows(Array.isArray(list) ? list : []);
+           const filtered = Array.isArray(list) && mod.rowFilter ? list.filter(mod.rowFilter) : list;
+           setRows(Array.isArray(filtered) ? filtered : []);
           setLoadError("");
         }
       })
@@ -538,7 +539,7 @@ export default function AdminModulePage({ module: slug, lock }) {
             className=" border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
             style={{ minWidth: 200 }}
           />
-          {!mod.readOnly && (
+          {!mod.readOnly && !mod.noCreate && (
             <button type="button" onClick={openCreate} className={btnPrimary}>
               <i className="bi bi-plus-lg" /> New
             </button>
