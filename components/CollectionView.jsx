@@ -53,13 +53,27 @@ export default function CollectionView({ meta, products, sizes = [], clothTypes 
 
   const reset = () => setFilters({ size: "", clothType: "", color: "", minPrice: "", maxPrice: "" });
   const setFilter = (key) => (event) => setFilters((current) => ({ ...current, [key]: event.target.value }));
+  const heroIsVideo = String(meta.bannerType || "").toLowerCase().startsWith("video") || /\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(meta.bannerImage || "");
 
   return (
     <main className="collection-page">
       <section className="collection-hero">
         {meta.bannerImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={meta.bannerImage} alt="" className="collection-hero__image" />
+          heroIsVideo ? (
+            <video
+              src={meta.bannerImage}
+              className="collection-hero__image"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              aria-label={`${meta.title} collection hero`}
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={meta.bannerImage} alt="" className="collection-hero__image" />
+          )
         ) : (
           <div className="collection-hero__image collection-hero__image--empty" />
         )}

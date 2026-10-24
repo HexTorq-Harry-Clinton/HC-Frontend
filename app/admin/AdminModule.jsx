@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch, unwrap, revalidateSite, detectMediaType, friendlyError } from "@/lib/api";
+import { apiFetch, unwrap, revalidateSite, detectMediaType, friendlyError, resolveUploadUrl } from "@/lib/api";
 import { adminModule, REFS } from "@/lib/admin";
 import ActiveToggle from "@/components/ActiveToggle";
 import FilePick from "./FilePick";
@@ -33,6 +33,27 @@ const panelCls = " border border-neutral-200 bg-white p-6 shadow-sm";
 const tableWrapCls = "overflow-x-auto  border border-neutral-200 bg-white shadow-sm";
 const thCls = "px-4 py-3 whitespace-nowrap";
 const tdCls = "max-w-xs truncate px-4 py-3";
+
+function isVideoSource(value, mediaType) {
+  return String(mediaType || "").toLowerCase().startsWith("video") || /\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(String(value || ""));
+}
+
+function MediaPreview({ file, src, mediaType, className = "" }) {
+  const objectUrl = useMemo(() => (file ? URL.createObjectURL(file) : ""), [file]);
+
+  useEffect(() => {
+    if (!objectUrl) return undefined;
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [objectUrl]);
+
+  const resolved = objectUrl || resolveUploadUrl(src);
+  if (!resolved) return null;
+  if (isVideoSource(file?.name || resolved, mediaType)) {
+    return <video src={resolved} className={className} controls muted playsInline preload="metadata" />;
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={resolved} alt="Media preview" className={className} />;
+}
 
 function cellText(r, c, refOptions = {}) {
   if (c.type === "checkbox") {
@@ -472,16 +493,22 @@ export default function AdminModulePage({ module: slug, lock }) {
               hint="Image / video — click or drop"
             />
           </div>
-          {file ? (
-            <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-green-800">
-              Staged: {file.name}
-              <button type="button" onClick={() => clearStaged(c.key)} className="font-normal text-red-600 underline">
-                remove
-              </button>
-            </span>
-          ) : (
-            <span className="mt-1 block text-xs text-neutral-500">No file staged — typed URL (if any) will be used.</span>
-          )}
+           {file ? (
+             <span className="mt-2 block">
+               <MediaPreview file={file} mediaType={form.media_type} className="h-28 w-full max-w-sm rounded border border-neutral-200 bg-neutral-950 object-cover" />
+               <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-green-800">
+                 Staged: {file.name}
+                 <button type="button" onClick={() => clearStaged(c.key)} className="font-normal text-red-600 underline">
+                   remove
+                 </button>
+               </span>
+             </span>
+           ) : (
+             <span className="mt-2 block">
+               <MediaPreview src={form[c.key]} mediaType={form.media_type} className="h-28 w-full max-w-sm rounded border border-neutral-200 bg-neutral-950 object-cover" />
+               <span className="mt-1 block text-xs text-neutral-500">No file staged — typed URL (if any) will be used.</span>
+             </span>
+           )}
         </span>
       );
     }
@@ -619,9 +646,11 @@ export default function AdminModulePage({ module: slug, lock }) {
                  </td>
                  {mod.columns.map((c) => (
                   <td key={c.key} className={tdCls}>
-                    {mod.toggle && c.key === mod.toggle ? (
-                      <ActiveToggle active={r[c.key]} onToggle={(next) => toggle(r, next)} />
-                    ) : (
+                     {mod.toggle && c.key === mod.toggle ? (
+                       <ActiveToggle active={r[c.key]} onToggle={(next) => toggle(r, next)} />
+                     ) : c.type === "upload" ? (
+                       <MediaPreview src={r[c.key]} mediaType={r.media_type} className="h-12 w-24 rounded border border-neutral-200 bg-neutral-950 object-cover" />
+                     ) : (
                       cellText(r, c, refOptions)
                     )}
                   </td>

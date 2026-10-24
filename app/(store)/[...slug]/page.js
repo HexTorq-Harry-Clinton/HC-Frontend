@@ -130,15 +130,17 @@ export default async function SlugPage({ params }) {
     } else {
     if (db.redirect && db.redirect.startsWith("/")) redirect(db.redirect);
     const data = await getCategoryData(null, db.keywords);
-    if (db.type === "db-collection") {
-      let bannerImage = null;
-      try {
+      if (db.type === "db-collection") {
+        let bannerImage = null;
+        let bannerType = null;
+        try {
         const media = await apiGet("/Style-Collection-Media").then(unwrap).catch(() => []);
         const list = Array.isArray(media) ? media : [];
         const hit =
           list.find((m) => String(m.style_collection_id) === String(db.row?.style_collection_id) && m.isprimary) ||
           list.find((m) => String(m.style_collection_id) === String(db.row?.style_collection_id));
-        bannerImage = resolveUploadUrl(hit?.media_url) || null;
+          bannerImage = resolveUploadUrl(hit?.media_url) || null;
+          bannerType = hit?.media_type || null;
       } catch {
         /* banner stays empty */
       }
@@ -147,8 +149,9 @@ export default async function SlugPage({ params }) {
           meta={{
             title: db.title,
              eyebrow: db.row?.eyebrow || "Style by HC",
-            description: db.row?.description || "",
-            bannerImage,
+             description: db.row?.description || "",
+             bannerImage,
+             bannerType,
           }}
           products={data.products}
           sizes={data.sizes}
@@ -214,11 +217,12 @@ export default async function SlugPage({ params }) {
   if (resolved.type === "collection") {
     const def = COLLECTIONS[resolved.collection];
     const data = await getCategoryData(resolved);
-       let meta = {
+      let meta = {
       title: def.title,
       eyebrow: def.eyebrow,
       description: def.description,
-       bannerImage: def.bannerImage || null,
+        bannerImage: def.bannerImage || null,
+        bannerType: null,
        ctaText: "Explore collection",
        ctaLink: "#collection-products",
     };
@@ -244,10 +248,11 @@ export default async function SlugPage({ params }) {
            description: matched.description || matched.short_description || def.description,
            ctaText: matched.cta_text || "Explore collection",
            ctaLink: matched.redirect_link || "#collection-products",
-          bannerImage:
-            resolveUploadUrl(matchedMedia?.media_url) ||
-            resolveUploadUrl(matched.banner_image_url || matched.image_url) ||
-            null,
+           bannerImage:
+             resolveUploadUrl(matchedMedia?.media_url) ||
+             resolveUploadUrl(matched.banner_image_url || matched.image_url) ||
+             null,
+           bannerType: matchedMedia?.media_type || null,
         };
       }
     } catch {
