@@ -88,7 +88,7 @@ export default function CollectionView({ meta, products, sizes = [], clothTypes 
         </div>
       </section>
 
-      <section className="collection-catalog" id="collection-products">
+       <section className="collection-catalog collection-catalog--edge-to-edge" id="collection-products">
         <div className="collection-catalog__heading">
           <div>
             <span className="collection-kicker">Curated by House of Cavani</span>
@@ -116,7 +116,7 @@ export default function CollectionView({ meta, products, sizes = [], clothTypes 
         <div className="collection-results collection-results--full">
           <div className="collection-products">
             {collectionProducts.length > 0 ? (
-              <div className="collection-grid">
+               <div className="collection-grid collection-grid--edge-to-edge">
                 {collectionProducts.map((product) => <CollectionCard key={product.id} product={product} />)}
               </div>
             ) : (
