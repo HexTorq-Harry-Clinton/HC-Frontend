@@ -25,18 +25,12 @@ export default function SpotlightMarquee({ title = "HC Spotlight" }) {
           entries.map((e) => [String(e.spotlight_entry_id), e.title || ""])
         );
         const list = (Array.isArray(mediaRaw) ? mediaRaw : [])
-          .filter(
-            (m) =>
-              (m.isactive === 1 || m.isactive === true) &&
-              m.isdeleted !== 1 && m.isdeleted !== true &&
-              m.media_url &&
-              (m.media_type || "image") !== "video" &&
-              !/\.(mp4|webm|mov)(\?|#|$)/i.test(m.media_url)
-          )
+          .filter((m) => (m.isactive === 1 || m.isactive === true) && m.isdeleted !== 1 && m.isdeleted !== true && m.media_url)
           .sort((a, b) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0))
           .map((m) => ({
             id: m.spotlight_media_id,
-            src: resolveUploadUrl(m.media_url),
+             src: resolveUploadUrl(m.media_url),
+             mediaType: String(m.media_type || "image").toLowerCase(),
             caption: titleById[String(m.spotlight_entry_id)] || m.alt_text || "",
             href: m.spotlight_entry_id ? `/hc-spotlight/${m.spotlight_entry_id}` : "/hc-spotlight",
           }))

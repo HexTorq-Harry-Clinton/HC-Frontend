@@ -57,12 +57,13 @@ export default function CIconModal({ isOpen, onClose }) {
     return `${h}:${m} ${suffix}`;
   };
 
+  const isTrue = (value) => value === true || value === 1 || value === "1" || value === "true";
   const timesForDate = timeSlots.filter(
     (t) =>
       String(t.appointment_date_slot_id) === String(formData.dateSlotId) &&
-      t.isavailable !== false &&
-      t.isbooked !== true &&
-      t.isactive !== false &&
+       (t.isavailable === undefined || isTrue(t.isavailable)) &&
+       !isTrue(t.isbooked) &&
+       (t.isactive === undefined || isTrue(t.isactive)) &&
       t.isdeleted !== true
   );
 
@@ -94,7 +95,7 @@ export default function CIconModal({ isOpen, onClose }) {
         if (!live) return;
         const dates = Array.isArray(dateRes) ? dateRes : dateRes?.data || [];
         const times = Array.isArray(timeRes) ? timeRes : timeRes?.data || [];
-        const liveDates = dates.filter((d) => d.isavailable !== false && d.isactive !== false && d.isdeleted !== true);
+         const liveDates = dates.filter((d) => (d.isavailable === undefined || isTrue(d.isavailable)) && (d.isactive === undefined || isTrue(d.isactive)) && !isTrue(d.isbooked) && d.isdeleted !== true);
         setDateSlots(liveDates);
         const firstDay = liveDates.map(slotDayKey).filter(Boolean).sort()[0];
         if (firstDay) {
@@ -102,7 +103,7 @@ export default function CIconModal({ isOpen, onClose }) {
           setCalYear(y);
           setCalMonth(m - 1);
         }
-        setTimeSlots(times.filter((t) => t.isavailable !== false && t.isactive !== false));
+         setTimeSlots(times.filter((t) => (t.isavailable === undefined || isTrue(t.isavailable)) && (t.isactive === undefined || isTrue(t.isactive)) && !isTrue(t.isbooked)));
       } catch (err) {
         if (live) setError(err.message || "Failed to load appointment slots.");
       }
@@ -150,7 +151,7 @@ export default function CIconModal({ isOpen, onClose }) {
           city: formData.city,
           preferred_delivery_date: formData.deliveryDate,
           occasion: formData.occasion,
-          appointment_status: "Pending",
+           appointment_status: "requested",
           appointment_notes: `Requested date slot ${formData.dateSlotId}, time slot ${formData.timeSlotId}`,
           rcu: "customer",
         },

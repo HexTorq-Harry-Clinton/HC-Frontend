@@ -10,6 +10,7 @@ export const useConfirm = () => useContext(ConfirmContext);
 export function ConfirmProvider({ children }) {
   const [dialog, setDialog] = useState(null);
   const resolverRef = useRef(null);
+  const dialogRef = useRef(null);
   // Open confirm owns the scroll — page behind is frozen.
   useLockBody(!!dialog);
 
@@ -32,6 +33,16 @@ export function ConfirmProvider({ children }) {
     resolverRef.current = null;
   };
 
+  useEffect(() => {
+    if (!dialog) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") handle(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    dialogRef.current?.querySelector("button")?.focus();
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [dialog]);
+
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
@@ -41,6 +52,10 @@ export function ConfirmProvider({ children }) {
           onClick={() => handle(false)}
         >
           <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-confirm-title"
             className="w-full max-w-md  border border-black/5 bg-white p-7 text-center shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
@@ -51,7 +66,7 @@ export function ConfirmProvider({ children }) {
             >
               <i className={dialog.danger ? "bi bi-exclamation-triangle-fill" : "bi bi-question-circle-fill"} />
             </div>
-            <h5 className="mb-2 mt-4 text-lg font-bold text-neutral-900">{dialog.title}</h5>
+             <h5 id="admin-confirm-title" className="mb-2 mt-4 text-lg font-bold text-neutral-900">{dialog.title}</h5>
             {dialog.message && <p className="mb-0 text-sm leading-relaxed text-neutral-500">{dialog.message}</p>}
             <div className="flex justify-center gap-3 pt-5">
               <button

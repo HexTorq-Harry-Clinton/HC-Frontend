@@ -375,6 +375,17 @@ export default function AdminModulePage({ module: slug, lock }) {
         }
       }
     }
+    for (const c of mod.columns) {
+      if (c.type !== "number" || body[c.key] === "" || body[c.key] === undefined || body[c.key] === null) continue;
+      const numeric = Number(body[c.key]);
+      if (!Number.isFinite(numeric)) {
+        const message = `${c.label} must be a valid number.`;
+        setMsg(message);
+        toast?.error(message);
+        return;
+      }
+      body[c.key] = numeric;
+    }
     mod.columns.forEach((c) => {
       if (c.type === "checkbox") {
         const v = body[c.key];

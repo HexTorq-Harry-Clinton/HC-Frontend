@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ToastProvider, useToast } from "./ToastProvider";
 import { ConfirmProvider, useConfirm } from "./ConfirmProvider";
+import useLockBody from "./useLockBody";
 
 const GROUPS = [
   { key: "dashboard", label: "Dashboard", paths: ["/admin"], labels: ["Dashboard"] },
@@ -119,6 +120,7 @@ function AdminShellInner({ children }) {
   const [user, setUser] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState(["dashboard"]);
+  useLockBody(sidebarOpen);
 
   // JWT lives in localStorage (invisible to the server), so the admin gate
   // must run client-side after mount. Mount-sync check is intentional.
@@ -271,7 +273,7 @@ function AdminShellInner({ children }) {
           </nav>
         </aside>
 
-        <main className="min-h-[calc(100vh-60px)] flex-1 px-4 pb-12 pt-5 md:px-8 md:pt-7">
+        <main className="min-w-0 min-h-[calc(100vh-60px)] flex-1 px-4 pb-12 pt-5 md:px-8 md:pt-7">
           {children}
         </main>
       </div>

@@ -28,7 +28,7 @@ export default function AppointmentsPage() {
         const times = Array.isArray(timesRes) ? timesRes : [];
         const profiles = Array.isArray(profileRes) ? profileRes : [];
         const uid = currentUserId();
-        const mine = uid ? all.filter((a) => a.user_id === uid) : all;
+        const mine = uid ? all.filter((a) => String(a.user_id) === String(uid)) : all;
         setItems(
           mine.map((a) => {
             const d = dates.find((x) => x.appointment_date_slot_id === a.appointment_date_slot_id);
@@ -58,12 +58,10 @@ export default function AppointmentsPage() {
     if (!window.confirm("Cancel this appointment?")) return;
     try {
       await apiFetch("/Custom-Appointments", {
-        method: "DELETE",
-        body: { appointment_id: a.appointment_id || a.custom_appointment_id, luu: "website" },
+        method: "PUT",
+        body: { appointment_id: a.appointment_id || a.custom_appointment_id, appointment_status: "cancelled", cancelled_at: new Date().toISOString(), luu: "website" },
       });
-      setItems((prev) =>
-        prev.filter((x) => (x.appointment_id || x.custom_appointment_id) !== (a.appointment_id || a.custom_appointment_id))
-      );
+      setItems((prev) => prev.map((x) => (x.appointment_id || x.custom_appointment_id) === (a.appointment_id || a.custom_appointment_id) ? { ...x, appointment_status: "cancelled" } : x));
     } catch {
       setError("Failed to cancel appointment");
     }

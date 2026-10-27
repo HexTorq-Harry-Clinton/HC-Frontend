@@ -55,17 +55,20 @@ export default function BookAppointmentPage() {
         ]);
         if (!live) return;
         const dates = Array.isArray(dateRes) ? dateRes : [];
-        const times = Array.isArray(timeRes) ? timeRes : [];
+         const times = Array.isArray(timeRes) ? timeRes : [];
+         const truthy = (value) => value === true || value === 1 || value === "1" || value === "true";
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         setDateSlots(
           dates.filter((d) => {
-            if (!d.isactive && d.isactive !== undefined) return false;
+             if (d.isactive !== undefined && !truthy(d.isactive)) return false;
+             if (d.isavailable !== undefined && !truthy(d.isavailable)) return false;
+             if (d.isbooked !== undefined && truthy(d.isbooked)) return false;
             if (d.slot_date) return new Date(d.slot_date) >= today;
             return true;
           })
         );
-        setTimeSlots(times.filter((t) => t.isactive !== false && t.isactive !== 0));
+         setTimeSlots(times.filter((t) => (t.isactive === undefined || truthy(t.isactive)) && (t.isavailable === undefined || truthy(t.isavailable)) && !truthy(t.isbooked)));
       } catch {
         if (live) setMessage({ text: "Could not load appointment slots.", isError: true });
       } finally {
@@ -101,7 +104,7 @@ export default function BookAppointmentPage() {
       const userId = currentUserId();
       await apiFetch("/Custom-Appointments", {
         method: "POST",
-        body: { ...form, user_id: userId || null, appointment_status: "Pending", rcu: "website" },
+         body: { ...form, user_id: userId || null, appointment_status: "requested", rcu: "website" },
       });
       setMessage({ text: "Appointment booked successfully! We'll confirm shortly.", isError: false });
       setForm(emptyForm);

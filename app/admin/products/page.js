@@ -27,6 +27,21 @@ const TAB_MODULES = {
 const input =
   "w-full  border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm transition-shadow placeholder:text-neutral-400 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25";
 
+const isVideoMedia = (media) => String(media?.media_type || media?.media_role || "").toLowerCase() === "video" || /\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(String(media?.media_url || ""));
+
+async function fetchAllProducts() {
+  const all = [];
+  for (let page = 1; page <= 50; page += 1) {
+    const response = await apiFetch("/Products", { params: { includeInactive: 1, pageSize: 200, page } });
+    const rows = unwrap(response);
+    if (!Array.isArray(rows)) break;
+    all.push(...rows);
+    const total = Number(response?.pagination?.total || response?.data?.pagination?.total || 0);
+    if (rows.length < 200 || (total > 0 && all.length >= total)) break;
+  }
+  return all;
+}
+
 // Product Management: grouped workspace like before —
 // tabs (Products/Sizes/Cloth Types/Care/Attributes) + search,
 // product table, and inside each product: variants, media,
@@ -60,8 +75,7 @@ export default function AdminProductsPage() {
   // Mount + refresh fetch: state updates happen only in the async continuation.
   useEffect(() => {
     let live = true;
-    apiFetch("/Products", { params: { includeInactive: 1, pageSize: 200 } })
-      .then(unwrap)
+    fetchAllProducts()
       .then((list) => {
         if (live) setProducts(Array.isArray(list) ? list : []);
       })
@@ -127,7 +141,7 @@ export default function AdminProductsPage() {
         if (!toOpen) {
           // fetch fresh list to find by slug we just created
           try {
-            const list = unwrap(await apiFetch("/Products", { params: { includeInactive: 1 } }));
+             const list = await fetchAllProducts();
             toOpen = (Array.isArray(list) ? list : []).find((p) => p.product_slug === form.product_slug) || null;
           } catch {}
         }
@@ -412,6 +426,18 @@ function ProductWorkspace({ product, onBack }) {
   const [showAttrForm, setShowAttrForm] = useState(false);
   const [showSeoForm, setShowSeoForm] = useState(false);
   useLockBody(showVariantForm || showMediaForm || showAttrForm || showSeoForm);
+  useEffect(() => {
+    if (!(showVariantForm || showMediaForm || showAttrForm || showSeoForm)) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key !== "Escape") return;
+      setShowVariantForm(false);
+      setShowMediaForm(false);
+      setShowAttrForm(false);
+      setShowSeoForm(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [showVariantForm, showMediaForm, showAttrForm, showSeoForm]);
   // Search + pagination for workspace tables (top-right search, 5/10/15/25/50).
   const [vSearch, setVSearch] = useState("");
   const [vPage, setVPage] = useState(1);
@@ -1037,14 +1063,12 @@ function ProductWorkspace({ product, onBack }) {
                         ) : (
                           vMedia.map((m) => (
                             <div key={m.product_media_id} className="relative">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                               <img
-                                src={resolveUploadUrl(m.media_url)}
-                                alt={m.alt_text || v.sku}
-                                style={{ height: 48, width: 48, objectFit: "cover" }}
-                                className=" border border-neutral-300 bg-white"
-                                onError={(e) => { e.currentTarget.style.display = "none"; }}
-                              />
+                               {isVideoMedia(m) ? (
+                                <video src={resolveUploadUrl(m.media_url)} aria-label={m.alt_text || v.sku} muted playsInline controls style={{ height: 48, width: 48, objectFit: "cover" }} className="border border-neutral-300 bg-white" />
+                              ) : (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img src={resolveUploadUrl(m.media_url)} alt={m.alt_text || v.sku} style={{ height: 48, width: 48, objectFit: "cover" }} className="border border-neutral-300 bg-white" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                              )}
                               {m.media_role && <span className="absolute bottom-0 left-0 bg-neutral-950/80 px-1 text-[9px] uppercase text-white">{m.media_role}</span>}
                               <button
                                 type="button"
@@ -1226,18 +1250,12 @@ function ProductWorkspace({ product, onBack }) {
         <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
           {media.map((m) => (
             <div key={m.product_media_id} className="relative overflow-hidden  border border-neutral-200 bg-white p-2 shadow-sm">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={resolveUploadUrl(m.media_url)}
-                alt={m.alt_text || product.product_name}
-                style={{ height: 140, width: "100%", objectFit: "cover" }}
-                className=" bg-neutral-100"
-                onError={(e) => {
-                  e.currentTarget.src = "/brand/logo-black.png";
-                  e.currentTarget.style.objectFit = "contain";
-                  e.currentTarget.style.padding = "12px";
-                }}
-              />
+                {isVideoMedia(m) ? (
+                 <video src={resolveUploadUrl(m.media_url)} aria-label={m.alt_text || product.product_name} muted playsInline controls style={{ height: 140, width: "100%", objectFit: "cover" }} className="bg-neutral-100" />
+               ) : (
+                 /* eslint-disable-next-line @next/next/no-img-element */
+                 <img src={resolveUploadUrl(m.media_url)} alt={m.alt_text || product.product_name} style={{ height: 140, width: "100%", objectFit: "cover" }} className="bg-neutral-100" onError={(e) => { e.currentTarget.src = "/brand/logo-black.png"; e.currentTarget.style.objectFit = "contain"; e.currentTarget.style.padding = "12px"; }} />
+               )}
                <div className="mt-1 flex items-center gap-1"><select value={m.media_role || "front"} onChange={(e) => updateMediaRole(m, e.target.value)} className="max-w-[120px] border border-neutral-200 bg-white px-1 py-0.5 text-[10px] uppercase"><option value="front">Front</option><option value="side">Side</option><option value="back">Back</option><option value="close-up">Close-up</option><option value="detailing">Detailing</option><option value="video">Video</option></select>{m.isprimary ? <span className="text-[10px]">• Primary</span> : null}</div>
               <button type="button" onClick={() => deleteMedia(m)} className="mt-1 text-xs text-red-600 underline underline-offset-2 transition-colors hover:text-red-700">Delete</button>
             </div>

@@ -60,3 +60,21 @@ The admin audit also addressed:
 - Appointment cancellation changed from destructive delete to a cancelled status update.
 - Product delete/toggle failures now show an error instead of silently continuing.
 - Multipart upload field order corrected; backend uploads now require admin auth and validate size, MIME type, and extensions.
+
+## Workflow, media, and responsive pass
+
+- Customer appointment date/time filters now consistently handle boolean values returned as booleans, numbers, or strings, exclude booked slots, submit the canonical `requested` status, and cancel through a non-destructive status update.
+- Admin order status updates now fail visibly when a status-master record is unavailable; order totals use stored values when valid and safe item/tax/shipping/discount fallbacks otherwise.
+- Order detail tabs now expose tab semantics and remain horizontally usable on narrow screens; long order/customer headers wrap without forcing page overflow.
+- Shared confirmation dialogs close with Escape, expose dialog semantics, and move focus into the dialog. Admin overlays lock body scrolling and product workspace forms also close with Escape.
+- Product and editorial media previews now render video files as video rather than broken image elements; inactive or unavailable media remains excluded from storefront showcases.
+- Catalog and admin product loading follows explicit backend pagination metadata without repeatedly fetching non-paginated endpoints.
+- Numeric generic admin fields are validated and normalized before submission.
+
+## Verification
+
+- Targeted ESLint: passed with no warnings on changed files.
+- Full ESLint: passed with existing warnings only; no errors.
+- `npm run build`: passed with Next.js 16.3.4.
+- Live desktop smoke check: `/book-appointment` loaded successfully with no browser console errors; no appointment or order mutation was submitted.
+- Authentication/authorization and IDOR findings remain intentionally out of scope.

@@ -28,17 +28,12 @@ export function StyleByHC({ title = "Style By HC" }) {
           collections.map((c) => [String(c.style_collection_id), c.collection_name || c.collection_slug || ""])
         );
         const list = (Array.isArray(mediaRaw) ? mediaRaw : [])
-          .filter(
-            (m) =>
-              isLive(m) &&
-              m.media_url &&
-              (m.media_type || "image") !== "video" &&
-              !/\.(mp4|webm|mov)(\?|#|$)/i.test(m.media_url)
-          )
+          .filter((m) => isLive(m) && m.media_url)
           .sort((a, b) => (Number(a.display_order) || 0) - (Number(b.display_order) || 0))
           .map((m) => ({
             id: m.style_collection_media_id,
-            src: resolveUploadUrl(m.media_url),
+             src: resolveUploadUrl(m.media_url),
+             mediaType: String(m.media_type || "image").toLowerCase(),
             caption: nameById[String(m.style_collection_id)] || m.alt_text || "",
             href: m.style_collection_id ? `/style-by-hc/${m.style_collection_id}` : "/style-by-hc",
           }))

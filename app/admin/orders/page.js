@@ -143,17 +143,21 @@ export default function AdminOrdersPage() {
       } catch {
         statuses = [];
       }
-      const match = statuses.find(
+       const match = statuses.find(
         (s) => s.status_name?.toLowerCase() === next.toLowerCase() || s.status_code?.toLowerCase() === next.toLowerCase()
-      );
+       );
+       if (!match?.order_status_id) {
+         toast?.error("That status is not available in Order Status Master. Refresh it before saving.");
+         return;
+       }
       await apiFetch("/Order-Status-History", {
         method: "POST",
         body: { order_id: o.order_id, order_status_id: match?.order_status_id || null, orderstatus: next, rcu: "ADMIN_PORTAL" },
       });
-      await apiFetch("/Orders", {
-        method: "PUT",
-        body: { order_id: o.order_id, orderstatus: next, luu: "ADMIN_PORTAL" },
-      }).catch(() => null);
+       await apiFetch("/Orders", {
+         method: "PUT",
+         body: { order_id: o.order_id, orderstatus: next, luu: "ADMIN_PORTAL" },
+       });
       toast?.success("Order status updated.");
       revalidateSite();
       load();
@@ -270,7 +274,7 @@ export default function AdminOrdersPage() {
         const needle = search.trim().toLowerCase();
         const filtered = needle
           ? orders.filter((o) =>
-              `${o.order_id || ""} ${userName(o.user_id)} ${latestStatus(o)}`.toLowerCase().includes(needle)
+              `${o.order_id || ""} ${o.order_number || ""} ${userName(o.user_id)} ${latestStatus(o)}`.toLowerCase().includes(needle)
             )
           : orders;
         const shown = paginate(filtered, page, pageSize);
@@ -288,8 +292,12 @@ export default function AdminOrdersPage() {
             const status = latestStatus(o);
             const list = orderItems(o.order_id);
             const subtotal = list.reduce((n, i) => n + Number(i.unit_price || 0) * Number(i.qty || 0), 0);
-            const tax = Math.round((o.discount_amount ? subtotal - Number(o.discount_amount) : subtotal) * 0.05 * 100) / 100;
+             const displayedSubtotal = Number(o.subtotal) > 0 ? Number(o.subtotal) : subtotal;
+             const tax = Number(o.tax_amount) || 0;
+             const shipping = Number(o.shipping_amount) || 0;
+             const displayedTotal = Number(o.total_amount ?? o.total) > 0 ? Number(o.total_amount ?? o.total) : Math.max(displayedSubtotal + tax + shipping - (Number(o.discount_amount) || 0), 0);
              const ship = orderShipment(o.order_id);
+             const allShipments = shipments.filter((shipment) => shipment.order_id === o.order_id);
              const payment = orderPayment(o.order_id);
              const events = orderEvents(o.order_id);
             const orderAddressList = orderAddresses(o.order_id);
@@ -300,22 +308,22 @@ export default function AdminOrdersPage() {
                   type="button"
                   onClick={() => toggleExpand(o.order_id)}
                   aria-expanded={isExpanded}
-                  className="flex w-full items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-[#faf8f4]"
+                   className="flex w-full flex-wrap items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-[#faf8f4]"
                 >
-                  <span className="flex items-center gap-3">
+                   <span className="flex min-w-0 items-center gap-3">
                     <i className={`bi ${isExpanded ? "bi-chevron-down" : "bi-chevron-right"} text-sm text-gold-deep`} />
-                    <strong className="text-neutral-900">{o.order_number || "Order"}</strong>
-                    {userName(o.user_id) && <span className="text-sm text-neutral-500">{userName(o.user_id)}</span>}
+                     <strong className="break-words text-neutral-900">{o.order_number || "Order"}</strong>
+                     {userName(o.user_id) && <span className="max-w-[35vw] truncate text-sm text-neutral-500">{userName(o.user_id)}</span>}
                   </span>
-                   <span className="flex flex-wrap items-center justify-end gap-2">
+                   <span className="flex max-w-full flex-wrap items-center justify-end gap-2">
                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${badgeClass(status)}`}>Order: {labelize(status)}</span>
                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${badgeClass(payment?.payment_status || o.payment_status)}`}>Payment: {labelize(payment?.payment_status || o.payment_status || "Unknown")}</span>
-                     <span className="font-bold text-neutral-900">{money(o.total_amount ?? o.total ?? subtotal)}</span>
+                      <span className="font-bold text-neutral-900">{money(displayedTotal)}</span>
                   </span>
                 </button>
                 {isExpanded && (
                   <div className="border-t border-neutral-200 p-4">
-                    <ul className="mb-3 flex gap-1 border-b border-neutral-200">
+                     <ul role="tablist" aria-label={`Order ${o.order_number || o.order_id} details`} className="mb-3 flex min-w-max gap-1 overflow-x-auto border-b border-neutral-200 pb-px">
                       {[
                          ["overview", "Overview"],
                         [`items`, `Items (${list.length})`],
@@ -328,7 +336,9 @@ export default function AdminOrdersPage() {
                           <button
                             type="button"
                             onClick={() => setActiveTab((m) => ({ ...m, [o.order_id]: key }))}
-                            className={`-mb-px border-b-2 px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+                             role="tab"
+                             aria-selected={tab === key}
+                             className={`-mb-px min-h-11 whitespace-nowrap border-b-2 px-4 py-2 text-[13.5px] font-semibold transition-colors ${
                               tab === key
                                 ? "border-gold bg-white text-neutral-900"
                                 : "border-transparent text-neutral-500 hover:text-neutral-900"
@@ -346,7 +356,7 @@ export default function AdminOrdersPage() {
                            <div className="rounded border border-neutral-200 bg-neutral-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Customer</p><p className="mt-1 font-semibold text-neutral-900">{userName(o.user_id) || "Guest customer"}</p><p className="text-xs text-neutral-500">{o.user_id || "No customer ID"}</p></div>
                            <div className="rounded border border-neutral-200 bg-neutral-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Payment</p><p className="mt-1 font-semibold text-neutral-900">{labelize(payment?.payment_status || o.payment_status || "Unknown")}</p><p className="text-xs text-neutral-500">{payment?.payment_method_type ? labelize(payment.payment_method_type) : "Payment record unavailable"}</p></div>
                            <div className="rounded border border-neutral-200 bg-neutral-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Fulfillment</p><p className="mt-1 font-semibold text-neutral-900">{labelize(ship?.shipment_status || "Not created")}</p><p className="text-xs text-neutral-500">{ship?.tracking_number || "Create shipment next"}</p></div>
-                           <div className="rounded border border-neutral-200 bg-neutral-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Order total</p><p className="mt-1 font-semibold text-neutral-900">{money(o.total_amount ?? o.total ?? subtotal)}</p><p className="text-xs text-neutral-500">Placed {dateTime(o.placed_at || o.rcm)}</p></div>
+                            <div className="rounded border border-neutral-200 bg-neutral-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Order total</p><p className="mt-1 font-semibold text-neutral-900">{money(displayedTotal)}</p><p className="text-xs text-neutral-500">Placed {dateTime(o.placed_at || o.rcm)}</p></div>
                          </div>
                          <div className="mb-5 rounded border border-neutral-200 p-4">
                            <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-bold text-neutral-900">Order activity</h4><span className="text-xs text-neutral-500">{orderHistory(o.order_id).length + events.length} events</span></div>
@@ -422,11 +432,11 @@ export default function AdminOrdersPage() {
                           </div>
                         )}
                          <div className="mt-3 grid gap-1 border-t border-neutral-200 pt-3 text-sm sm:grid-cols-2 lg:grid-cols-5">
-                           <span>Subtotal: {money(o.subtotal ?? subtotal)}</span>
+                            <span>Subtotal: {money(displayedSubtotal)}</span>
                            <span>Discount: -{money(o.discount_amount)}</span>
-                           <span>Tax: {money(o.tax_amount ?? tax)}</span>
-                           <span>Shipping: {money(o.shipping_amount)}</span>
-                           <strong className="text-neutral-900">Total: {money(o.total_amount ?? o.total ?? subtotal)}</strong>
+                            <span>Tax: {money(tax)}</span>
+                            <span>Shipping: {money(shipping)}</span>
+                            <strong className="text-neutral-900">Total: {money(displayedTotal)}</strong>
                          </div>
                        </div>
                      )}
@@ -448,7 +458,8 @@ export default function AdminOrdersPage() {
                      )}
 
                      {tab === "shipment" && (
-                      <div>
+                       <div>
+                         {allShipments.length > 1 && <div className="mb-3 rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><strong>{allShipments.length} shipments</strong> are linked to this order. The editor below updates the first shipment; review the shipment records before dispatch.</div>}
                         {ship ? (
                            <div className="space-y-4 text-sm">
                             <p className="mb-1"><strong>Tracking Number:</strong> {ship.tracking_number}</p>
