@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { apiCached, homeKV } from "@/lib/api";
 import Reveal from "@/components/Reveal";
 
@@ -89,12 +89,20 @@ export default function HomeTestimonials() {
   const [reviews, setReviews] = useState(INITIAL_REVIEWS);
   const [page, setPage] = useState(0);
   const [pageDirection, setPageDirection] = useState(1);
-  const reduceMotion = useReducedMotion();
+  const [reduceMotion, setReduceMotion] = useState(false);
   const [isUpcomingModalOpen, setIsUpcomingModalOpen] = useState(false);
   const [copy, setCopy] = useState({
     eyebrow: "WHAT OUR CLIENTS SAY",
     title: "Voices of Distinction",
   });
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduceMotion(media.matches);
+    sync();
+    media.addEventListener?.("change", sync);
+    return () => media.removeEventListener?.("change", sync);
+  }, []);
 
   useEffect(() => {
     async function loadData() {
