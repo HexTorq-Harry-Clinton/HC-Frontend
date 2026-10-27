@@ -62,7 +62,7 @@ const NAV = [
   { href: "/admin/running-bars", label: "Running Bar", group: "home" },
   { href: "/admin/menu-video", label: "Home Video Slider", group: "home" },
   { href: "/admin/spotlight", label: "HC Spotlight", group: "home" },
-  { href: "/admin/style-collections", label: "Style By HC", group: "home" },
+  { href: "/admin/style-by-hc", label: "Style By HC", group: "home" },
   { href: "/admin/home-collection", label: "The Collection", group: "home" },
   { href: "/admin/home-new-arrivals", label: "New Arrivals", group: "home" },
   { href: "/admin/reviews", label: "Customer Reviews", group: "home" },

@@ -39,12 +39,12 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value:
               "default-src 'self'; " +
-              `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}; ` +
+              `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${isDevelopment ? " 'unsafe-eval'" : ""}; ` +
               "style-src 'self' 'unsafe-inline'; " +
               "img-src 'self' https: data: blob:; " +
               "media-src 'self' https: blob:; " +
               "font-src 'self' data:; " +
-              "connect-src 'self' https:; " +
+              "connect-src 'self' https://cloudflareinsights.com https://*.cloudflareinsights.com https://static.cloudflareinsights.com https:; " +
               "object-src 'none'; " +
               "frame-ancestors 'none';",
           },

@@ -43,6 +43,18 @@ function compareOrdersNewestFirst(a, b) {
   return orderSortNumber(b) - orderSortNumber(a);
 }
 
+function orderAmounts(order, items) {
+  const itemSubtotal = items.reduce((sum, item) => sum + (Number(item.unit_price) || 0) * (Number(item.qty) || 0), 0);
+  const storedSubtotal = Number(order.subtotal) || 0;
+  const subtotal = storedSubtotal > 0 ? storedSubtotal : itemSubtotal;
+  const shipping = Number(order.shipping_amount) || 0;
+  const tax = Number(order.tax_amount) || 0;
+  const discount = Number(order.discount_amount) || 0;
+  const storedTotal = Number(order.total_amount ?? order.total_price ?? order.total) || 0;
+  const total = storedTotal > 0 ? storedTotal : Math.max(subtotal + shipping + tax - discount, 0);
+  return { subtotal, shipping, tax, total };
+}
+
 // Orders: same structure/texts/flows as the previous UI —
 // cards with header, status, cancel, items, totals, shipment, return modal.
 function OrdersInner() {
@@ -203,8 +215,9 @@ function OrdersInner() {
           .filter((e) => e.shipment_id === shipment?.shipment_id)
           .sort((a, b) => new Date(b.event_timestamp || b.created_at || 0) - new Date(a.event_timestamp || a.created_at || 0));
          const courier = couriers.find((c) => c.courier_partner_id === shipment?.courier_partner_id);
-        const totalItems = o.total_items || items.length;
-         const totalPrice = o.total_amount ?? o.total_price ?? o.total ?? 0;
+         const totalItems = o.total_items || items.length;
+         const amounts = orderAmounts(o, items);
+          const totalPrice = amounts.total;
          const payment = detail.payments?.[0];
          const shippingAddress = detail.addresses?.find((address) => String(address.address_type || "").toLowerCase().includes("ship")) || detail.addresses?.[0];
          const billingAddress = detail.addresses?.find((address) => String(address.address_type || "").toLowerCase().includes("bill"));
@@ -280,8 +293,8 @@ function OrdersInner() {
               <span>Total Items: {totalItems}</span>
               <span className="text-lg font-bold">Total: ₹{Number(totalPrice || 0).toLocaleString("en-IN")}</span>
              </div>
-             <div className="grid gap-3 px-4 pb-4 md:grid-cols-3">
-               <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Payment summary</h6><p className="mt-2">Subtotal: ₹{Number(o.subtotal || 0).toLocaleString("en-IN")}</p><p>Shipping: ₹{Number(o.shipping_amount || 0).toLocaleString("en-IN")}</p><p>Tax: ₹{Number(o.tax_amount || 0).toLocaleString("en-IN")}</p><p className="mt-1 font-bold">Total: ₹{Number(totalPrice || 0).toLocaleString("en-IN")}</p></div>
+               <div className="grid gap-3 px-4 pb-4 md:grid-cols-3">
+                <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Payment summary</h6><p className="mt-2">Subtotal: ₹{amounts.subtotal.toLocaleString("en-IN")}</p><p>Shipping: ₹{amounts.shipping.toLocaleString("en-IN")}</p><p>Tax: ₹{amounts.tax.toLocaleString("en-IN")}</p><p className="mt-1 font-bold">Total: ₹{totalPrice.toLocaleString("en-IN")}</p></div>
                <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Delivery address</h6>{shippingAddress ? <p className="mt-2 leading-relaxed">{shippingAddress.full_name}<br />{addressText(shippingAddress)}<br />{[shippingAddress.city, shippingAddress.state].filter(Boolean).join(", ")} {shippingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Address details unavailable.</p>}</div>
                <div className="rounded bg-neutral-50 p-4 text-sm"><h6 className="font-semibold">Billing address</h6>{billingAddress ? <p className="mt-2 leading-relaxed">{billingAddress.full_name}<br />{addressText(billingAddress)}<br />{[billingAddress.city, billingAddress.state].filter(Boolean).join(", ")} {billingAddress.pincode || ""}</p> : <p className="mt-2 text-neutral-500">Same as delivery address.</p>}</div>
              </div>

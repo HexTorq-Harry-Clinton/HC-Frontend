@@ -32,7 +32,7 @@ const PATH_LABELS = {
   "smart-casual-trouser": "Smart Casual Trouser",
   tuxedo: "Tuxedo Collection", "extreme-poppins": "Extreme Poppins",
   "gurkha-trousers": "Gurkha Trousers", "linen-shirts-trousers": "Linen Collection",
-  cigarettes: "Cigarette Collection",
+  cigarettes: "Cigarette Collection", "88-cigarettes": "Cigarette Collection",
   collections: "Collections", services: "Services",
   "hc-spotlight": "HC Spotlight", "style-by-hc": "Style by HC",
   "new-arrivals": "New Arrivals", "forgot-password": "Forgot Password",
