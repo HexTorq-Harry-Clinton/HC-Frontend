@@ -65,8 +65,6 @@ const NAV = [
   { href: "/admin/style-by-hc", label: "Style By HC", group: "home" },
   { href: "/admin/home-collection", label: "The Collection", group: "home" },
   { href: "/admin/home-new-arrivals", label: "New Arrivals", group: "home" },
-  { href: "/admin/reviews", label: "Customer Reviews", group: "home" },
-  { href: "/admin/faqs", label: "FAQs", group: "home" },
   { href: "/admin/home-footer", label: "Footer", group: "home" },
   { href: "/admin/users", label: "Users", group: "users" },
   { href: "/admin/roles", label: "Roles", group: "users" },
@@ -74,16 +72,20 @@ const NAV = [
   { href: "/admin/measurements", label: "Customer Measurements", group: "users" },
   { href: "/admin/products", label: "Products & Media", group: "catalog" },
   { href: "/admin/categories", label: "Categories & Subcategories", group: "catalog" },
-  { href: "/admin/notification-bars", label: "Notification Bar", group: "marketing" },
-  { href: "/admin/image-sliders", label: "Home Slider", group: "marketing" },
-  { href: "/admin/running-bars", label: "Running Bar & Items", group: "marketing" },
+  { href: "/admin/sub-categories", label: "Sub-Categories", group: "catalog" },
+  { href: "/admin/category-sync", label: "Category Sync", group: "catalog" },
+  { href: "/admin/sizes", label: "Product Sizes", group: "catalog" },
+  { href: "/admin/cloth-types", label: "Cloth Types", group: "catalog" },
+  { href: "/admin/care", label: "Care Instructions", group: "catalog" },
+  { href: "/admin/attributes", label: "Attributes", group: "catalog" },
+  { href: "/admin/product-media", label: "Product Media", group: "catalog" },
+  { href: "/admin/product-seo", label: "Product SEO", group: "catalog" },
   { href: "/admin/coupons", label: "Coupons", group: "marketing" },
   { href: "/admin/discounts", label: "Discounts", group: "marketing" },
   { href: "/admin/newsletter", label: "Newsletters", group: "marketing" },
   { href: "/admin/reviews", label: "Reviews", group: "marketing" },
   { href: "/admin/spotlight", label: "Spotlight Media", group: "marketing" },
   { href: "/admin/style-collections", label: "Style Collections", group: "marketing" },
-  { href: "/admin/menu-video", label: "Home Video", group: "marketing" },
   { href: "/admin/subcategory-content", label: "Subcategory Content", group: "marketing" },
   { href: "/admin/orders", label: "Orders", group: "sales" },
   { href: "/admin/payments", label: "Payments", group: "sales" },
@@ -137,13 +139,20 @@ function AdminShellInner({ children }) {
   // Auto-expand the active group when navigating — intentional mount sync.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    const active = NAV.find((item) =>
-      item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href)
-    );
+    const active = NAV.find((item) => item.href === "/admin" ? pathname === "/admin" : pathname === item.href || pathname.startsWith(item.href + "/"));
     if (active) {
       setOpenGroups((prev) => (prev.includes(active.group) ? prev : [...prev, active.group]));
     }
   }, [pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setSidebarOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [sidebarOpen]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!allowed) return <p className="p-10 text-sm text-neutral-500">Checking admin access…</p>;
@@ -174,7 +183,9 @@ function AdminShellInner({ children }) {
             type="button"
             onClick={() => setSidebarOpen((v) => !v)}
             aria-label="Toggle menu"
-            className=" border border-white/25 px-2.5 py-1.5 text-sm text-white transition-colors hover:bg-white/10 lg:hidden"
+            aria-expanded={sidebarOpen}
+            aria-controls="admin-sidebar"
+            className="border border-white/25 px-2.5 py-1.5 text-sm text-white transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold lg:hidden"
           >
             <i className="bi bi-list" />
           </button>
@@ -202,7 +213,9 @@ function AdminShellInner({ children }) {
       </header>
 
       <div className="flex flex-1">
+        {sidebarOpen && <button type="button" aria-label="Close admin menu" onClick={() => setSidebarOpen(false)} className="fixed inset-0 top-[60px] z-40 bg-black/45 lg:hidden" />}
         <aside
+          id="admin-sidebar"
           className={`fixed bottom-0 left-0 top-[60px] z-50 w-[252px] shrink-0 overflow-y-auto border-r border-white/5 bg-[#16151a] px-3 pb-10 pt-[18px] text-[#d8d6dd] transition-transform duration-200 lg:sticky lg:top-[60px] lg:h-[calc(100vh-60px)] lg:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
@@ -218,7 +231,7 @@ function AdminShellInner({ children }) {
                     type="button"
                     onClick={() => toggleGroup(group.key)}
                     aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between  px-2.5 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/90"
+                    className="flex w-full items-center justify-between px-2.5 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
                   >
                     <span className="flex items-center gap-2">
                       <i className={`${GROUP_ICON[group.key]} text-[13px] text-gold/70`} />
@@ -240,7 +253,7 @@ function AdminShellInner({ children }) {
                             key={item.href}
                             href={item.href}
                             onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-2.5  border-l-2 px-3 py-2 text-[13.5px] transition-colors ${
+                            className={`flex items-center gap-2.5 border-l-2 px-3 py-2 text-[13.5px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold ${
                               active
                                 ? "border-gold bg-gold/10 font-semibold text-gold"
                                 : "border-transparent text-white/65 hover:bg-white/5 hover:text-white"

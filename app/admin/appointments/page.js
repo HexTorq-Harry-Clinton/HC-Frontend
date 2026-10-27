@@ -8,7 +8,13 @@ import { useConfirm } from "../ConfirmProvider";
 // Appointments manager: same as the previous UI —
 // customer/date/time/status table, expandable detail,
 // status update with save, cancel with confirm.
-const STATUSES = ["Pending", "Approved", "Completed", "Cancelled"];
+const STATUSES = [
+  ["requested", "Pending"],
+  ["approved", "Approved"],
+  ["rejected", "Rejected"],
+  ["cancelled", "Cancelled"],
+  ["completed", "Completed"],
+];
 
 export default function AdminAppointmentsManager() {
   const confirm = useConfirm();
@@ -76,18 +82,22 @@ export default function AdminAppointmentsManager() {
 
   const saveStatus = async (r) => {
     const next = edits[r.appointment_id] || r.appointment_status;
-    await apiFetch("/Custom-Appointments", {
-      method: "PUT",
-      body: {
-        appointment_id: r.appointment_id,
-        appointment_status: (next || "").toLowerCase(),
-        approved_at: (next || "").toLowerCase() === "approved" ? new Date().toISOString() : null,
-        luu: "ADMIN_PORTAL",
-      },
-    }).catch(() => null);
-    setMsg("Status updated.");
-    revalidateSite();
-    load();
+    try {
+      await apiFetch("/Custom-Appointments", {
+        method: "PUT",
+        body: {
+          appointment_id: r.appointment_id,
+          appointment_status: (next || "requested").toLowerCase(),
+          approved_at: (next || "").toLowerCase() === "approved" ? new Date().toISOString() : null,
+          luu: "ADMIN_PORTAL",
+        },
+      });
+      setMsg("Status updated.");
+      revalidateSite();
+      load();
+    } catch (err) {
+      setMsg(err.message || "Status update failed.");
+    }
   };
 
   const cancel = async (r) => {
@@ -98,13 +108,17 @@ export default function AdminAppointmentsManager() {
       danger: true,
     });
     if (!ok) return;
-    await apiFetch("/Custom-Appointments", {
-      method: "DELETE",
-      body: { appointment_id: r.appointment_id, luu: "ADMIN_PORTAL" },
-    }).catch(() => null);
-    setMsg("Appointment cancelled.");
-    revalidateSite();
-    load();
+    try {
+      await apiFetch("/Custom-Appointments", {
+        method: "PUT",
+        body: { appointment_id: r.appointment_id, appointment_status: "cancelled", cancelled_at: new Date().toISOString(), luu: "ADMIN_PORTAL" },
+      });
+      setMsg("Appointment cancelled.");
+      revalidateSite();
+      load();
+    } catch (err) {
+      setMsg(err.message || "Appointment cancellation failed.");
+    }
   };
 
   return (
@@ -169,12 +183,12 @@ export default function AdminAppointmentsManager() {
                         <div className="mt-3 flex items-center gap-2">
                           <span className="text-xs font-semibold uppercase">Update Status</span>
                           <select
-                            value={edits[r.appointment_id] || r.appointment_status || "Pending"}
+                            value={edits[r.appointment_id] || r.appointment_status || "requested"}
                             onChange={(e) => setEdits((m) => ({ ...m, [r.appointment_id]: e.target.value }))}
                             className=" border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 shadow-sm transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25"
                           >
-                            {STATUSES.map((s) => (
-                              <option key={s} value={s}>{s}</option>
+                            {STATUSES.map(([value, label]) => (
+                              <option key={value} value={value}>{label}</option>
                             ))}
                           </select>
                           <button

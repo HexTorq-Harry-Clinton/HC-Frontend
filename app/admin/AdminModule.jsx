@@ -34,6 +34,21 @@ const tableWrapCls = "overflow-x-auto  border border-neutral-200 bg-white shadow
 const thCls = "px-4 py-3 whitespace-nowrap";
 const tdCls = "max-w-xs truncate px-4 py-3";
 
+function isChecked(value) {
+  return value === 1 || value === true || value === "1" || value === "true";
+}
+
+function dateInputValue(value) {
+  if (!value) return "";
+  return String(value).slice(0, 10);
+}
+
+function singularTitle(mod) {
+  if (mod.singular) return mod.singular;
+  const known = { "Menu Categories": "Menu Category", "Running Bars": "Running Bar", "Date Slots": "Date Slot" };
+  return known[mod.title] || mod.title.replace(/ies$/, "y").replace(/s$/, "");
+}
+
 function isVideoSource(value, mediaType) {
   return String(mediaType || "").toLowerCase().startsWith("video") || /\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(String(value || ""));
 }
@@ -58,7 +73,7 @@ function MediaPreview({ file, src, mediaType, className = "" }) {
 function cellText(r, c, refOptions = {}) {
   if (c.type === "checkbox") {
     const v = r[c.key];
-    return v === 1 || v === true ? "Yes" : "No";
+    return isChecked(v) ? "Yes" : "No";
   }  if (c.ref) {
     const hit = (refOptions[c.ref] || []).find((o) => String(o.value) === String(r[c.key]));
     if (hit) return hit.label;
@@ -79,6 +94,7 @@ export default function AdminModulePage({ module: slug, lock }) {
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
   const [search, setSearch] = useState("");
   // Staged files: { columnKey: File } — picked in the form, uploaded on
@@ -96,6 +112,14 @@ export default function AdminModulePage({ module: slug, lock }) {
     setForm({});
     setStaged({});
   };
+  useEffect(() => {
+    if (!showForm) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") closeForm();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [showForm]);
   const openCreate = () => {
     setForm({});
     setStaged({});
@@ -150,13 +174,15 @@ export default function AdminModulePage({ module: slug, lock }) {
         if (live) {
            const filtered = Array.isArray(list) && mod.rowFilter ? list.filter(mod.rowFilter) : list;
            setRows(Array.isArray(filtered) ? filtered : []);
-          setLoadError("");
+           setLoadError("");
+           setLoading(false);
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (live) {
           setRows([]);
-          setLoadError(`Could not load ${mod.title}. The request timed out or the API returned an error.`);
+          setLoading(false);
+          setLoadError(friendlyError(err, `Could not load ${mod.title}.`));
         }
       });
     return () => {
@@ -164,9 +190,18 @@ export default function AdminModulePage({ module: slug, lock }) {
     };
   }, [mod, refresh]);
 
-  const reload = () => setRefresh((n) => n + 1);
+  const reload = () => {
+    setLoading(true);
+    setRefresh((n) => n + 1);
+  };
 
   const bulkDelete = async (hard) => {
+    if (mod.readOnly || mod.noDelete) {
+      const message = `${mod.title} is protected and cannot be deleted.`;
+      setMsg(message);
+      toast?.error(message);
+      return;
+    }
     if (selectedIds.length === 0) return;
     const action = hard ? "PERMANENTLY delete" : "soft-delete";
     const ok = await confirm({
@@ -212,7 +247,7 @@ export default function AdminModulePage({ module: slug, lock }) {
   /* eslint-disable react-hooks/set-state-in-effect -- reset pagination for a new filter */
   useEffect(() => {
     setPage(1);
-  }, [search, mod]);
+  }, [search, mod, lock?.field, lock?.value]);
   /* eslint-enable react-hooks/set-state-in-effect */
   const shown = paginate(visible, page, pageSize);
   const rowId = (row) => String(row?.[mod.id] ?? "");
@@ -250,7 +285,7 @@ export default function AdminModulePage({ module: slug, lock }) {
         </button>
         <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-neutral-900">{parentLabel}</h1>
         <p className="mt-1 text-xs text-neutral-500">
-          Everything created below automatically belongs to this {mod.title.slice(0, -1).toLowerCase() || "record"} — no need to pick it again.
+           Everything created below automatically belongs to this {singularTitle(mod).toLowerCase()} — no need to pick it again.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {mod.children.map((c, i) => (
@@ -395,7 +430,7 @@ export default function AdminModulePage({ module: slug, lock }) {
     const f = {};
     mod.columns.forEach((c) => {
       const v = r[c.key];
-      f[c.key] = c.type === "checkbox" ? v === 1 || v === true : v ?? "";
+      f[c.key] = c.type === "checkbox" ? isChecked(v) : v ?? "";
     });
     setForm(f);
     setStaged({});
@@ -412,21 +447,34 @@ export default function AdminModulePage({ module: slug, lock }) {
       danger: true,
     });
     if (!ok) return;
-    await apiFetch(mod.endpoint, { method: "DELETE", body: { [mod.id]: r[mod.id], luu: "ADMIN_PORTAL" } }).catch(() => null);
-    toast?.success(`${mod.title} deleted.`);
-    reload();
-    revalidateSite();
+    try {
+      const path = mod.deletePath ? mod.deletePath(r[mod.id]) : mod.endpoint;
+      await apiFetch(path, { method: "DELETE", body: { [mod.id]: r[mod.id], luu: "ADMIN_PORTAL" } });
+      toast?.success(`${mod.title} deleted.`);
+      reload();
+      revalidateSite();
+    } catch (err) {
+      const message = friendlyError(err, "Delete failed");
+      setMsg(message);
+      toast?.error(message);
+    }
   };
 
   const toggle = async (r, next) => {
     if (!mod.toggle) return;
     const value = typeof next === "boolean" ? (next ? 1 : 0) : next;
-    await apiFetch(mod.endpoint, {
-      method: "PUT",
-      body: { [mod.id]: r[mod.id], [mod.toggle]: value, luu: "ADMIN_PORTAL" },
-    }).catch(() => null);
-    reload();
-    revalidateSite();
+    try {
+      await apiFetch(mod.endpoint, {
+        method: "PUT",
+        body: { [mod.id]: r[mod.id], [mod.toggle]: value, luu: "ADMIN_PORTAL" },
+      });
+      reload();
+      revalidateSite();
+    } catch (err) {
+      const message = friendlyError(err, "Status update failed");
+      setMsg(message);
+      toast?.error(message);
+    }
   };
 
   const renderField = (c) => {
@@ -446,7 +494,7 @@ export default function AdminModulePage({ module: slug, lock }) {
       );
     }
     if (c.type === "checkbox") {
-      return <input type="checkbox" checked={!!form[c.key]} onChange={set(c.key, "checkbox")} className="ml-2" />;
+       return <input type="checkbox" checked={isChecked(form[c.key])} onChange={set(c.key, "checkbox")} className="ml-2" />;
     }
     if (c.type === "select") {
       const opts = c.ref ? refOptions[c.ref] || [] : c.options || [];
@@ -454,9 +502,11 @@ export default function AdminModulePage({ module: slug, lock }) {
         <span className="mt-1 block font-normal">
           <select value={form[c.key] || ""} onChange={set(c.key)} required={!!c.required} className={inputCls}>
             <option value="">Select {c.label}</option>
-            {opts.map((o) => (
-              <option key={o.value} value={o.value}>{typeof o === "string" ? o : o.label}</option>
-            ))}
+            {opts.map((o) => {
+              const value = typeof o === "string" ? o : o.value;
+              const label = typeof o === "string" ? o : o.label;
+              return <option key={value} value={value}>{label}</option>;
+            })}
           </select>
           {c.ref && opts.length === 0 && (
             <span className="mt-1 block text-xs text-amber-700">
@@ -479,7 +529,9 @@ export default function AdminModulePage({ module: slug, lock }) {
       const file = staged[c.key];
       return (
         <span className="mt-1 block font-normal">
-          <input
+           <label htmlFor={`admin-search-${slug}`} className="sr-only">Search {mod.title}</label>
+           <input
+             id={`admin-search-${slug}`}
             value={form[c.key] || ""}
             onChange={set(c.key)}
             placeholder="URL or pick a file below"
@@ -516,7 +568,7 @@ export default function AdminModulePage({ module: slug, lock }) {
     return (
       <input
         type={c.type === "number" ? "number" : c.type === "date" ? "date" : "text"}
-        value={form[c.key] || ""}
+        value={c.type === "date" ? dateInputValue(form[c.key]) : form[c.key] || ""}
         onChange={set(c.key, c.type)}
         className={`${inputCls} mt-1 font-normal`}
       />
@@ -546,7 +598,7 @@ export default function AdminModulePage({ module: slug, lock }) {
           )}
         </div>
       </div>
-      {selectedIds.length > 0 && (
+       {!mod.readOnly && !mod.noDelete && selectedIds.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-2 border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <strong>{selectedIds.length}</strong> selected
           <button type="button" onClick={() => bulkDelete(false)} className={btnOutline}>Delete selected</button>
@@ -568,9 +620,12 @@ export default function AdminModulePage({ module: slug, lock }) {
           <form
             onSubmit={submit}
             onClick={(e) => e.stopPropagation()}
-            className={`max-h-[90vh] w-full max-w-2xl overflow-y-auto ${panelCls}`}
-          >
-            <h3 className="font-display text-lg font-bold text-neutral-900">
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="admin-form-title"
+           className={`max-h-[90vh] w-full max-w-2xl overflow-y-auto ${panelCls}`}
+        >
+            <h3 id="admin-form-title" className="font-display text-lg font-bold text-neutral-900">
               {editing ? `Edit ${mod.title.replace(/s$/, "")}` : `New ${mod.title.replace(/s$/, "")}`}
             </h3>
             {lock && (
@@ -619,13 +674,11 @@ export default function AdminModulePage({ module: slug, lock }) {
           <button type="button" onClick={() => { setLoadError(""); reload(); }} className={btnOutline}>Retry</button>
         </div>
       )}
-      <div className={tableWrapCls}>
-        <table className="w-full bg-white text-left text-sm">
+       <div className={tableWrapCls}>
+         <table className="min-w-max w-full bg-white text-left text-sm">
           <thead>
             <tr className="bg-[#17161a] text-[11px] font-bold uppercase tracking-wider text-white">
-              <th className="w-12 px-4 py-3">
-                <input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} aria-label="Select visible records" />
-              </th>
+              {!mod.readOnly && !mod.noDelete && <th className="w-12 px-4 py-3"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} aria-label="Select visible records" /></th>}
               {mod.columns.map((c) => (
                 <th key={c.key} className={thCls}>{c.label}</th>
               ))}
@@ -633,7 +686,9 @@ export default function AdminModulePage({ module: slug, lock }) {
             </tr>
           </thead>
           <tbody>
-            {visible.length === 0 ? (
+             {loading ? (
+               <tr><td colSpan={mod.columns.length + 2} className="p-8 text-center text-neutral-500">Loading {mod.title.toLowerCase()}…</td></tr>
+             ) : visible.length === 0 ? (
               <tr>
                  <td colSpan={mod.columns.length + 2} className="p-5 text-center text-neutral-500">
                   No records found.
@@ -642,12 +697,10 @@ export default function AdminModulePage({ module: slug, lock }) {
             ) : (
              shown.map((r, i) => (
                <tr key={r[mod.id] || i} className="border-b transition-colors last:border-0 hover:bg-[#faf8f4]">
-                 <td className="px-4 py-3">
-                   <input type="checkbox" checked={selectedIds.includes(rowId(r))} onChange={() => toggleSelected(rowId(r))} aria-label={`Select ${cellText(r, mod.columns[0], refOptions)}`} />
-                 </td>
+                  {!mod.readOnly && !mod.noDelete && <td className="px-4 py-3"><input type="checkbox" checked={selectedIds.includes(rowId(r))} onChange={() => toggleSelected(rowId(r))} aria-label={`Select ${cellText(r, mod.columns[0], refOptions)}`} /></td>}
                  {mod.columns.map((c) => (
                   <td key={c.key} className={tdCls}>
-                     {mod.toggle && c.key === mod.toggle ? (
+                      {mod.toggle && c.key === mod.toggle && !mod.readOnly ? (
                        <ActiveToggle active={r[c.key]} onToggle={(next) => toggle(r, next)} />
                      ) : c.type === "upload" ? (
                        <MediaPreview src={r[c.key]} mediaType={r.media_type} className="h-12 w-24 rounded border border-neutral-200 bg-neutral-950 object-cover" />

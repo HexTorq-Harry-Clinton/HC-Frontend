@@ -168,16 +168,29 @@ export default function AdminProductsPage() {
       danger: true,
     });
     if (!ok) return;
-    await apiFetch("/Products", { method: "DELETE", body: { product_id: p.product_id, luu: "ADMIN_PORTAL" } }).catch(() => null);
-    reload();
+    try {
+      await apiFetch("/Products", { method: "DELETE", body: { product_id: p.product_id, luu: "ADMIN_PORTAL" } });
+      setToast({ type: "ok", text: "Product deleted." });
+      reload();
+    } catch (err) {
+      const friendly = friendlyError(err, "Delete failed");
+      setMsg(friendly);
+      setToast({ type: "error", text: friendly });
+    }
   };
 
   const toggleProduct = async (p, next) => {
-    await apiFetch("/Products", {
-      method: "PUT",
-      body: { product_id: p.product_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
-    }).catch(() => null);
-    reload();
+    try {
+      await apiFetch("/Products", {
+        method: "PUT",
+        body: { product_id: p.product_id, isactive: next ? 1 : 0, luu: "ADMIN_PORTAL" },
+      });
+      reload();
+    } catch (err) {
+      const friendly = friendlyError(err, "Status update failed");
+      setMsg(friendly);
+      setToast({ type: "error", text: friendly });
+    }
   };
 
   // workspace: false = list, object = open existing (save-first gate:

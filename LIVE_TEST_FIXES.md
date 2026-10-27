@@ -42,3 +42,21 @@ After deployment, verify:
 - Targeted ESLint passed.
 - `npm run build` passed with Next.js 16.3.4.
 - No production records were edited during the fix.
+
+## Admin panel audit fixes
+
+The admin audit also addressed:
+
+- Duplicate sidebar destinations and conflicting active selections.
+- Missing direct links for category/product maintenance modules.
+- Mobile sidebar backdrop, Escape handling, and keyboard focus states.
+- Protected/read-only modules exposing bulk-delete controls.
+- Generic delete/toggle failures falsely showing success.
+- Subcategory content deletion using its required `/:id` URL.
+- String select options, string boolean values, and date edit values.
+- Nested workspace pagination reset when the parent changes.
+- Accessible search labels and CRUD dialog semantics.
+- Appointment status values aligned with backend values.
+- Appointment cancellation changed from destructive delete to a cancelled status update.
+- Product delete/toggle failures now show an error instead of silently continuing.
+- Multipart upload field order corrected; backend uploads now require admin auth and validate size, MIME type, and extensions.

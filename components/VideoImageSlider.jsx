@@ -36,10 +36,12 @@ export default function VideoImageSlider() {
   const videoRef = useRef(null);
 
   // Fresh video element per slide starts autoplay-muted; reset controls.
+  /* eslint-disable react-hooks/set-state-in-effect -- reset controls for the newly mounted slide */
   useEffect(() => {
     setMuted(true);
     setPlaying(true);
   }, [index]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     let live = true;

@@ -28,7 +28,7 @@ const DEFAULT_TILES = [
 function parseTiles(json) {
   try {
     const arr = JSON.parse(json || "[]");
-    if (Array.isArray(arr) && arr.length > 0) return arr;
+    if (Array.isArray(arr)) return arr;
   } catch {
     /* fall through to defaults */
   }
@@ -45,12 +45,14 @@ export default function AdminHomeCollectionPage() {
   const [tiles, setTiles] = useState(DEFAULT_TILES);
   const [seeded, setSeeded] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- hydrate editable state after async settings load */
   useEffect(() => {
     if (!loading && !seeded) {
       setTiles(parseTiles(settings.home_collection_json));
       setSeeded(true);
     }
   }, [loading, seeded, settings.home_collection_json]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const setTile = (i, fields) =>
     setTiles((t) => t.map((tile, idx) => (idx === i ? { ...tile, ...fields } : tile)));
