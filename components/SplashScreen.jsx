@@ -1,10 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-
-// Runs pre-paint on the client (no-op on the server): lets us hide the
-// splash synchronously for returning visitors without a flash frame.
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const SPLASH_MS = 3000;
 const SPLASH_SRC = "/brand/hc-splash.mp4";
@@ -21,10 +17,10 @@ export default function SplashScreen() {
   const [videoSrc, setVideoSrc] = useState(null);
   const videoRef = useRef(null);
 
-  useIsomorphicLayoutEffect(() => {
-    if (sessionStorage.getItem("hc_splash_seen")) {
-      setShow(false);
-    }
+  useEffect(() => {
+    if (!sessionStorage.getItem("hc_splash_seen")) return undefined;
+    const timer = window.setTimeout(() => setShow(false), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const dismiss = useCallback(() => {

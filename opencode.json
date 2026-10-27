@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "agentation": {
+        "type": "local",
+        "command": [
+          "npx",
+          "agentation-mcp",
+          "server"
+        ]
+      }
+    }
+  }
+}
+

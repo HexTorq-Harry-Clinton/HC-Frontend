@@ -77,4 +77,5 @@ The admin audit also addressed:
 - Full ESLint: passed with existing warnings only; no errors.
 - `npm run build`: passed with Next.js 16.3.4.
 - Live desktop smoke check: `/book-appointment` loaded successfully with no browser console errors; no appointment or order mutation was submitted.
+- Homepage splash session-state hydration was corrected after the final live pass exposed React hydration warning `#418`; the session-storage check now runs asynchronously after the matching server/client render.
 - Authentication/authorization and IDOR findings remain intentionally out of scope.
