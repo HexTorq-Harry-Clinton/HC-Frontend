@@ -14,7 +14,7 @@ export default function AppointmentCTA() {
               {/* Left Column: High-Fashion Bespoke Atelier Photography */}
               <div className="lg:col-span-5 relative min-h-[340px] sm:min-h-[420px] lg:min-h-[560px] overflow-hidden">
                 <Image
-                  src="/brand/atelier-portrait.jpg"
+                   src="/brand/Wedding.jpeg"
                   alt="Harry Clinton Bespoke Tailoring Atelier"
                   fill
                   sizes="(max-width: 1024px) 100vw, 42vw"

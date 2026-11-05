@@ -184,7 +184,7 @@ export default async function ServicePage({ config }) {
     <div className={`service-editorial-page service-editorial-page--${key}`}>
       <section
         className="service-editorial-page__hero bg-neutral-950 text-white"
-        style={key === "embroidery" ? { backgroundImage: "linear-gradient(90deg, rgba(10,8,7,.88), rgba(10,8,7,.48)), url('/brand/atelier-portrait.jpg')" } : undefined}
+         style={key === "embroidery" ? { backgroundImage: "linear-gradient(90deg, rgba(10,8,7,.88), rgba(10,8,7,.48)), url('/brand/Wedding.jpeg')" } : undefined}
       >
         <div className="service-editorial-page__hero-inner mx-auto max-w-4xl px-4 text-center">
           <p className="eyebrow text-gold">{hero.eyebrow}</p>
